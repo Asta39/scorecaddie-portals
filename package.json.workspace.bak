@@ -1,0 +1,17 @@
+{
+  "name": "scorecaddie-portals",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:super-admin": "npm run dev --workspace=apps/super-admin",
+    "dev:club-admin": "npm run dev --workspace=apps/club-admin",
+    "build:super-admin": "npm run build --workspace=apps/super-admin",
+    "build:club-admin": "npm run build --workspace=apps/club-admin"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

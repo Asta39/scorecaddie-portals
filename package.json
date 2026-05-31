@@ -1,0 +1,19 @@
+{
+  "name": "scorecaddie-portals",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:super-admin": "pnpm --filter super-admin dev",
+    "dev:club-admin": "pnpm --filter club-admin dev",
+    "build:super-admin": "pnpm --filter super-admin build",
+    "build:club-admin": "pnpm --filter club-admin build",
+    "build": "pnpm --filter super-admin build && pnpm --filter club-admin build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

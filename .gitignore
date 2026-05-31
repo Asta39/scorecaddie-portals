@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+.env.local
+apps/club-admin/node_modules/
+apps/super-admin/node_modules/
+packages/*/node_modules/
