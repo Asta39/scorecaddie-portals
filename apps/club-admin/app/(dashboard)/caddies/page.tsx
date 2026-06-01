@@ -166,12 +166,12 @@ export default function CaddiesPage() {
         const duplicates: {row: number, phone: string}[] = []
         
         // Use a Set to track phones (existing + newly parsed ones in the same file)
-        const currentPhones = new Set(caddies.map(c => c.phone))
+        const currentPhones = new Set(caddies.map(c => c.phone ? c.phone.replace(/[^0-9+]/g, '') : ''))
 
         rows.forEach((row, index) => {
           const rowNum = index + 2 // +2 because 1-indexed and header row
           const name = row['Name']?.trim()
-          const phone = row['Phone']?.trim()
+          let phone = row['Phone']?.trim()
           const idNumber = row['ID Number']?.trim()
           let exp = row['Experience']?.trim()?.toLowerCase()
 
@@ -180,21 +180,23 @@ export default function CaddiesPage() {
             return
           }
 
+          const normalizedPhone = phone.replace(/[^0-9+]/g, '')
+
           if (!['beginner', 'intermediate', 'expert'].includes(exp)) {
             exp = 'beginner'
           }
 
-          if (currentPhones.has(phone)) {
+          if (currentPhones.has(normalizedPhone)) {
             duplicates.push({ row: rowNum, phone })
             return // Skip duplicate
           }
 
-          currentPhones.add(phone)
+          currentPhones.add(normalizedPhone)
 
           validCaddies.push({
             club_id: clubId,
             name,
-            phone,
+            phone: normalizedPhone,
             id_number: idNumber || null,
             experience_level: exp,
             photo_url: null,
