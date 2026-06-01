@@ -2,13 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
-import { Shield, Settings as SettingsIcon, Check, AlertCircle, Building, Key } from 'lucide-react'
+import { Shield, Settings as SettingsIcon, Check, AlertCircle, Building, Key, FileText } from 'lucide-react'
 
 export default function SettingsPage() {
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
   const [clubInfo, setClubInfo] = useState<any>(null)
   const [adminInfo, setAdminInfo] = useState<any>(null)
+
+  // Caddies About form states
+  const [caddiesAbout, setCaddiesAbout] = useState('')
+  const [updatingClub, setUpdatingClub] = useState(false)
+  const [clubSuccessMsg, setClubSuccessMsg] = useState('')
+  const [clubErrorMsg, setClubErrorMsg] = useState('')
 
   // Password change form states
   const [newPassword, setNewPassword] = useState('')
@@ -31,12 +37,35 @@ export default function SettingsPage() {
         if (admin) {
           setAdminInfo(admin)
           setClubInfo(admin.clubs)
+          setCaddiesAbout(admin.clubs?.caddies_about || '')
         }
       }
       setLoading(false)
     }
     loadDetails()
   }, [])
+
+  const handleUpdateCaddiesAbout = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!clubInfo?.id) return
+    
+    setClubSuccessMsg('')
+    setClubErrorMsg('')
+    setUpdatingClub(true)
+
+    const { error } = await supabase
+      .from('clubs')
+      .update({ caddies_about: caddiesAbout })
+      .eq('id', clubInfo.id)
+
+    if (error) {
+      setClubErrorMsg(error.message)
+    } else {
+      setClubSuccessMsg('Caddie bio template updated successfully!')
+      setClubInfo({ ...clubInfo, caddies_about: caddiesAbout })
+    }
+    setUpdatingClub(false)
+  }
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -120,6 +149,61 @@ export default function SettingsPage() {
                     <p className="font-semibold text-text font-mono">{clubInfo.contact_phone ?? '—'}</p>
                   </div>
                 </div>
+              ) : (
+                <p className="text-sm text-text-muted">No club info linked to this account.</p>
+              )}
+            </div>
+
+            {/* Caddie Marketplace Bio */}
+            <div className="card p-6">
+              <div className="flex items-center gap-3 mb-5 pb-3 border-b" style={{ borderColor: 'var(--color-lighter)' }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-lighter">
+                  <FileText size={20} className="text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base" style={{ color: 'var(--color-text)' }}>Marketplace Bio</h3>
+                  <p className="text-xs" style={{ color: 'var(--color-light)' }}>Template for all your caddies</p>
+                </div>
+              </div>
+
+              {clubInfo ? (
+                <form onSubmit={handleUpdateCaddiesAbout} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-1 text-text">Caddie Description (What You'll Get)</label>
+                    <p className="text-xs text-text-muted mb-2">
+                      This text appears on the mobile app marketplace for every caddie registered under your club.
+                    </p>
+                    <textarea
+                      value={caddiesAbout}
+                      onChange={e => setCaddiesAbout(e.target.value)}
+                      placeholder="E.g., Sigona caddies are professionally trained with excellent knowledge of our greens..."
+                      className="input min-h-[100px] resize-y"
+                    />
+                  </div>
+
+                  {clubSuccessMsg && (
+                    <div className="text-sm text-emerald-600 bg-emerald-50 p-3 rounded-lg border border-emerald-200 flex items-start gap-2">
+                      <Check size={16} className="flex-shrink-0 mt-0.5" />
+                      <span>{clubSuccessMsg}</span>
+                    </div>
+                  )}
+
+                  {clubErrorMsg && (
+                    <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200 flex items-start gap-2">
+                      <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+                      <span>{clubErrorMsg}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={updatingClub}
+                    className="btn-primary w-full"
+                    style={{ background: updatingClub ? 'var(--color-secondary)' : 'var(--color-primary)' }}
+                  >
+                    {updatingClub ? 'Saving…' : 'Save Template'}
+                  </button>
+                </form>
               ) : (
                 <p className="text-sm text-text-muted">No club info linked to this account.</p>
               )}
