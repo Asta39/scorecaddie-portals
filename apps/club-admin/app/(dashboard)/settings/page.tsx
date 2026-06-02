@@ -36,7 +36,7 @@ export default function SettingsPage() {
           .single()
         if (admin) {
           setAdminInfo(admin)
-          const club = admin.clubs as any
+          const club = Array.isArray(admin.clubs) ? admin.clubs[0] : admin.clubs
           setClubInfo(club)
           setCaddiesAbout(club?.caddies_about || '')
         }

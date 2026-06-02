@@ -123,7 +123,7 @@ export default async function DashboardPage() {
   const subPercent = d.totalCaddies > 0 ? Math.round((d.activeSubscriptions / d.totalCaddies) * 100) : 0
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="flex flex-col gap-6">
       {/* ─── Header ─────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.75rem' }}>
         <div>

@@ -167,6 +167,7 @@ export default function CaddiesPage() {
         
         // Use a Set to track phones (existing + newly parsed ones in the same file)
         const currentPhones = new Set(caddies.map(c => c.phone ? c.phone.replace(/[^0-9+]/g, '') : ''))
+        const currentNames = new Set(caddies.map(c => c.name?.trim().toLowerCase()))
 
         rows.forEach((row, index) => {
           const rowNum = index + 2 // +2 because 1-indexed and header row
@@ -181,17 +182,19 @@ export default function CaddiesPage() {
           }
 
           const normalizedPhone = phone.replace(/[^0-9+]/g, '')
+          const normalizedName = name.toLowerCase()
 
           if (!['beginner', 'intermediate', 'expert'].includes(exp)) {
             exp = 'beginner'
           }
 
-          if (currentPhones.has(normalizedPhone)) {
+          if (currentPhones.has(normalizedPhone) || currentNames.has(normalizedName)) {
             duplicates.push({ row: rowNum, phone })
             return // Skip duplicate
           }
 
           currentPhones.add(normalizedPhone)
+          currentNames.add(normalizedName)
 
           validCaddies.push({
             club_id: clubId,
