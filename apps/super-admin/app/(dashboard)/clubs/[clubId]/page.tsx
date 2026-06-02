@@ -56,7 +56,7 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
           { label: 'Total Caddies', value: caddies?.length ?? 0 },
           { label: 'Active Subscriptions', value: activeCount },
@@ -70,7 +70,7 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Caddies table */}
         <div className="col-span-2 card">
           <div className="card-header">
@@ -79,7 +79,8 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
               <h3 className="font-semibold" style={{ color: 'var(--color-text)' }}>Caddies</h3>
             </div>
           </div>
-          <table className="data-table">
+          <div className="table-responsive-wrapper">
+            <table className="data-table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -112,6 +113,7 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
               })}
             </tbody>
           </table>
+        </div>
         </div>
 
         {/* Admins panel */}

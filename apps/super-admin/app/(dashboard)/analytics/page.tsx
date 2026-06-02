@@ -636,7 +636,7 @@ export default function PlatformAnalyticsPage() {
                       Insufficient logs to compute user retention metrics
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                       {retentionData.map((item, idx) => (
                         <div key={idx} className="p-4 rounded-xl bg-lighter/25 border" style={{ borderColor: 'var(--color-lighter)' }}>
                           <div className="relative w-24 h-24 mx-auto flex items-center justify-center mb-3">
@@ -800,6 +800,7 @@ export default function PlatformAnalyticsPage() {
               </div>
 
               <div className="overflow-x-auto">
+              <div className="table-responsive-wrapper">
                 <table className="data-table">
                   <thead>
                     <tr>
@@ -861,6 +862,7 @@ export default function PlatformAnalyticsPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
               </div>
             </div>
           )}

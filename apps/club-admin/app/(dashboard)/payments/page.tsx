@@ -250,7 +250,7 @@ export default function PaymentsPage() {
           Loading subscription records…
         </div>
       ) : (
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Caddies Lists (Main area) */}
           <div className="col-span-3 space-y-6">
             
@@ -320,6 +320,7 @@ export default function PaymentsPage() {
                         </div>
 
                         {/* Batch Table */}
+                      <div className="table-responsive-wrapper">
                         <table className="data-table" style={{ margin: 0 }}>
                           <thead>
                             <tr>
@@ -347,11 +348,12 @@ export default function PaymentsPage() {
                                   <td className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
                                     {format(new Date(c.paid_until!), 'd MMM yyyy')}
                                   </td>
-                                </tr>
-                              )
-                            })}
-                          </tbody>
-                        </table>
+                                  </tr>
+                                )
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     )
                   })}
@@ -400,55 +402,56 @@ export default function PaymentsPage() {
                 </div>
 
                 {/* Table */}
-                <table className="data-table" style={{ margin: 0 }}>
-                  <thead>
-                    <tr>
-                      <th style={{ width: '40px' }}></th>
-                      <th>Caddie Name</th>
-                      <th>Phone</th>
-                      <th>Expiry Status</th>
-                      <th>Last Expiry Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {unpaidList.length === 0 ? (
+                <div className="table-responsive-wrapper">
+                  <table className="data-table" style={{ margin: 0 }}>
+                    <thead>
                       <tr>
-                        <td colSpan={5} className="text-center py-12 text-text-muted" style={{ color: 'var(--color-text-muted)' }}>
-                          No unpaid or expired caddies. All registered caddies are fully paid!
-                        </td>
+                        <th style={{ width: '40px' }}></th>
+                        <th>Caddie Name</th>
+                        <th>Phone</th>
+                        <th>Expiry Status</th>
+                        <th>Last Expiry Date</th>
                       </tr>
-                    ) : (
-                      unpaidList.map(c => {
-                        const isSelected = selectedIds.includes(c.id)
-                        return (
-                          <tr key={c.id} className={isSelected ? 'bg-red-50/30' : ''}>
-                            <td>
-                              <button 
-                                onClick={() => toggleSelectCaddie(c.id)} 
-                                style={{ color: isSelected ? '#ef4444' : 'var(--color-light)' }}
-                              >
-                                {isSelected ? <CheckSquare size={18} style={{ color: '#ef4444' }} /> : <Square size={18} />}
-                              </button>
-                            </td>
-                            <td className="font-semibold">{c.name}</td>
-                            <td className="font-mono text-sm" style={{ color: 'var(--color-text-muted)' }}>{c.phone}</td>
-                            <td>
-                              <span className="badge badge-warning" style={{ background: '#fef2f2', color: '#ef4444', border: '1px solid #fee2e2' }}>
-                                {c.paid_until ? 'Expired' : 'Unpaid'}
-                              </span>
-                            </td>
-                            <td className="text-sm font-semibold" style={{ color: '#ef4444' }}>
-                              {c.paid_until ? format(new Date(c.paid_until), 'd MMM yyyy') : 'Never'}
-                            </td>
-                          </tr>
-                        )
-                      })
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {unpaidList.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="text-center py-12 text-text-muted" style={{ color: 'var(--color-text-muted)' }}>
+                            No unpaid or expired caddies. All registered caddies are fully paid!
+                          </td>
+                        </tr>
+                      ) : (
+                        unpaidList.map(c => {
+                          const isSelected = selectedIds.includes(c.id)
+                          return (
+                            <tr key={c.id} className={isSelected ? 'bg-red-50/30' : ''}>
+                              <td>
+                                <button 
+                                  onClick={() => toggleSelectCaddie(c.id)} 
+                                  style={{ color: isSelected ? '#ef4444' : 'var(--color-light)' }}
+                                >
+                                  {isSelected ? <CheckSquare size={18} style={{ color: '#ef4444' }} /> : <Square size={18} />}
+                                </button>
+                              </td>
+                              <td className="font-semibold">{c.name}</td>
+                              <td className="font-mono text-sm" style={{ color: 'var(--color-text-muted)' }}>{c.phone}</td>
+                              <td>
+                                <span className="badge badge-warning" style={{ background: '#fef2f2', color: '#ef4444', border: '1px solid #fee2e2' }}>
+                                  {c.paid_until ? 'Expired' : 'Unpaid'}
+                                </span>
+                              </td>
+                              <td className="text-sm font-semibold" style={{ color: '#ef4444' }}>
+                                {c.paid_until ? format(new Date(c.paid_until), 'd MMM yyyy') : 'Never'}
+                              </td>
+                            </tr>
+                          )
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-
           </div>
 
           {/* Side Checkout Summary */}

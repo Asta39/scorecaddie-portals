@@ -52,7 +52,7 @@ export default async function PaymentsPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         {/* Highlighted Card */}
         <div className="card" style={{
           padding: '1.25rem 1.5rem', background: 'linear-gradient(135deg, #0B2B26 0%, #163832 100%)',
@@ -127,7 +127,8 @@ export default async function PaymentsPage() {
       </div>
 
       <div className="card">
-        <table className="data-table">
+        <div className="table-responsive-wrapper">
+          <table className="data-table">
           <thead>
             <tr>
               <th>Date</th>
@@ -160,7 +161,8 @@ export default async function PaymentsPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
   )

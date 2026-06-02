@@ -527,7 +527,7 @@ export default function AnalyticsPage() {
         <div className="space-y-6">
           
           {/* Stats Grid */}
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="card p-5">
               <div className="flex justify-between items-start">
                 <div>
@@ -606,7 +606,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Main Reputational & Operational Dashboard Row */}
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {/* Airbnb "Guest Favourite" Rating Card */}
             <div className="card p-6 flex flex-col justify-between" style={{ minHeight: '340px' }}>
@@ -681,7 +681,7 @@ export default function AnalyticsPage() {
               </div>
 
               {/* Attributes breakdown */}
-              <div className="pt-4 mt-4 border-t grid grid-cols-2 gap-4 text-center" style={{ borderColor: 'var(--color-lighter)' }}>
+              <div className="pt-4 mt-4 border-t grid grid-cols-1 sm:grid-cols-2 gap-4 text-center" style={{ borderColor: 'var(--color-lighter)' }}>
                 <div>
                   <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block mb-1">
                     Punctuality
@@ -911,7 +911,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Charts & Settings Row */}
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* Turnout Trend Chart */}
             <div className="card col-span-2 p-6 flex flex-col justify-between">

@@ -25,7 +25,8 @@ export default async function AdminsPage() {
       </div>
 
       <div className="card">
-        <table className="data-table">
+        <div className="table-responsive-wrapper">
+          <table className="data-table">
           <thead>
             <tr>
               <th>Secretary</th>
@@ -85,7 +86,8 @@ export default async function AdminsPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
   )

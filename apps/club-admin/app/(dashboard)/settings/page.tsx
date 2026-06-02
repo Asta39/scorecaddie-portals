@@ -113,9 +113,9 @@ export default function SettingsPage() {
           Loading settings…
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Club Info (Read-Only) */}
-          <div className="col-span-1 space-y-4">
+          <div className="lg:col-span-1 space-y-4">
             <div className="card p-6">
               <div className="flex items-center gap-3 mb-5 pb-3 border-b" style={{ borderColor: 'var(--color-lighter)' }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-lighter">
@@ -212,7 +212,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Account Security (Password change) */}
-          <div className="col-span-2 card p-6">
+          <div className="lg:col-span-2 card p-6">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b" style={{ borderColor: 'var(--color-lighter)' }}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-lighter">
                 <Key size={20} className="text-primary" />

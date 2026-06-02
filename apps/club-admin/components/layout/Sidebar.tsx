@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import {
   LayoutDashboard, Calendar, Users,
-  CreditCard, Settings, LogOut, ChevronRight, BarChart3
+  CreditCard, Settings, LogOut, ChevronRight, BarChart3, Menu, X
 } from 'lucide-react'
 
 const navItems = [
@@ -24,6 +24,7 @@ export default function Sidebar() {
   const supabase = createClient()
   const [secretaryName, setSecretaryName] = useState('Secretary')
   const [clubName, setClubName] = useState('Golf Club')
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
     const loadSecretaryDetails = async () => {
@@ -57,7 +58,31 @@ export default function Sidebar() {
     href === '/dashboard' ? pathname === href : pathname.startsWith(href)
 
   return (
-    <aside className="portal-sidebar">
+    <>
+      {/* Mobile Top Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-[60px] flex items-center justify-between px-4 z-40 bg-[#0B2B26] shadow-md">
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain" />
+          <span className="text-white font-bold">{clubName}</span>
+        </div>
+        <button 
+          onClick={() => setMobileOpen(!mobileOpen)} 
+          className="text-white p-2 focus:outline-none"
+        >
+          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Mobile Backdrop Overlay */}
+      {mobileOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-40" 
+          onClick={() => setMobileOpen(false)} 
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`portal-sidebar ${mobileOpen ? 'open' : ''}`}>
       {/* Logo */}
       <div className="flex items-center gap-4 px-5 py-8 border-b" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
         <img src="/logo.png" alt="Score Caddie Logo" className="h-14 w-auto object-contain flex-shrink-0" />
@@ -76,6 +101,7 @@ export default function Sidebar() {
           const active = isActive(href)
           return (
             <Link key={href} href={href}
+              onClick={() => setMobileOpen(false)}
               className={`sidebar-nav-link ${active ? 'active' : ''}`}>
               <Icon size={18} strokeWidth={active ? 2.5 : 2} className="nav-icon" />
               <span className="flex-1">{label}</span>
@@ -108,5 +134,6 @@ export default function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   )
 }

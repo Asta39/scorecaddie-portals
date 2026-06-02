@@ -291,8 +291,9 @@ export default function RosterPage() {
           Loading roster data…
         </div>
       ) : (
-        <div className="card overflow-hidden">
-          <table className="data-table" style={{ tableLayout: 'fixed' }}>
+        <div className="card h-full flex flex-col">
+          <div className="table-responsive-wrapper flex-1">
+            <table className="data-table" style={{ tableLayout: 'fixed' }}>
             <thead>
               <tr>
                 <th style={{ width: '220px' }}>Caddie Name</th>
@@ -369,7 +370,8 @@ export default function RosterPage() {
                 ))
               )}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
 
@@ -393,7 +395,7 @@ export default function RosterPage() {
 
             <div className="space-y-6">
               {/* Quick Actions */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button className="btn-primary py-3 justify-center text-sm font-semibold"
                   style={{ background: 'var(--color-primary)' }}
                   onClick={() => handleSaveAttendance('check_in')}>

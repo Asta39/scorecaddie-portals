@@ -38,7 +38,8 @@ export default async function ClubsPage() {
       </div>
 
       <div className="card">
-        <table className="data-table">
+        <div className="table-responsive-wrapper">
+          <table className="data-table">
           <thead>
             <tr>
               <th>Club Name</th>
@@ -105,7 +106,8 @@ export default async function ClubsPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
   )

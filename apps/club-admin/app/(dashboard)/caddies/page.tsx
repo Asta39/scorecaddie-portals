@@ -396,7 +396,8 @@ export default function CaddiesPage() {
         </div>
       ) : (
         <div className="card">
-          <table className="data-table">
+          <div className="table-responsive-wrapper">
+            <table className="data-table">
             <thead>
               <tr>
                 <th>Caddie Name</th>
@@ -480,7 +481,8 @@ export default function CaddiesPage() {
                 )
               })}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
 
