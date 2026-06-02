@@ -214,11 +214,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats Grid — 4 columns */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '1rem', marginBottom: '1.5rem',
-      }}>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {statCards.map(card => (
           <div key={card.label} className="card" style={{
             padding: '1.25rem 1.5rem',
@@ -272,24 +269,26 @@ export default async function DashboardPage() {
       </div>
 
       {/* Main Charts Row — Wide Revenue + Donut */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: '2fr 1fr',
-        gap: '1rem', marginBottom: '1.5rem',
-      }}>
-        <RevenueChart data={data.monthlyRevenue} />
-        <PresenceDonut data={[
-          { name: 'Present', value: data.presentCaddies },
-          { name: 'Absent', value: data.absentCaddies },
-        ]} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div className="lg:col-span-2">
+          <RevenueChart data={data.monthlyRevenue} />
+        </div>
+        <div className="lg:col-span-1">
+          <PresenceDonut data={[
+            { name: 'Present', value: data.presentCaddies },
+            { name: 'Absent', value: data.absentCaddies },
+          ]} />
+        </div>
       </div>
 
       {/* Bottom Row — Experience Bar + Recent Activity */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 2fr',
-        gap: '1rem', marginBottom: '1.5rem',
-      }}>
-        <ExperienceChart data={data.experienceData} />
-        <RecentActivity payments={data.recentPayments} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div className="lg:col-span-1">
+          <ExperienceChart data={data.experienceData} />
+        </div>
+        <div className="lg:col-span-2">
+          <RecentActivity payments={data.recentPayments} />
+        </div>
       </div>
 
       {/* Quick-Glance: Checked-In Caddies */}

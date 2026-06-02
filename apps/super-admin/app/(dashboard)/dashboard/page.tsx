@@ -145,11 +145,11 @@ export default async function DashboardPage() {
       </div>
 
       {/* ─── Hero Stat Cards ────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.875rem', marginBottom: '1.5rem' }}>
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         {/* MRR — highlighted */}
         <div className="card" style={{
           padding: '1.25rem 1.5rem', background: 'linear-gradient(135deg, #0B2B26 0%, #163832 100%)',
-          position: 'relative', overflow: 'hidden', gridColumn: 'span 1',
+          position: 'relative', overflow: 'hidden',
         }}>
           <p style={{ fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.6)', marginBottom: '0.75rem' }}>
             Monthly Revenue
@@ -165,7 +165,7 @@ export default async function DashboardPage() {
         {/* Active Clubs — highlighted */}
         <div className="card" style={{
           padding: '1.25rem 1.5rem', background: 'linear-gradient(135deg, #0B2B26 0%, #163832 100%)',
-          position: 'relative', overflow: 'hidden', gridColumn: 'span 1',
+          position: 'relative', overflow: 'hidden',
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div>
@@ -224,9 +224,9 @@ export default async function DashboardPage() {
       </div>
 
       {/* ─── Main Charts Row ────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '5fr 3fr', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-8 gap-4 mb-6">
         {/* Revenue Chart */}
-        <div className="card" style={{ padding: '1.5rem' }}>
+        <div className="card lg:col-span-5" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
             <div>
               <h3 className="font-semibold" style={{ fontSize: '1rem', color: 'var(--color-text)' }}>Revenue Overview</h3>
@@ -243,7 +243,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Subscription Donut */}
-        <div className="card" style={{ padding: '1.5rem' }}>
+        <div className="card lg:col-span-3" style={{ padding: '1.5rem' }}>
           <div style={{ marginBottom: '0.5rem' }}>
             <h3 className="font-semibold" style={{ fontSize: '1rem', color: 'var(--color-text)' }}>Subscription Health</h3>
             <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '2px' }}>Active vs Expiring vs Expired</p>
@@ -269,9 +269,9 @@ export default async function DashboardPage() {
       </div>
 
       {/* ─── Second Row: Club Bar Chart + Flags ─────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
         {/* Per-Club Bar Chart */}
-        <div className="card" style={{ padding: '1.5rem' }}>
+        <div className="card lg:col-span-3" style={{ padding: '1.5rem' }}>
           <div style={{ marginBottom: '1rem' }}>
             <h3 className="font-semibold" style={{ fontSize: '1rem', color: 'var(--color-text)' }}>Caddies by Club</h3>
             <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '2px' }}>Total registered vs active subscriptions per club</p>
@@ -280,7 +280,9 @@ export default async function DashboardPage() {
         </div>
 
         {/* Flags */}
-        <RecentFlagsCard flags={d.flags} />
+        <div className="lg:col-span-2">
+          <RecentFlagsCard flags={d.flags} />
+        </div>
       </div>
 
       {/* ─── Recent Payments Table ──────────────────────────────── */}
