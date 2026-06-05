@@ -1,9 +1,8 @@
 import { createClient } from '@/lib/supabase'
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns'
-import { Users, UserCheck, CreditCard, TrendingUp, Clock, ArrowUp, ArrowDown } from 'lucide-react'
+import { Users, UserCheck, CreditCard, Clock, ArrowUp, ArrowDown } from 'lucide-react'
 import Link from 'next/link'
-import { RevenueChart, PresenceDonut, ExperienceChart } from '@/components/dashboard/DashboardCharts'
-import { RecentActivity } from '@/components/dashboard/RecentActivity'
+import { PresenceDonut, ExperienceChart } from '@/components/dashboard/DashboardCharts'
 import { CheckedInTable } from '@/components/dashboard/CheckedInTable'
 
 export const dynamic = 'force-dynamic'
@@ -48,30 +47,8 @@ async function getDashboardData() {
       .lt('paid_until', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()),
   ])
 
-  // ── Total Revenue ──────────────────────────────────────────────
-  const { data: allPayments } = await supabase
-    .from('caddie_payments')
-    .select('amount_kes, paid_at')
-    .eq('club_id', clubId)
-    .eq('status', 'confirmed')
-
-  const totalRevenue = (allPayments ?? []).reduce((sum, p) => sum + (p.amount_kes ?? 0), 0)
-
-  // ── Revenue by month (last 6 months) ──────────────────────────
-  const now = new Date()
-  const monthlyRevenue: { month: string; amount: number }[] = []
-  for (let i = 5; i >= 0; i--) {
-    const m = subMonths(now, i)
-    const label = format(m, 'MMM yyyy')
-    const monthStart = startOfMonth(m).toISOString()
-    const monthEnd = endOfMonth(m).toISOString()
-
-    const monthTotal = (allPayments ?? [])
-      .filter(p => p.paid_at >= monthStart && p.paid_at <= monthEnd)
-      .reduce((sum, p) => sum + (p.amount_kes ?? 0), 0)
-
-    monthlyRevenue.push({ month: label, amount: monthTotal })
-  }
+  // ── Total Revenue and Monthly Revenue logic has been removed to hide financial data ──
+  // ── Recent Payments logic has been removed to hide financial data ──
 
   // ── Experience level distribution ─────────────────────────────
   const { data: caddiesAll } = await supabase
@@ -88,14 +65,6 @@ async function getDashboardData() {
     levelCounts[lvl] = (levelCounts[lvl] ?? 0) + 1
   })
   const experienceData = Object.entries(levelCounts).map(([level, count]) => ({ level, count }))
-
-  // ── Recent payments ────────────────────────────────────────────
-  const { data: recentPayments } = await supabase
-    .from('caddie_payments')
-    .select('id, paystack_reference, amount_kes, caddie_count, status, paid_at')
-    .eq('club_id', clubId)
-    .order('paid_at', { ascending: false })
-    .limit(5)
 
   // ── Present caddies list with attendance ───────────────────────
   const todayStr = format(new Date(), 'yyyy-MM-dd')
@@ -133,10 +102,7 @@ async function getDashboardData() {
     activeSubs: activeSubs ?? 0,
     expiredSubs: expiredSubs ?? 0,
     expiringCaddies: expiringCaddies ?? 0,
-    totalRevenue,
-    monthlyRevenue,
     experienceData,
-    recentPayments: recentPayments ?? [],
     presentList,
     clubId,
   }
@@ -147,24 +113,14 @@ export default async function DashboardPage() {
 
   const statCards = [
     {
-      label: 'Total Revenue',
-      value: `KES ${data.totalRevenue.toLocaleString()}`,
-      icon: TrendingUp,
-      color: '#fff',
-      bg: 'var(--color-primary)',
-      textColor: '#fff',
-      sub: 'Across all caddie subscriptions',
-      highlight: true,
-    },
-    {
       label: 'Total Caddies',
       value: data.totalCaddies,
       icon: Users,
-      color: 'var(--color-primary)',
-      bg: 'var(--color-lighter)',
-      textColor: 'var(--color-text)',
+      color: '#fff',
+      bg: 'var(--color-primary)',
+      textColor: '#fff',
       sub: `${data.activeSubs} active subscriptions`,
-      highlight: false,
+      highlight: true,
     },
     {
       label: 'Present Today',
@@ -184,6 +140,16 @@ export default async function DashboardPage() {
       bg: 'var(--color-lighter)',
       textColor: 'var(--color-text)',
       sub: `${data.expiredSubs} expired`,
+      highlight: false,
+    },
+    {
+      label: 'Expiring Soon',
+      value: data.expiringCaddies,
+      icon: Clock,
+      color: '#f59e0b',
+      bg: '#fef3c7',
+      textColor: 'var(--color-text)',
+      sub: 'Within the next 7 days',
       highlight: false,
     },
   ]
@@ -268,26 +234,16 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      {/* Main Charts Row — Wide Revenue + Donut */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-        <div className="lg:col-span-2">
-          <RevenueChart data={data.monthlyRevenue} />
-        </div>
+      {/* Main Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <div className="lg:col-span-1">
           <PresenceDonut data={[
             { name: 'Present', value: data.presentCaddies },
             { name: 'Absent', value: data.absentCaddies },
           ]} />
         </div>
-      </div>
-
-      {/* Bottom Row — Experience Bar + Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         <div className="lg:col-span-1">
           <ExperienceChart data={data.experienceData} />
-        </div>
-        <div className="lg:col-span-2">
-          <RecentActivity payments={data.recentPayments} />
         </div>
       </div>
 
