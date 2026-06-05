@@ -41,7 +41,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Top Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-[60px] flex items-center justify-between px-4 z-40 bg-[#0B2B26] shadow-md">
+      <div className="md:hidden fixed top-0 left-0 right-0 h-[60px] flex items-center justify-between px-4 z-40 bg-[#0B2B26] shadow-md">
         <div className="flex items-center gap-3">
           <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain" />
           <span className="text-white font-bold">Score Caddie</span>
@@ -57,7 +57,7 @@ export default function Sidebar() {
       {/* Mobile Backdrop Overlay */}
       {mobileOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-40" 
+          className="md:hidden fixed inset-0 bg-black/50 z-40" 
           onClick={() => setMobileOpen(false)} 
         />
       )}

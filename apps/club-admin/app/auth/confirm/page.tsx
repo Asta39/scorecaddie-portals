@@ -1,10 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { useRouter } from 'next/navigation'
-
-const supabase = createClient()
 
 /**
  * /auth/confirm — Set Password Page
@@ -16,6 +14,7 @@ const supabase = createClient()
  *  3. Redirect to dashboard
  */
 export default function ConfirmPage() {
+  const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
   const [sessionReady, setSessionReady] = useState(false)
   const [newPassword, setNewPassword] = useState('')
