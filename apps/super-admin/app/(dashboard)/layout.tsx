@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Sidebar from '@/components/layout/Sidebar'
 
+export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Score Caddie Super Admin' }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
