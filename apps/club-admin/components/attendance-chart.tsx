@@ -12,7 +12,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import {
-	type ChartConfig,
+	ChartConfig,
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
@@ -25,13 +25,10 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Delta, DeltaIcon, DeltaValue } from "@/components/delta";
-import { revenueChartDemo } from "@/components/revenue-chart-data";
 import { ArrowRightIcon } from "lucide-react";
 
-/** Matches `<Select>`; chart uses the last N days of `revenueChartDemo`. */
 type PeriodDays = 7 | 14 | 30 | 60 | 90;
 
-// Recharts XAxis: `interval` is tick skip index (0 = all, 1 = every other, …).
 const xAxisIntervalByPeriod: Record<PeriodDays, number> = {
 	7: 0,
 	14: 1,
@@ -40,39 +37,37 @@ const xAxisIntervalByPeriod: Record<PeriodDays, number> = {
 	90: 6,
 };
 
-type RevenueRow = {
+type AttendanceRow = {
 	date: string;
-	revenue: number;
+	count: number;
 };
 
 const chartConfig = {
-	revenue: {
-		label: "Revenue",
+	attendance: {
+		label: "Attendance",
 		color: "var(--chart-1)",
 	},
 } satisfies ChartConfig;
 
-export function RevenueChart() {
+export function AttendanceChart({ data }: { data: AttendanceRow[] }) {
 	const chartUid = useId().replace(/:/g, "");
-	const idAreaGradient = `revenue-area-grad-${chartUid}`;
-	const [periodDays, setPeriodDays] = useState<PeriodDays>(60);
+	const idAreaGradient = `attendance-area-grad-${chartUid}`;
+	const [periodDays, setPeriodDays] = useState<PeriodDays>(90);
 
 	const chartRows = useMemo(
-		() => revenueChartDemo.slice(-periodDays),
-		[periodDays]
+		() => data.slice(-periodDays),
+		[periodDays, data]
 	);
 
-	// Footer delta: first → last point in the active series (not calendar MoM).
 	const growthPct = useMemo(() => {
-		const first = chartRows[0]?.revenue ?? 0;
-		const last = chartRows.at(-1)?.revenue ?? first;
+		const first = chartRows[0]?.count ?? 0;
+		const last = chartRows.at(-1)?.count ?? first;
 		if (!first) {
 			return 0;
 		}
 		return ((last - first) / first) * 100;
 	}, [chartRows]);
 
-	// Extra spacing so long ranges don’t collide; pairs with `interval` above.
 	let xAxisMinTickGap: number | undefined;
 	if (periodDays <= 7) {
 		xAxisMinTickGap = undefined;
@@ -81,9 +76,9 @@ export function RevenueChart() {
 	}
 
 	return (
-		<Card className="md:col-span-2 lg:col-span-4">
+		<Card className="md:col-span-2 lg:col-span-4 shadow-none">
 			<CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-				<CardTitle className="text-balance">Revenue</CardTitle>
+				<CardTitle className="text-balance">Attendance Over Time</CardTitle>
 				<Select
 					onValueChange={(v) => {
 						setPeriodDays(Number(v) as PeriodDays);
@@ -91,7 +86,7 @@ export function RevenueChart() {
 					value={String(periodDays)}
 				>
 					<SelectTrigger
-						aria-label="Revenue time range"
+						aria-label="Attendance time range"
 						className="w-full min-w-36 sm:w-fit"
 						size="sm"
 					>
@@ -113,20 +108,19 @@ export function RevenueChart() {
 				>
 					<AreaChart
 						accessibilityLayer
-						// Copy so Recharts always sees a mutable array reference.
-						data={[...chartRows]}
+						data={chartRows}
 						margin={{ left: 24, right: 8, top: 8, bottom: 0 }}
 					>
 						<defs>
 							<linearGradient id={idAreaGradient} x1="0" x2="0" y1="0" y2="1">
 								<stop
 									offset="0%"
-									stopColor="var(--color-revenue)"
+									stopColor="var(--chart-1)"
 									stopOpacity={0.2}
 								/>
 								<stop
 									offset="100%"
-									stopColor="var(--color-revenue)"
+									stopColor="var(--chart-1)"
 									stopOpacity={0}
 								/>
 							</linearGradient>
@@ -149,7 +143,7 @@ export function RevenueChart() {
 									className="min-w-36"
 									indicator="line"
 									labelFormatter={(_, payload) => {
-										const row = payload?.[0]?.payload as RevenueRow | undefined;
+										const row = payload?.[0]?.payload as AttendanceRow | undefined;
 										if (!row?.date) {
 											return "";
 										}
@@ -159,10 +153,10 @@ export function RevenueChart() {
 							}
 						/>
 						<Area
-							dataKey="revenue"
+							dataKey="count"
 							dot={false}
 							fill={`url(#${idAreaGradient})`}
-							stroke="var(--color-revenue)"
+							stroke="var(--chart-1)"
 							strokeWidth={2}
 							type="monotone"
 						/>
@@ -179,8 +173,10 @@ export function RevenueChart() {
 						vs first day in last {periodDays} days.
 					</p>
 				</div>
-				<Button className="text-muted-foreground" size="xs" variant="ghost" render={<a href="#/reports" />} nativeButton={false}>View report
-                						<ArrowRightIcon aria-hidden="true" data-icon="inline-end" /></Button>
+				<Button className="text-muted-foreground" size="sm" variant="ghost">
+				    View report
+					<ArrowRightIcon aria-hidden="true" className="w-4 h-4 ml-1" />
+				</Button>
 			</CardFooter>
 		</Card>
 	);

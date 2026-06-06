@@ -8,10 +8,11 @@ import { CustomSidebarTrigger } from "@/components/custom-sidebar-trigger";
 import { navLinks } from "@/components/app-shared";
 import { NavUser } from "@/components/nav-user";
 import { BellIcon } from "lucide-react";
-
-const activeItem = navLinks.find((item) => item.isActive);
+import { usePathname } from "next/navigation";
 
 export function AppHeader() {
+	const pathname = usePathname();
+	const activeItem = navLinks.find((item) => item.path && pathname.startsWith(item.path)) || navLinks[0];
 	return (
 		<header
 			className={cn(

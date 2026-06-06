@@ -1,6 +1,8 @@
 import { PresenceDonut, ExperienceChart } from "@/components/dashboard/DashboardCharts";
 import { CheckedInTable } from "@/components/dashboard/CheckedInTable";
 import { DashboardStats, Stat } from "@/components/stats";
+import { AttendanceChart } from "@/components/attendance-chart";
+import { SubscriptionMixChart } from "@/components/subscription-mix-chart";
 import { Clock } from "lucide-react";
 import Link from "next/link";
 
@@ -8,6 +10,8 @@ export function Dashboard({
 	stats,
 	presenceData,
 	experienceData,
+	attendanceHistory,
+	subscriptionData,
 	checkedInCaddies,
 	clubId,
 	expiringCaddiesCount,
@@ -15,6 +19,8 @@ export function Dashboard({
 	stats: Stat[];
 	presenceData: any[];
 	experienceData: any[];
+	attendanceHistory: any[];
+	subscriptionData: any[];
 	checkedInCaddies: any[];
 	clubId: string;
 	expiringCaddiesCount: number;
@@ -31,6 +37,15 @@ export function Dashboard({
 				</div>
 				<div className="lg:col-span-1">
 					<ExperienceChart data={experienceData} />
+				</div>
+			</div>
+
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+				<div className="lg:col-span-1">
+					<AttendanceChart data={attendanceHistory} />
+				</div>
+				<div className="lg:col-span-1">
+					<SubscriptionMixChart data={subscriptionData} />
 				</div>
 			</div>
 

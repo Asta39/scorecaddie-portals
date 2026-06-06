@@ -2,24 +2,13 @@ import { createClient } from '@/lib/supabase'
 import { format } from 'date-fns'
 import { Users, UserCheck, CreditCard, Clock } from 'lucide-react'
 import { Dashboard } from '@/components/dashboard'
+import { Suspense } from 'react'
+import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton'
 
 export const dynamic = 'force-dynamic'
 
-async function getDashboardData() {
+async function getDashboardData(clubId: string) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) throw new Error('Not authenticated')
-
-  const { data: admin } = await supabase
-    .from('club_admins')
-    .select('club_id, name')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!admin) throw new Error('Club admin record not found')
-
-  const clubId = admin.club_id
 
   // ── Core counts ────────────────────────────────────────────────
   const [
@@ -46,20 +35,23 @@ async function getDashboardData() {
   ])
 
   // ── Experience level distribution ─────────────────────────────
-  const { data: caddiesAll } = await supabase
-    .from('caddies')
-    .select('experience_level')
-    .eq('club_id', clubId)
-    .eq('is_active', true)
-
-  const levelCounts: Record<string, number> = {}
-  ;(caddiesAll ?? []).forEach(c => {
-    const lvl = c.experience_level
-      ? c.experience_level.charAt(0).toUpperCase() + c.experience_level.slice(1)
-      : 'Unknown'
-    levelCounts[lvl] = (levelCounts[lvl] ?? 0) + 1
+  const { data: experienceMix } = await supabase.rpc('get_caddie_experience_mix', {
+    p_club_id: clubId,
   })
-  const experienceData = Object.entries(levelCounts).map(([level, count]) => ({ level, count }))
+
+  const experienceData = (experienceMix ?? []).map((row: any) => ({
+    level: row.level,
+    count: Number(row.count)
+  }))
+
+  const { data: attendanceHistoryData } = await supabase.rpc('get_attendance_history', {
+    p_club_id: clubId,
+    p_days: 90
+  })
+  const attendanceHistory = (attendanceHistoryData ?? []).map((row: any) => ({
+    date: row.date,
+    count: Number(row.attendance)
+  }))
 
   // ── Present caddies list with attendance ───────────────────────
   const todayStr = format(new Date(), 'yyyy-MM-dd')
@@ -98,13 +90,14 @@ async function getDashboardData() {
     expiredSubs: expiredSubs ?? 0,
     expiringCaddies: expiringCaddies ?? 0,
     experienceData,
+    attendanceHistory,
     presentList,
     clubId,
   }
 }
 
-export default async function DashboardPage() {
-  const data = await getDashboardData()
+async function DashboardContent({ clubId }: { clubId: string }) {
+  const data = await getDashboardData(clubId)
 
   const stats = [
     {
@@ -138,6 +131,40 @@ export default async function DashboardPage() {
     { name: 'Absent', value: data.absentCaddies },
   ]
 
+  const subscriptionData = [
+    { category: 'Active', count: data.activeSubs },
+    { category: 'Expiring Soon', count: data.expiringCaddies },
+    { category: 'Expired', count: data.expiredSubs },
+  ]
+
+  return (
+    <Dashboard
+      stats={stats}
+      presenceData={presenceData}
+      experienceData={data.experienceData}
+      attendanceHistory={data.attendanceHistory}
+      subscriptionData={subscriptionData}
+      checkedInCaddies={data.presentList}
+      clubId={data.clubId}
+      expiringCaddiesCount={data.expiringCaddies}
+    />
+  )
+}
+
+export default async function DashboardPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) throw new Error('Not authenticated')
+
+  const { data: admin } = await supabase
+    .from('club_admins')
+    .select('club_id')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!admin) throw new Error('Club admin record not found')
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2 mb-6">
@@ -152,14 +179,10 @@ export default async function DashboardPage() {
           Live
         </div>
       </div>
-      <Dashboard
-        stats={stats}
-        presenceData={presenceData}
-        experienceData={data.experienceData}
-        checkedInCaddies={data.presentList}
-        clubId={data.clubId}
-        expiringCaddiesCount={data.expiringCaddies}
-      />
+      
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardContent clubId={admin.club_id} />
+      </Suspense>
     </div>
   )
 }

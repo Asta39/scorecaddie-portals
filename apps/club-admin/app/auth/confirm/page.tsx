@@ -89,7 +89,7 @@ export default function ConfirmPage() {
 
       {/* Right form panel */}
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-10">
+        <div className="w-full max-w-md bg-background rounded-2xl shadow-2xl p-10 border border-border">
           <div className="mb-8">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: 'var(--color-lighter)' }}>
               <svg width="22" height="22" viewBox="0 0 22 22" fill="none">

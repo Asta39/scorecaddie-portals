@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
-import { Shield, Settings as SettingsIcon, Check, AlertCircle, Building, Key, FileText } from 'lucide-react'
+import { Shield, Settings as SettingsIcon, Check, AlertCircle, Building, Key, FileText, Sun, Moon, Laptop } from 'lucide-react'
+import { useTheme } from 'next-themes'
 
 export default function SettingsPage() {
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
   const [clubInfo, setClubInfo] = useState<any>(null)
   const [adminInfo, setAdminInfo] = useState<any>(null)
+  
+  const { theme, setTheme } = useTheme()
 
   // Caddies About form states
   const [caddiesAbout, setCaddiesAbout] = useState('')
@@ -101,8 +104,8 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Settings</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+          <p className="text-sm mt-0.5 text-muted-foreground">
             Manage your account security and view golf club configuration
           </p>
         </div>
@@ -117,61 +120,61 @@ export default function SettingsPage() {
           {/* Club Info (Read-Only) */}
           <div className="lg:col-span-1 space-y-4">
             <div className="card p-6">
-              <div className="flex items-center gap-3 mb-5 pb-3 border-b" style={{ borderColor: 'var(--color-lighter)' }}>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-lighter">
+              <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10">
                   <Building size={20} className="text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base" style={{ color: 'var(--color-text)' }}>Club Info</h3>
-                  <p className="text-xs" style={{ color: 'var(--color-light)' }}>Assigned golf club details</p>
+                  <h3 className="font-bold text-base text-foreground">Club Info</h3>
+                  <p className="text-xs text-muted-foreground">Assigned golf club details</p>
                 </div>
               </div>
 
               {clubInfo ? (
                 <div className="space-y-4 text-sm">
                   <div>
-                    <label className="block text-xs font-semibold text-text-muted mb-1">Club Name</label>
-                    <p className="font-semibold text-text">{clubInfo.name}</p>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1">Club Name</label>
+                    <p className="font-semibold text-foreground">{clubInfo.name}</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-text-muted mb-1">Location</label>
-                    <p className="font-semibold text-text">{clubInfo.location ?? '—'}</p>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1">Location</label>
+                    <p className="font-semibold text-foreground">{clubInfo.location ?? '—'}</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-text-muted mb-1">Region</label>
-                    <p className="font-semibold text-text">{clubInfo.region ?? '—'}</p>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1">Region</label>
+                    <p className="font-semibold text-foreground">{clubInfo.region ?? '—'}</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-text-muted mb-1">Contact Name</label>
-                    <p className="font-semibold text-text">{clubInfo.contact_name ?? '—'}</p>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1">Contact Name</label>
+                    <p className="font-semibold text-foreground">{clubInfo.contact_name ?? '—'}</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-text-muted mb-1">Contact Phone</label>
-                    <p className="font-semibold text-text font-mono">{clubInfo.contact_phone ?? '—'}</p>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1">Contact Phone</label>
+                    <p className="font-semibold text-foreground font-mono">{clubInfo.contact_phone ?? '—'}</p>
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-text-muted">No club info linked to this account.</p>
+                <p className="text-sm text-muted-foreground">No club info linked to this account.</p>
               )}
             </div>
 
             {/* Caddie Marketplace Bio */}
             <div className="card p-6">
-              <div className="flex items-center gap-3 mb-5 pb-3 border-b" style={{ borderColor: 'var(--color-lighter)' }}>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-lighter">
+              <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10">
                   <FileText size={20} className="text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base" style={{ color: 'var(--color-text)' }}>Marketplace Bio</h3>
-                  <p className="text-xs" style={{ color: 'var(--color-light)' }}>Template for all your caddies</p>
+                  <h3 className="font-bold text-base text-foreground">Marketplace Bio</h3>
+                  <p className="text-xs text-muted-foreground">Template for all your caddies</p>
                 </div>
               </div>
 
               {clubInfo ? (
                 <form onSubmit={handleUpdateCaddiesAbout} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold mb-1 text-text">Caddie Description (What You'll Get)</label>
-                    <p className="text-xs text-text-muted mb-2">
+                    <label className="block text-sm font-semibold mb-1 text-foreground">Caddie Description (What You'll Get)</label>
+                    <p className="text-xs text-muted-foreground mb-2">
                       This text appears on the mobile app marketplace for every caddie registered under your club.
                     </p>
                     <textarea
@@ -199,33 +202,32 @@ export default function SettingsPage() {
                   <button
                     type="submit"
                     disabled={updatingClub}
-                    className="btn-primary w-full"
-                    style={{ background: updatingClub ? 'var(--color-secondary)' : 'var(--color-primary)' }}
+                    className="btn-primary w-full disabled:opacity-50"
                   >
                     {updatingClub ? 'Saving…' : 'Save Template'}
                   </button>
                 </form>
               ) : (
-                <p className="text-sm text-text-muted">No club info linked to this account.</p>
+                <p className="text-sm text-muted-foreground">No club info linked to this account.</p>
               )}
             </div>
           </div>
 
           {/* Account Security (Password change) */}
           <div className="lg:col-span-2 card p-6">
-            <div className="flex items-center gap-3 mb-5 pb-3 border-b" style={{ borderColor: 'var(--color-lighter)' }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-lighter">
+            <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10">
                 <Key size={20} className="text-primary" />
               </div>
               <div>
-                <h3 className="font-bold text-base" style={{ color: 'var(--color-text)' }}>Account Security</h3>
-                <p className="text-xs" style={{ color: 'var(--color-light)' }}>Update password for {adminInfo?.email}</p>
+                <h3 className="font-bold text-base text-foreground">Account Security</h3>
+                <p className="text-xs text-muted-foreground">Update password for {adminInfo?.email}</p>
               </div>
             </div>
 
             <form onSubmit={handlePasswordChange} className="max-w-md space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-1 text-text">New Password</label>
+                <label className="block text-sm font-semibold mb-1 text-foreground">New Password</label>
                 <input
                   type="password"
                   required
@@ -237,7 +239,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-1 text-text">Confirm New Password</label>
+                <label className="block text-sm font-semibold mb-1 text-foreground">Confirm New Password</label>
                 <input
                   type="password"
                   required
@@ -265,12 +267,51 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={updating}
-                className="btn-primary"
-                style={{ background: updating ? 'var(--color-secondary)' : 'var(--color-primary)' }}
+                className="btn-primary disabled:opacity-50"
               >
                 {updating ? 'Updating…' : 'Update Password'}
               </button>
             </form>
+          </div>
+
+          {/* Theme Settings */}
+          <div className="lg:col-span-3 card p-6 mt-2">
+            <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-muted">
+                <Sun size={20} className="text-primary dark:hidden" />
+                <Moon size={20} className="text-primary hidden dark:block" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-foreground">Appearance</h3>
+                <p className="text-xs text-muted-foreground">Customize your portal experience</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 items-center">
+              <button
+                onClick={() => setTheme('light')}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${theme === 'light' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+              >
+                <Sun className={theme === 'light' ? 'text-primary' : 'text-muted-foreground'} />
+                <span className="text-sm font-medium">Light</span>
+              </button>
+              
+              <button
+                onClick={() => setTheme('dark')}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${theme === 'dark' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+              >
+                <Moon className={theme === 'dark' ? 'text-primary' : 'text-muted-foreground'} />
+                <span className="text-sm font-medium">Dark</span>
+              </button>
+
+              <button
+                onClick={() => setTheme('system')}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${theme === 'system' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+              >
+                <Laptop className={theme === 'system' ? 'text-primary' : 'text-muted-foreground'} />
+                <span className="text-sm font-medium">System</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

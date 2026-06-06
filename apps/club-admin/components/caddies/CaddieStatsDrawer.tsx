@@ -198,7 +198,7 @@ export function CaddieStatsDrawer({ caddie, isOpen, onClose }: CaddieStatsDrawer
             {caddie.photo_url ? (
               <img src={caddie.photo_url} alt={caddie.name} className="w-12 h-12 rounded-full object-cover border border-white shadow-sm" />
             ) : (
-              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-white shadow-sm border border-black/5">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-background shadow-sm border border-border">
                 <span className="text-base font-bold text-primary">{caddie.name.charAt(0)}</span>
               </div>
             )}

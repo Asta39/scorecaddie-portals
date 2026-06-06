@@ -52,33 +52,21 @@ export function CheckedInTable({ initialCaddies, clubId }: { initialCaddies: Cad
 
   return (
     <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '1.25rem 1.5rem 1rem',
-      }}>
+      <div className="flex items-center justify-between p-5 pb-4">
         <div>
-          <h3 className="font-semibold" style={{ color: 'var(--color-text)', fontSize: '1rem' }}>
+          <h3 className="font-semibold text-foreground text-base">
             Checked-In Today
           </h3>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', marginTop: '2px' }}>
+          <p className="text-muted-foreground text-xs mt-0.5">
             {caddies.length} caddies currently present at the course
           </p>
         </div>
-        <Link href="/roster" style={{
-          fontSize: '0.75rem',
-          fontWeight: 600,
-          color: 'var(--color-primary)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '3px',
-        }}>
+        <Link href="/roster" className="text-xs font-semibold text-primary flex items-center gap-1 hover:underline">
           Full Roster →
         </Link>
       </div>
 
-      <table className="data-table" style={{ margin: 0 }}>
+      <table className="data-table">
         <thead>
           <tr>
             <th>Caddie Name</th>
@@ -93,10 +81,10 @@ export function CheckedInTable({ initialCaddies, clubId }: { initialCaddies: Cad
           {caddies.length === 0 ? (
             <tr>
               <td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                  <UserCheck size={28} style={{ color: 'var(--color-light)' }} />
-                  <p className="font-medium" style={{ color: 'var(--color-text-muted)' }}>No caddies checked in today</p>
-                  <p style={{ color: 'var(--color-light)', fontSize: '0.8rem' }}>Check in caddies from the Weekly Roster page.</p>
+                <div className="flex flex-col items-center gap-2">
+                  <UserCheck className="size-7 text-muted-foreground/50" />
+                  <p className="font-medium text-muted-foreground">No caddies checked in today</p>
+                  <p className="text-xs text-muted-foreground/70">Check in caddies from the Weekly Roster page.</p>
                 </div>
               </td>
             </tr>
@@ -109,45 +97,32 @@ export function CheckedInTable({ initialCaddies, clubId }: { initialCaddies: Cad
               return (
                 <tr key={caddie.id}>
                   <td className="font-semibold">{caddie.name}</td>
-                  <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                  <td className="font-mono text-xs text-muted-foreground">
                     {caddie.phone}
                   </td>
-                  <td style={{ textTransform: 'capitalize' }}>
+                  <td className="capitalize">
                     {caddie.experience_level}
                   </td>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--color-text)' }}>
-                      <Clock size={13} style={{ color: 'var(--color-text-muted)' }} />
+                    <div className="flex items-center gap-1.5 text-xs text-foreground">
+                      <Clock className="size-3.5 text-muted-foreground" />
                       <span>{formattedTime}</span>
                     </div>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <div style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        background: '#10b981',
-                      }} />
-                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#10b981' }}>
+                    <div className="flex items-center gap-1.5">
+                      <div className="size-2 rounded-full bg-emerald-500" />
+                      <span className="text-xs font-semibold text-emerald-500">
                         Checked In
                       </span>
                     </div>
                   </td>
-                  <td style={{ textAlign: 'right' }}>
+                  <td className="text-right">
                     <button
                       onClick={() => handleCheckOut(caddie.id)}
                       disabled={loadingId === caddie.id}
-                      className="btn-secondary"
-                      style={{
-                        padding: '4px 10px',
-                        fontSize: '0.75rem',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        borderRadius: '8px',
-                        cursor: loadingId === caddie.id ? 'not-allowed' : 'pointer'
-                      }}
+                      className="btn-secondary px-2.5 py-1 text-xs inline-flex items-center gap-1 rounded-lg"
+                      style={{ cursor: loadingId === caddie.id ? 'not-allowed' : 'pointer' }}
                     >
                       <LogOut size={12} />
                       {loadingId === caddie.id ? 'Checking out...' : 'Check Out'}

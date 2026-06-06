@@ -255,7 +255,7 @@ export default function RosterPage() {
         </div>
 
         {/* Date Selector Navigation */}
-        <div className="flex items-center gap-3 bg-white border border-light rounded-xl p-1.5 shadow-sm">
+        <div className="flex items-center gap-3 bg-background border border-border rounded-xl p-1.5 shadow-sm">
           <button onClick={() => navigateWeek('prev')} className="p-2 hover:bg-lighter rounded-lg text-primary">
             <ChevronLeft size={18} />
           </button>

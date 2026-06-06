@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { Plus, Search, User, Check, X, Camera, Edit2, AlertTriangle, Upload, Download, BarChart3 } from 'lucide-react'
 import Papa from 'papaparse'
@@ -21,6 +22,7 @@ type Caddie = {
 
 export default function CaddiesPage() {
   const supabase = createClient()
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [caddies, setCaddies] = useState<Caddie[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -128,6 +130,17 @@ export default function CaddiesPage() {
     setFormError('')
     setIsModalOpen(true)
   }
+
+  // Auto-open register modal when URL has ?register=true
+  useEffect(() => {
+    if (!clubId) return
+    const search = new URLSearchParams(window.location.search)
+    if (search.get('register') === 'true') {
+      openAddModal()
+      // Remove query param to keep clean URL
+      router.replace('/caddies')
+    }
+  }, [clubId])
 
   const openImportModal = () => {
     setIsImportModalOpen(true)
@@ -382,7 +395,7 @@ export default function CaddiesPage() {
       </div>
 
       {/* Search Bar */}
-      <div className="flex items-center gap-3 bg-white border border-light rounded-xl px-4 py-3 mb-6 shadow-sm max-w-md">
+      <div className="flex items-center gap-3 bg-background border rounded-xl px-4 py-3 mb-6 shadow-sm max-w-md">
         <Search size={18} style={{ color: 'var(--color-light)' }} />
         <input
           type="text"
@@ -668,7 +681,7 @@ export default function CaddiesPage() {
 
                   {/* Warning Details */}
                   {(duplicateErrors.length > 0 || validationErrors.length > 0) && (
-                    <div className="max-h-40 overflow-y-auto border rounded-xl p-3 text-xs space-y-2 bg-white" style={{ borderColor: 'var(--color-light)' }}>
+                    <div className="max-h-40 overflow-y-auto border border-border rounded-xl p-3 text-xs space-y-2 bg-background">
                       {duplicateErrors.map((err, i) => (
                         <div key={`dup-${i}`} className="text-orange-700 flex gap-2">
                           <AlertTriangle size={14} className="flex-shrink-0" />

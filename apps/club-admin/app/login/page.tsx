@@ -116,134 +116,124 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'var(--color-primary)' }}>
-      {/* Left branding panel */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center p-16 text-white">
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            <img src="/logo.png" alt="Score Caddie Logo" className="h-16 w-auto object-contain" />
+    <div className="relative w-full overflow-hidden px-4 md:h-screen bg-background">
+      <div className="relative mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center border-x border-border/50 *:px-6">
+        
+        {/* Header */}
+        <div className="flex flex-col space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-sm">
+              <img src="/logo.png" alt="Score Caddie" className="h-6 w-auto brightness-0 invert" />
+            </div>
             <div>
-              <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.7)' }}>Score Caddie</p>
-              <p className="text-lg font-bold">Club Admin</p>
+              <p className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">Score Caddie</p>
+              <p className="text-sm font-bold text-foreground leading-none">Club Admin</p>
             </div>
           </div>
-          <h1 className="text-4xl font-bold mb-4 leading-tight">
-            Club Secretary<br />Portal
-          </h1>
-          <p className="text-lg" style={{ color: 'rgba(255,255,255,0.75)' }}>
-            Manage your club's caddie roster, daily attendance, payments, and marketplace visibility.
-          </p>
-        </div>
-      </div>
-
-      {/* Right login panel */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-10">
-          <div className="mb-8">
-            <img src="/logo.png" alt="Score Caddie Logo" className="h-14 w-auto object-contain mb-4" />
-            <h2 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-              {isRecoveryMode ? 'Set your password' : 'Sign in'}
-            </h2>
-            <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-              {isRecoveryMode ? 'Activate your club secretary account' : 'Club Secretary access only'}
+          
+          <div className="space-y-1.5">
+            <h1 className="font-semibold text-2xl tracking-tight text-foreground">
+              {isRecoveryMode ? 'Set your password' : 'Hey, welcome!'}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {isRecoveryMode 
+                ? 'Activate your club secretary account below.' 
+                : 'Log in to manage your club roster and settings.'}
             </p>
           </div>
+        </div>
+
+        {/* Form Container */}
+        <div className="relative my-6 flex w-full flex-col gap-4 py-8 border-y border-border/50">
+          {error && (
+            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20 font-medium">
+              {error === 'Invalid login credentials' ? 'Incorrect email or password.' : error}
+            </div>
+          )}
 
           {isRecoveryMode ? (
-            <form onSubmit={handleResetPassword} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text)' }}>New Password</label>
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">New Password</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="input"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text)' }}>Confirm New Password</label>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Confirm New Password</label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="input"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
-
-              {error && (
-                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
-                  {error}
-                </div>
-              )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full btn-primary justify-center py-3 text-base"
-                style={{ background: loading ? 'var(--color-secondary)' : 'var(--color-primary)' }}
+                className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 mt-4"
               >
-                {loading ? 'Saving…' : 'Activate Account & Sign In →'}
+                {loading ? 'Activating…' : 'Activate Account'}
               </button>
             </form>
           ) : (
-            <form onSubmit={handleLogin} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text)' }}>Email address</label>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Email address</label>
                 <input
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="secretary@sigonagolfclub.com"
                   required
-                  className="input"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text)' }}>Password</label>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Password</label>
                 <input
                   type="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="input"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
-
-              {error && (
-                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
-                  {error === 'Invalid login credentials' ? 'Incorrect email or password.' : error}
-                </div>
-              )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full btn-primary justify-center py-3 text-base"
-                style={{ background: loading ? 'var(--color-secondary)' : 'var(--color-primary)' }}
+                className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:opacity-90 h-10 px-4 py-2 mt-4"
               >
                 {loading ? (
                   <>
-                    <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                      <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="3" strokeDasharray="30 70"/>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeDasharray="30 70" opacity="0.3"/>
+                      <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                     </svg>
-                    Signing in…
+                    Signing in...
                   </>
-                ) : 'Sign in →'}
+                ) : 'Sign in'}
               </button>
             </form>
           )}
-
-          <p className="text-center text-xs mt-8" style={{ color: 'var(--color-light)' }}>
-            This portal is restricted to authorized Score Caddie club secretaries.
-          </p>
         </div>
+
+        {/* Footer */}
+        <p className="text-center text-muted-foreground text-xs font-medium">
+          Authorized Score Caddie administrators only.
+        </p>
       </div>
     </div>
   )
