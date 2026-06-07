@@ -94,7 +94,7 @@ function DeltaIcon({
 	filled = false,
 	className,
 	...props
-}: Omit<React.ComponentProps<"svg">, "fill"> & {
+}: Omit<React.ComponentPropsWithoutRef<"svg">, "fill"> & {
 	variant?: DeltaIconVariant;
 	filled?: boolean;
 }) {

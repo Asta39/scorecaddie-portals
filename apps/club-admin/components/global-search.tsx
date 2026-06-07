@@ -1,7 +1,7 @@
-// "use client";
+"use client";
 
 import * as React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Command, CommandInput, CommandItem, CommandList, CommandEmpty } from "@/components/ui/command";
 import { SearchIcon } from "lucide-react";
 
@@ -43,11 +43,8 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        {/* The trigger is hidden because we control opening from the Sidebar button */}
-        <button className="hidden" />
-      </DialogTrigger>
-      <DialogContent className="max-w-md sm:max-w-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-md sm:max-w-lg">
+
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <SearchIcon className="h-5 w-5" /> Search

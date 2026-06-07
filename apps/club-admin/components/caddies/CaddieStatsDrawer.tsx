@@ -488,12 +488,12 @@ export function CaddieStatsDrawer({ caddie, isOpen, onClose }: CaddieStatsDrawer
       </div>
       
       {/* Keyframe animation for slide-in */}
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes slideIn {
           from { transform: translateX(100%); }
           to { transform: translateX(0); }
         }
-      `}</style>
+      ` }} />
     </div>
   )
 }

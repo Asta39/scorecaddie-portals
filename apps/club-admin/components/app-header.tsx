@@ -12,7 +12,7 @@ import { usePathname } from "next/navigation";
 
 export function AppHeader() {
 	const pathname = usePathname();
-	const activeItem = navLinks.find((item) => item.path && pathname.startsWith(item.path)) || navLinks[0];
+	const activeItem = navLinks.find((item) => item.path && pathname?.startsWith(item.path)) || navLinks[0];
 	return (
 		<header
 			className={cn(
