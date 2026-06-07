@@ -4,24 +4,43 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('Supabase URL or Anon Key is missing from environment variables!')
+    return supabaseResponse
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          try {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          } catch (_) {}
           supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            )
+          } catch (_) {}
         },
       },
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data?.user ?? null
+  } catch (err) {
+    console.error('Error fetching user in middleware:', err)
+  }
+
   const isLoginPage = request.nextUrl.pathname === '/login'
 
   // If not logged in and not on login page → redirect to login
@@ -34,13 +53,18 @@ export async function middleware(request: NextRequest) {
 
   // If logged in, verify they are super_admin
   if (user && !isLoginPage) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    let isSuperAdmin = false
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
 
-    const isSuperAdmin = profile?.role === 'super_admin'
+      isSuperAdmin = profile?.role === 'super_admin'
+    } catch (err) {
+      console.error('Error fetching super admin profile in middleware:', err)
+    }
 
     // Only apply email guard if SUPER_ADMIN_EMAIL is set AND readable in this runtime.
     // Edge middleware may not have access to server-only env vars, so we only block
@@ -49,7 +73,9 @@ export async function middleware(request: NextRequest) {
     const emailOk = !expectedEmail || user.email === expectedEmail
 
     if (!isSuperAdmin || !emailOk) {
-      await supabase.auth.signOut()
+      try {
+        await supabase.auth.signOut()
+      } catch (_) {}
       if (request.nextUrl.pathname.startsWith('/api/')) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }

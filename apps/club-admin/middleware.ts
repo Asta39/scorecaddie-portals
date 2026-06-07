@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
   let user = null
   try {
     const { data } = await supabase.auth.getUser()
-    user = data.user
+    user = data?.user ?? null
   } catch (err) {
     console.error('Error fetching user in middleware:', err)
   }
