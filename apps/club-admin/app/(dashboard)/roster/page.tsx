@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { startOfWeek, addDays, format, isSameDay, parseISO } from 'date-fns'
 import { Calendar as CalendarIcon, Check, X, Clock, AlertCircle, ChevronLeft, ChevronRight, User, Search, Download } from 'lucide-react'
@@ -24,6 +25,7 @@ type Attendance = {
 
 export default function RosterPage() {
   const supabase = createClient()
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [caddies, setCaddies] = useState<Caddie[]>([])
   const [attendance, setAttendance] = useState<Attendance[]>([])
@@ -61,6 +63,19 @@ export default function RosterPage() {
     }
     loadClub()
   }, [])
+
+  // Read ?search query param on load
+  useEffect(() => {
+    if (!clubId) return
+    const searchParams = new URLSearchParams(window.location.search)
+    const searchQ = searchParams.get('search')
+    if (searchQ) {
+      setSearchQuery(searchQ)
+      searchParams.delete('search')
+      const newUrl = window.location.pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '')
+      router.replace(newUrl)
+    }
+  }, [clubId, router])
 
   // 2. Fetch caddies and attendance records for the current week
   const fetchRosterData = async () => {

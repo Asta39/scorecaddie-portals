@@ -132,13 +132,28 @@ export default function CaddiesPage() {
   }
 
   // Auto-open register modal when URL has ?register=true
+  // and pre-fill search query if ?search=... is provided
   useEffect(() => {
     if (!clubId) return
-    const search = new URLSearchParams(window.location.search)
-    if (search.get('register') === 'true') {
+    const searchParams = new URLSearchParams(window.location.search)
+    let shouldReplaceUrl = false
+
+    if (searchParams.get('register') === 'true') {
       openAddModal()
-      // Remove query param to keep clean URL
-      router.replace('/caddies')
+      searchParams.delete('register')
+      shouldReplaceUrl = true
+    }
+
+    const searchQ = searchParams.get('search')
+    if (searchQ) {
+      setSearchQuery(searchQ)
+      searchParams.delete('search')
+      shouldReplaceUrl = true
+    }
+
+    if (shouldReplaceUrl) {
+      const newUrl = window.location.pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '')
+      router.replace(newUrl)
     }
   }, [clubId])
 
