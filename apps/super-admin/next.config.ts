@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   env: {
     SUPER_ADMIN_EMAIL: process.env.SUPER_ADMIN_EMAIL ?? '',
   },
+  allowedDevOrigins: ['192.168.100.7'],
 };
 
 export default nextConfig;
