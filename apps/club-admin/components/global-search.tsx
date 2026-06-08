@@ -5,13 +5,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Command, CommandInput, CommandItem, CommandList, CommandEmpty } from "@/components/ui/command";
 import { SearchIcon } from "lucide-react";
 
-// Simple list of searchable items. In a real app, this could be fetched or derived from routes.
+// Searchable pages — must match actual routes in app/(dashboard)
 const items = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/caddies", label: "Caddies" },
-  { href: "/clubs", label: "Clubs" },
-  { href: "/settings", label: "Settings" },
-];
+  { href: '/dashboard',  label: 'Dashboard' },
+  { href: '/analytics',  label: 'Analytics' },
+  { href: '/roster',     label: 'Weekly Roster' },
+  { href: '/caddies',    label: 'Caddie Profiles' },
+  { href: '/caddies?register=true', label: 'Register Caddie' },
+  { href: '/payments',   label: 'Payments' },
+  { href: '/settings',   label: 'Settings' },
+  { href: '/support',    label: 'Help & Support' },
+  { href: '/status',     label: 'Platform Status' },
+]
+;
 
 interface GlobalSearchProps {
   open: boolean;
