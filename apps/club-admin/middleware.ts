@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+async function runMiddleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -99,18 +99,17 @@ export async function middleware(request: NextRequest) {
   return supabaseResponse
 }
 
-// Wrap the proxy export in a top-level error boundary just in case 
-// something in edge runtime or Supabase fetch crashes uncontrollably.
-export async function proxy(request: NextRequest) {
+// The main logic is now inside the try-catch to ensure we never crash the Edge runtime.
+export async function middleware(request: NextRequest) {
   try {
-    return await middleware(request)
+    return await runMiddleware(request)
   } catch (error) {
-    console.error('Critical failure in proxy:', error)
+    console.error('Critical failure in middleware:', error)
     const isApi = request.nextUrl.pathname.startsWith('/api/')
     if (isApi) {
       return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }
-    // If it crashes hard, fail open to the login page to avoid 500 loop
+    // Fail open to login page to avoid 500 loop
     return NextResponse.redirect(new URL('/login', request.url))
   }
 }
