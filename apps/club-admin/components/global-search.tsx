@@ -115,7 +115,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
+      <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden border-none ring-0 focus:ring-0 outline-none">
         <DialogHeader className="sr-only">
           <DialogTitle>Search</DialogTitle>
         </DialogHeader>

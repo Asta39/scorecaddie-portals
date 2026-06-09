@@ -1,5 +1,11 @@
 {
   "installCommand": "pnpm install",
   "buildCommand": "pnpm build",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "crons": [
+    {
+      "path": "/api/cron/auto-checkout",
+      "schedule": "0 20 * * *"
+    }
+  ]
 }

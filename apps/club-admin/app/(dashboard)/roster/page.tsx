@@ -395,16 +395,16 @@ export default function RosterPage() {
       {selectedCell && (
         <div className="modal-overlay" onClick={() => setSelectedCell(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between pb-4 border-b mb-5" style={{ borderColor: 'var(--color-light)' }}>
+            <div className="flex items-center justify-between pb-4 border-b border-border mb-5">
               <div>
-                <h3 className="font-bold text-lg" style={{ color: 'var(--color-text)' }}>
+                <h3 className="font-bold text-lg text-foreground">
                   {selectedCell.record ? 'Edit Attendance' : 'Mark Attendance'}
                 </h3>
-                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                <p className="text-xs text-muted-foreground">
                   {selectedCell.caddie.name} · {format(selectedCell.date, 'EEEE, d MMM yyyy')}
                 </p>
               </div>
-              <button className="p-1 hover:bg-lighter rounded-lg text-primary" onClick={() => setSelectedCell(null)}>
+              <button className="p-1 hover:bg-muted rounded-lg text-foreground" onClick={() => setSelectedCell(null)}>
                 <X size={18} />
               </button>
             </div>
@@ -412,27 +412,25 @@ export default function RosterPage() {
             <div className="space-y-6">
               {/* Quick Actions */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button className="btn-primary py-3 justify-center text-sm font-semibold"
-                  style={{ background: 'var(--color-primary)' }}
+                <button className="btn-primary py-3 justify-center text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
                   onClick={() => handleSaveAttendance('check_in')}>
                   <Check size={16} />
                   Check In
                 </button>
-                <button className="btn-primary py-3 justify-center text-sm font-semibold"
-                  style={{ background: 'var(--color-secondary)' }}
+                <button className="btn-primary py-3 justify-center text-sm font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80"
                   onClick={() => handleSaveAttendance('check_out')}>
                   <Clock size={16} />
                   Check Out
                 </button>
               </div>
 
-              <div className="flex gap-2 pt-4 border-t" style={{ borderColor: 'var(--color-lighter)' }}>
-                <button className="btn-secondary py-3 flex-1 justify-center text-sm font-semibold border-amber-300 text-amber-700 hover:bg-amber-50"
+              <div className="flex gap-2 pt-4 border-t border-border">
+                <button className="btn-secondary py-3 flex-1 justify-center text-sm font-semibold border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700/50 dark:text-amber-400 dark:hover:bg-amber-950/50"
                   onClick={() => handleSaveAttendance('absent')}>
                   Mark Absent
                 </button>
                 {selectedCell.record && (
-                  <button className="btn-secondary py-3 flex-1 justify-center text-sm font-semibold border-red-200 text-red-600 hover:bg-red-50"
+                  <button className="btn-secondary py-3 flex-1 justify-center text-sm font-semibold border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/50"
                     onClick={() => handleSaveAttendance('clear')}>
                     Clear Entry
                   </button>

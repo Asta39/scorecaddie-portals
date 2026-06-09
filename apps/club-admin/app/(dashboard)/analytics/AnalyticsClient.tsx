@@ -542,7 +542,7 @@ export default function AnalyticsClient() {
                     caddies present / active day
                   </span>
                 </div>
-                <div className="bg-lighter p-2 rounded-xl text-primary">
+                <div className="bg-primary/10 p-2 rounded-xl text-primary">
                   <Users size={20} />
                 </div>
               </div>
@@ -561,7 +561,7 @@ export default function AnalyticsClient() {
                     checked in before {standardStartTime}
                   </span>
                 </div>
-                <div className="bg-lighter p-2 rounded-xl text-primary">
+                <div className="bg-primary/10 p-2 rounded-xl text-primary">
                   <Clock size={20} />
                 </div>
               </div>
@@ -580,7 +580,7 @@ export default function AnalyticsClient() {
                     checked-in caddies booked
                   </span>
                 </div>
-                <div className="bg-lighter p-2 rounded-xl text-primary">
+                <div className="bg-primary/10 p-2 rounded-xl text-primary">
                   <TrendingUp size={20} />
                 </div>
               </div>
@@ -599,7 +599,7 @@ export default function AnalyticsClient() {
                     of scheduled shifts missed
                   </span>
                 </div>
-                <div className="bg-lighter p-2 rounded-xl text-primary">
+                <div className="bg-primary/10 p-2 rounded-xl text-primary">
                   <AlertCircle size={20} />
                 </div>
               </div>
@@ -668,7 +668,7 @@ export default function AnalyticsClient() {
                     return (
                       <div key={stars} className="flex items-center gap-2 text-xs">
                         <span className="w-2.5 font-bold text-right text-text-muted">{stars}</span>
-                        <div className="flex-grow h-1.5 bg-lighter rounded-full overflow-hidden relative">
+                        <div className="flex-grow h-1.5 bg-muted rounded-full overflow-hidden relative">
                           <div 
                             className="h-full rounded-full transition-all duration-500" 
                             style={{ width: `${pct}%`, backgroundColor: 'var(--color-text)' }} 
@@ -992,7 +992,7 @@ export default function AnalyticsClient() {
                       type="time"
                       value={standardStartTime}
                       onChange={e => setStandardStartTime(e.target.value)}
-                      className="input w-full font-mono text-sm py-2 px-3 bg-lighter border border-light focus:outline-none"
+                      className="input w-full font-mono text-sm py-2 px-3 bg-muted border border-border focus:outline-none"
                     />
                     <p className="text-[11px] text-text-muted mt-1 leading-relaxed">
                       Caddies checking in after this threshold are marked "late" for punctuality ratios.
