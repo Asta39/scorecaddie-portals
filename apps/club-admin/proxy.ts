@@ -35,10 +35,17 @@ export async function middleware(request: NextRequest) {
 
   let user = null
   try {
-    const { data } = await supabase.auth.getUser()
-    user = data?.user ?? null
+    const { data, error } = await supabase.auth.getUser()
+    if (error) {
+      console.error('Supabase Auth error in proxy:', error.message)
+      // If refresh token is invalid or missing, we can force a clear
+      // by setting user to null so they get redirected.
+    } else {
+      user = data?.user ?? null
+    }
   } catch (err) {
-    console.error('Error fetching user in middleware:', err)
+    console.error('Unhandled fetch error in proxy:', err)
+    user = null
   }
 
   const isLoginPage = request.nextUrl.pathname === '/login'
@@ -90,6 +97,22 @@ export async function middleware(request: NextRequest) {
   }
 
   return supabaseResponse
+}
+
+// Wrap the proxy export in a top-level error boundary just in case 
+// something in edge runtime or Supabase fetch crashes uncontrollably.
+export async function proxy(request: NextRequest) {
+  try {
+    return await middleware(request)
+  } catch (error) {
+    console.error('Critical failure in proxy:', error)
+    const isApi = request.nextUrl.pathname.startsWith('/api/')
+    if (isApi) {
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    }
+    // If it crashes hard, fail open to the login page to avoid 500 loop
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
 }
 
 export const config = {
