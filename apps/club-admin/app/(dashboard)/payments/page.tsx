@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase-client'
+import { TableSkeleton } from '@/components/ui/table-skeleton'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import { 
   CreditCard, Check, ShieldAlert, Sparkles, CheckSquare, 
@@ -246,8 +247,8 @@ export default function PaymentsPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64 text-text-muted">
-          Loading subscription records…
+        <div className="mt-8">
+          <TableSkeleton />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

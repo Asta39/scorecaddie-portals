@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { TableSkeleton } from '@/components/ui/table-skeleton'
 import { createClient } from '@/lib/supabase-client'
 import { Plus, Search, User, Check, X, Camera, Edit2, AlertTriangle, Upload, Download, BarChart3 } from 'lucide-react'
 import Papa from 'papaparse'
@@ -422,8 +423,8 @@ export default function CaddiesPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64 text-text-muted">
-          Loading caddie profiles…
+        <div className="mt-8">
+          <TableSkeleton />
         </div>
       ) : (
         <div className="card">

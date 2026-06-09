@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
+import { DashboardSkeleton } from '@/components/dashboard-skeleton'
 import {
   format,
   subDays,
@@ -520,8 +521,8 @@ export default function AnalyticsClient() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64 text-text-muted">
-          Analyzing club databases & compiling statistics…
+        <div className="mt-8">
+          <DashboardSkeleton />
         </div>
       ) : (
         <div className="space-y-6">

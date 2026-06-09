@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
+import { TableSkeleton } from '@/components/ui/table-skeleton'
 import { startOfWeek, addDays, format, isSameDay, parseISO } from 'date-fns'
 import { Calendar as CalendarIcon, Check, X, Clock, AlertCircle, ChevronLeft, ChevronRight, User, Search, Download } from 'lucide-react'
 
@@ -302,8 +303,8 @@ export default function RosterPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64 text-text-muted">
-          Loading roster data…
+        <div className="mt-8">
+          <TableSkeleton />
         </div>
       ) : (
         <div className="card h-full flex flex-col">

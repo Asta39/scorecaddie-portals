@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
+import { DashboardSkeleton } from '@/components/dashboard-skeleton'
 import { Shield, Settings as SettingsIcon, Check, AlertCircle, Building, Key, FileText, Sun, Moon, Laptop } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
@@ -112,8 +113,8 @@ export default function SettingsPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64 text-text-muted">
-          Loading settings…
+        <div className="mt-8">
+          <DashboardSkeleton />
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
