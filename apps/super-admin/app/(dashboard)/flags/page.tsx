@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 const severityConfig = {
   critical: { Icon: AlertTriangle, color: '#ef4444', bg: '#fee2e2', label: 'Critical' },
   warning: { Icon: AlertCircle, color: '#f59e0b', bg: '#fef3c7', label: 'Warning' },
-  info: { Icon: Info, color: 'var(--color-secondary)', bg: 'var(--color-lighter)', label: 'Info' },
+  info: { Icon: Info, color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', label: 'Info' },
 }
 
 export default async function FlagsPage() {
@@ -26,8 +26,8 @@ export default async function FlagsPage() {
     <div className="portal-content">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Flags & Alerts</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+          <h1 className="text-2xl font-bold text-foreground">Flags & Alerts</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             {unresolvedCount} unresolved · {flags?.length ?? 0} total
           </p>
         </div>
@@ -36,11 +36,11 @@ export default async function FlagsPage() {
       <div className="space-y-3">
         {(!flags || flags.length === 0) ? (
           <div className="card p-12 text-center">
-            <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--color-lighter)' }}>
-              <Info size={24} style={{ color: 'var(--color-secondary)' }} />
+            <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center bg-muted">
+              <Info size={24} className="text-muted-foreground" />
             </div>
-            <p className="font-semibold" style={{ color: 'var(--color-text)' }}>All clear — no flags</p>
-            <p className="text-sm mt-1" style={{ color: 'var(--color-light)' }}>The platform is running smoothly</p>
+            <p className="font-semibold text-foreground">All clear — no flags</p>
+            <p className="text-sm text-muted-foreground mt-1">The platform is running smoothly</p>
           </div>
         ) : flags.map((flag: any) => {
           const cfg = severityConfig[flag.severity as keyof typeof severityConfig] ?? severityConfig.info
@@ -60,18 +60,18 @@ export default async function FlagsPage() {
                         <span className="badge text-xs" style={{ background: cfg.bg, color: cfg.color }}>
                           {cfg.label}
                         </span>
-                        <span className="text-xs" style={{ color: 'var(--color-light)' }}>
+                        <span className="text-xs text-muted-foreground">
                           {flag.type.replace(/_/g, ' ')}
                         </span>
                       </div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>{flag.message}</p>
-                      <p className="text-xs mt-1.5" style={{ color: 'var(--color-light)' }}>
+                      <p className="text-sm font-medium text-foreground">{flag.message}</p>
+                      <p className="text-xs text-muted-foreground mt-1.5">
                         {flag.clubs?.name ?? 'Platform'} ·{' '}
                         {flag.caddies?.name ? `${flag.caddies.name} · ` : ''}
                         {format(new Date(flag.created_at), 'd MMM yyyy, HH:mm')}
                       </p>
                       {flag.resolved && flag.resolved_note && (
-                        <p className="text-xs mt-2 p-2 rounded" style={{ background: 'var(--color-lighter)', color: 'var(--color-text-muted)' }}>
+                        <p className="text-xs mt-2 p-2 rounded bg-muted text-muted-foreground">
                           ✓ Resolved: {flag.resolved_note}
                         </p>
                       )}

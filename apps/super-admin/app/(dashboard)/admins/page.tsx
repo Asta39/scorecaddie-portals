@@ -17,8 +17,8 @@ export default async function AdminsPage() {
     <div className="portal-content">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Club Admins</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+          <h1 className="text-2xl font-bold text-foreground">Club Admins</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             All secretary accounts across {new Set(admins?.map((a: any) => a.club_id)).size} clubs
           </p>
         </div>
@@ -42,11 +42,11 @@ export default async function AdminsPage() {
               <tr>
                 <td colSpan={6} className="text-center py-12">
                   <div className="flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-lighter)' }}>
-                      <UserCheck size={22} style={{ color: 'var(--color-secondary)' }} />
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-muted">
+                      <UserCheck size={22} className="text-muted-foreground" />
                     </div>
-                    <p className="font-medium" style={{ color: 'var(--color-text)' }}>No secretary accounts yet</p>
-                    <p className="text-sm" style={{ color: 'var(--color-light)' }}>Create a club first, then add a secretary from the club detail page</p>
+                    <p className="font-medium text-foreground">No secretary accounts yet</p>
+                    <p className="text-sm text-muted-foreground">Create a club first, then add a secretary from the club detail page</p>
                   </div>
                 </td>
               </tr>
@@ -54,31 +54,30 @@ export default async function AdminsPage() {
               <tr key={a.id}>
                 <td>
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center"
-                      style={{ background: 'var(--color-lighter)' }}>
-                      <span className="text-xs font-bold" style={{ color: 'var(--color-primary)' }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-muted">
+                      <span className="text-xs font-bold text-primary">
                         {(a.name ?? a.email ?? '?').charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <span className="font-semibold text-sm">{a.name ?? '—'}</span>
                   </div>
                 </td>
-                <td className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                <td className="text-sm text-muted-foreground">
                   {(a as any).clubs?.name ?? '—'}
                 </td>
-                <td className="text-sm font-mono" style={{ color: 'var(--color-text-muted)' }}>{a.email}</td>
+                <td className="text-sm font-mono text-muted-foreground">{a.email}</td>
                 <td>
                   <span className={`badge badge-${a.is_active ? 'active' : 'suspended'}`}>
                     {a.is_active ? 'Active' : 'Deactivated'}
                   </span>
                 </td>
-                <td className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                <td className="text-sm text-muted-foreground">
                   {format(new Date(a.created_at), 'd MMM yyyy')}
                 </td>
                 <td>
                   {a.club_id && (
                     <Link href={`/clubs/${a.club_id}`}
-                      className="text-sm font-semibold" style={{ color: 'var(--color-primary)' }}>
+                      className="text-sm font-semibold text-primary">
                       View club →
                     </Link>
                   )}

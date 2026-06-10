@@ -41,8 +41,7 @@ export function NavUser() {
 
 	const handleSignOut = async () => {
 		await supabase.auth.signOut();
-		router.push('/login');
-		router.refresh();
+		window.location.href = '/login';
 	};
 
 	if (!user) return <Avatar className="size-8 animate-pulse bg-muted" />;

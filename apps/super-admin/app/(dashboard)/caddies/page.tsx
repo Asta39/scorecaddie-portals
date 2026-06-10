@@ -31,8 +31,8 @@ export default async function CaddiesPage({ searchParams }: { searchParams: { cl
     <div className="portal-content">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Caddies</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+          <h1 className="text-2xl font-bold text-foreground">Caddies</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             {caddies?.length ?? 0} total · {active.length} active · {expired.length} expired
           </p>
         </div>

@@ -29,8 +29,8 @@ export default async function ClubsPage() {
     <div className="portal-content">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Clubs</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+          <h1 className="text-2xl font-bold text-foreground">Clubs</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             {clubs?.length ?? 0} golf club{(clubs?.length ?? 0) !== 1 ? 's' : ''} on the platform
           </p>
         </div>
@@ -55,11 +55,11 @@ export default async function ClubsPage() {
               <tr>
                 <td colSpan={6} className="text-center py-16">
                   <div className="flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-lighter)' }}>
-                      <MapPin size={22} style={{ color: 'var(--color-secondary)' }} />
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-muted">
+                      <MapPin size={22} className="text-muted-foreground" />
                     </div>
-                    <p className="font-medium" style={{ color: 'var(--color-text)' }}>No clubs yet</p>
-                    <p className="text-sm" style={{ color: 'var(--color-light)' }}>Add your first golf club to get started</p>
+                    <p className="font-medium text-foreground">No clubs yet</p>
+                    <p className="text-sm text-muted-foreground">Add your first golf club to get started</p>
                   </div>
                 </td>
               </tr>
@@ -69,12 +69,10 @@ export default async function ClubsPage() {
                   <div className="flex items-center gap-3">
                     {club.logo_url ? (
                       <img src={club.logo_url} alt={club.name}
-                        className="w-8 h-8 rounded-lg object-cover"
-                        style={{ border: '1px solid var(--color-lighter)' }} />
+                        className="w-8 h-8 rounded-lg object-cover border border-border" />
                     ) : (
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                        style={{ background: 'var(--color-lighter)' }}>
-                        <span className="text-xs font-bold" style={{ color: 'var(--color-primary)' }}>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted">
+                        <span className="text-xs font-bold text-primary">
                           {club.name.charAt(0)}
                         </span>
                       </div>
@@ -82,24 +80,24 @@ export default async function ClubsPage() {
                     <span className="font-semibold text-sm">{club.name}</span>
                   </div>
                 </td>
-                <td className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                <td className="text-sm text-muted-foreground">
                   {club.location ?? '—'}{club.region ? `, ${club.region}` : ''}
                 </td>
                 <td>
                   <span className="font-semibold">{countByClub[club.id] ?? 0}</span>
-                  <span className="text-xs ml-1" style={{ color: 'var(--color-light)' }}>caddies</span>
+                  <span className="text-xs ml-1 text-muted-foreground">caddies</span>
                 </td>
                 <td>
                   <span className={`badge badge-${club.status === 'active' ? 'active' : 'suspended'}`}>
                     {club.status}
                   </span>
                 </td>
-                <td className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                <td className="text-sm text-muted-foreground">
                   {format(new Date(club.onboarded_at), 'd MMM yyyy')}
                 </td>
                 <td>
                   <Link href={`/clubs/${club.id}`}
-                    className="text-sm font-semibold" style={{ color: 'var(--color-primary)' }}>
+                    className="text-sm font-semibold text-primary">
                     View →
                   </Link>
                 </td>

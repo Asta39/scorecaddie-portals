@@ -46,63 +46,52 @@ export default async function PaymentsPage() {
     <div className="portal-content">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Payments</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>All Paystack transactions across clubs</p>
+          <h1 className="text-2xl font-bold text-foreground">Payments</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">All Paystack transactions across clubs</p>
         </div>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         {/* Highlighted Card */}
-        <div className="card" style={{
-          padding: '1.25rem 1.5rem', background: 'linear-gradient(135deg, #0B2B26 0%, #163832 100%)',
-          position: 'relative', overflow: 'hidden',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div className="card p-5 bg-gradient-to-br from-[#0B2B26] to-[#163832] relative overflow-hidden text-white border-0">
+          <div className="flex items-start justify-between">
             <div>
-              <p style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem' }}>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-300/70 mb-2">
                 This Month
               </p>
-              <p style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', lineHeight: 1.1 }}>
+              <p className="text-3xl font-extrabold text-white leading-none">
                 KES {monthTotal.toLocaleString()}
               </p>
-              <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)', marginTop: '0.5rem' }}>
+              <p className="text-xs text-emerald-200/60 mt-2">
                 {thisMonth.length} transactions
               </p>
             </div>
-            <div style={{
-              width: 38, height: 38, borderRadius: '10px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.1)', flexShrink: 0,
-            }}>
-              <TrendingUp size={18} color="#8EB69B" strokeWidth={2.5} />
+            <div className="w-[38px] h-[38px] rounded-[10px] flex items-center justify-center bg-white/10 shrink-0">
+              <TrendingUp size={18} className="text-emerald-300" strokeWidth={2.5} />
             </div>
           </div>
         </div>
 
         {/* Normal Cards */}
         {[
-          { label: 'All Time Revenue', value: `KES ${totalConfirmed.toLocaleString()}`, sub: 'Confirmed payments only', icon: Wallet, color: '#235347', bg: '#DAF1DE' },
-          { label: 'Pending / Failed', value: payments?.filter((p: any) => p.status !== 'confirmed').length ?? 0, sub: 'Needs investigation', icon: AlertCircle, color: '#991b1b', bg: '#fef2f2' },
+          { label: 'All Time Revenue', value: `KES ${totalConfirmed.toLocaleString()}`, sub: 'Confirmed payments only', icon: Wallet, color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+          { label: 'Pending / Failed', value: String(payments?.filter((p: any) => p.status !== 'confirmed').length ?? 0), sub: 'Needs investigation', icon: AlertCircle, color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
         ].map(card => (
-          <div key={card.label} className="card" style={{ padding: '1.25rem 1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div key={card.label} className="card p-5">
+            <div className="flex items-start justify-between">
               <div>
-                <p style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#8EB69B', marginBottom: '0.5rem' }}>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2">
                   {card.label}
                 </p>
-                <p style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--color-text)', lineHeight: 1.1 }}>
+                <p className="text-3xl font-extrabold text-foreground leading-none">
                   {card.value}
                 </p>
-                <p style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
+                <p className="text-xs text-muted-foreground mt-2">
                   {card.sub}
                 </p>
               </div>
-              <div style={{
-                width: 38, height: 38, borderRadius: '10px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: card.bg, flexShrink: 0,
-              }}>
+              <div className="w-[38px] h-[38px] rounded-[10px] flex items-center justify-center shrink-0" style={{ background: card.bg }}>
                 <card.icon size={18} color={card.color} strokeWidth={2} />
               </div>
             </div>
@@ -110,16 +99,13 @@ export default async function PaymentsPage() {
         ))}
       </div>
 
-      <div className="card mb-8" style={{ padding: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+      <div className="card mb-8 p-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-semibold" style={{ fontSize: '1rem', color: 'var(--color-text)' }}>Revenue Overview</h3>
-            <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '2px' }}>Platform-wide payment volume (last 6 months)</p>
+            <h3 className="text-base font-semibold text-foreground">Revenue Overview</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Platform-wide payment volume (last 6 months)</p>
           </div>
-          <div style={{
-            fontSize: '0.7rem', fontWeight: 700, color: '#10b981',
-            background: '#ecfdf5', padding: '4px 10px', borderRadius: '6px',
-          }}>
+          <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-md">
             KES {totalConfirmed.toLocaleString()} total
           </div>
         </div>
@@ -142,7 +128,7 @@ export default async function PaymentsPage() {
           <tbody>
             {(!payments || payments.length === 0) ? (
               <tr>
-                <td colSpan={6} className="text-center py-12" style={{ color: 'var(--color-light)' }}>
+                <td colSpan={6} className="text-center py-12 text-muted-foreground">
                   No payment records yet
                 </td>
               </tr>
@@ -150,7 +136,7 @@ export default async function PaymentsPage() {
               <tr key={p.id}>
                 <td className="text-sm">{format(new Date(p.created_at), 'd MMM yyyy')}</td>
                 <td className="font-medium text-sm">{(p as any).clubs?.name ?? '—'}</td>
-                <td className="font-mono text-xs" style={{ color: 'var(--color-secondary)' }}>{p.paystack_reference}</td>
+                <td className="font-mono text-xs text-muted-foreground">{p.paystack_reference}</td>
                 <td className="text-sm">{p.caddie_count}</td>
                 <td className="font-semibold text-sm">KES {p.amount_kes.toLocaleString()}</td>
                 <td>

@@ -20,7 +20,7 @@ import {
 const chartConfig = {
 	amount: {
 		label: "Revenue",
-		color: "hsl(var(--primary))",
+		color: "#10b981",
 	},
 } satisfies ChartConfig;
 
