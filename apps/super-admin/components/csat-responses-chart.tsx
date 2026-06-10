@@ -18,13 +18,13 @@ import {
 } from "@/components/ui/chart";
 
 const chartConfig = {
-	caddies: {
-		label: "Total Caddies",
-		color: "var(--chart-1)",
-	},
 	active: {
-		label: "Active Subscriptions",
+		label: "Active Caddies",
 		color: "var(--chart-2)",
+	},
+	inactive: {
+		label: "Inactive Caddies",
+		color: "var(--chart-5)",
 	},
 } satisfies ChartConfig;
 
@@ -48,7 +48,10 @@ export function CsatResponsesChart({
 	data,
 	...props
 }: ComponentProps<typeof Card> & { data?: any }) {
-	const chartRows = data?.clubCaddies || [];
+	const chartRows = (data?.clubCaddies || []).map((row: any) => ({
+		...row,
+		inactive: Math.max(0, row.caddies - row.active),
+	}));
 
 	return (
 		<Card
@@ -82,14 +85,18 @@ export function CsatResponsesChart({
 							cursor={<ColumnHoverCursor />}
 						/>
 						<Bar
-							dataKey="caddies"
-							fill="var(--color-caddies)"
-							radius={[BAR_RADIUS, BAR_RADIUS, 0, 0]}
-						/>
-						<Bar
 							dataKey="active"
 							fill="var(--color-active)"
+							stackId="a"
+							radius={[0, 0, BAR_RADIUS, BAR_RADIUS]}
+							barSize={12}
+						/>
+						<Bar
+							dataKey="inactive"
+							fill="var(--color-inactive)"
+							stackId="a"
 							radius={[BAR_RADIUS, BAR_RADIUS, 0, 0]}
+							barSize={12}
 						/>
 					</BarChart>
 				</ChartContainer>

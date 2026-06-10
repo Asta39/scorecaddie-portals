@@ -45,7 +45,7 @@ async function getDashboardData() {
   // ── All payments (for revenue chart) ──────────────────────────
   const { data: allPayments } = await supabase
     .from('caddie_payments')
-    .select('amount_kes, paid_at')
+    .select('amount_kes, created_at')
     .eq('status', 'confirmed')
 
   const totalRevenue = (allPayments ?? []).reduce((sum, p) => sum + (p.amount_kes ?? 0), 0)
@@ -59,7 +59,7 @@ async function getDashboardData() {
     const mStart = startOfMonth(m).toISOString()
     const mEnd = endOfMonth(m).toISOString()
     const total = (allPayments ?? [])
-      .filter(p => p.paid_at >= mStart && p.paid_at <= mEnd)
+      .filter(p => p.created_at >= mStart && p.created_at <= mEnd)
       .reduce((sum, p) => sum + (p.amount_kes ?? 0), 0)
     monthlyRevenue.push({ month: label, amount: total })
   }

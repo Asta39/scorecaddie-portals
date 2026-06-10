@@ -14,7 +14,7 @@
   --color-text-muted: #163832;
   --sidebar-width: 260px;
   --sidebar-gap: 12px;
-  --content-bg: #f4f7f5;
+  --content-bg: var(--background);
 }
 
 * {
@@ -123,31 +123,19 @@ a, button, input, select, textarea {
    DATA TABLES
    ═══════════════════════════════════════════════════════════════════ */
 .data-table {
-  width: 100%;
-  border-collapse: collapse;
+  @apply w-full border-collapse;
 }
 
 .data-table th {
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  padding: 12px 16px;
-  border-bottom: 1px solid #e8eeeb;
-  background: #f8faf9;
+  @apply text-left text-[11px] font-semibold tracking-wide uppercase text-muted-foreground px-4 py-3 border-b border-border bg-muted/50;
 }
 
 .data-table td {
-  padding: 14px 16px;
-  font-size: 14px;
-  border-bottom: 1px solid #f0f4f2;
-  color: var(--color-text);
+  @apply px-4 py-3.5 text-sm border-b border-border text-foreground;
 }
 
 .data-table tr:hover td {
-  background-color: #f8faf9;
+  @apply bg-muted/30;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -226,22 +214,16 @@ a, button, input, select, textarea {
    CARDS
    ═══════════════════════════════════════════════════════════════════ */
 .card {
-  background: white;
-  border-radius: 14px;
-  border: 1px solid #e8eeeb;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  overflow: hidden;
+  @apply bg-card text-card-foreground rounded-xl border border-border shadow-sm overflow-hidden;
 }
 
 .card-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid #f0f4f2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @apply px-5 py-4 border-b border-border flex items-center justify-between;
 }
 
-.card-body { padding: 20px; }
+.card-body { 
+  @apply p-5;
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    MODALS
@@ -378,6 +360,13 @@ a, button, input, select, textarea {
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+    
+    /* Legacy variables mapping */
+    --color-text: var(--foreground);
+    --color-text-muted: var(--muted-foreground);
+    --color-light: var(--muted-foreground);
+    --color-lighter: var(--muted);
+    --content-bg: var(--background);
   }
   * {
     @apply border-border outline-none;
