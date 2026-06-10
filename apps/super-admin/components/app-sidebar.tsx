@@ -1,3 +1,5 @@
+'use client'
+
 import { LogoIcon } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,8 +16,18 @@ import { NavGroup } from "@/components/nav-group";
 import { footerNavLinks, navGroups } from "@/components/app-shared";
 import { LatestChange } from "@/components/latest-change";
 import { PlusIcon, SearchIcon } from "lucide-react";
+import { createClient } from "@/lib/supabase-client";
+import { useRouter } from "next/navigation";
 
 export function AppSidebar() {
+	const router = useRouter();
+	const supabase = createClient();
+
+	const handleSignOut = async () => {
+		await supabase.auth.signOut();
+		window.location.href = '/login';
+	};
+
 	return (
 		<Sidebar collapsible="icon" variant="inset">
 			<SidebarHeader className="h-14 justify-center">
@@ -34,11 +46,23 @@ export function AppSidebar() {
 			<SidebarFooter>
 				<LatestChange />
 				<SidebarMenu className="mt-2">
-					{footerNavLinks.map((item) => (
-						<SidebarMenuItem key={item.title}>
-							<SidebarMenuButton className="text-muted-foreground" isActive={item.isActive} size="sm" render={<a href={item.path} />}>{item.icon}<span>{item.title}</span></SidebarMenuButton>
-						</SidebarMenuItem>
-					))}
+					{footerNavLinks.map((item) => {
+						const isSignOut = item.path === "#sign-out";
+						return (
+							<SidebarMenuItem key={item.title}>
+								<SidebarMenuButton
+									className="text-muted-foreground"
+									isActive={item.isActive}
+									size="sm"
+									onClick={isSignOut ? handleSignOut : undefined}
+									render={isSignOut ? <button type="button" /> : <a href={item.path} />}
+								>
+									{item.icon}
+									<span>{item.title}</span>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						);
+					})}
 				</SidebarMenu>
 			</SidebarFooter>
 		</Sidebar>

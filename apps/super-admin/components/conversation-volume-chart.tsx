@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { type ComponentProps, useId, useState, useMemo } from "react";
+import { type ComponentProps, useId, useState, useMemo, useEffect } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { format, subDays, subMonths, eachDayOfInterval, eachMonthOfInterval, isSameDay, startOfMonth, endOfMonth } from "date-fns";
 import {
@@ -34,6 +34,11 @@ export function ConversationVolumeChart({
 	const idAreaGradient = `conversation-volume-area-grad-${chartUid}`;
 
 	const [timeframe, setTimeframe] = useState<"7d" | "30d" | "6m" | "all">("30d");
+	const [isMounted, setIsMounted] = useState(false);
+
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
 
 	// Group raw Supabase payments list by timeframe
 	const chartRows = useMemo(() => {
@@ -146,6 +151,28 @@ export function ConversationVolumeChart({
 		return parseFloat((((currentSum - prevSum) / prevSum) * 100).toFixed(1));
 	}, [data, timeframe]);
 
+	if (!isMounted) {
+		return (
+			<Card
+				className={cn(
+					"shadow-none md:col-span-2 lg:col-span-3 dark:ring-0",
+					className
+				)}
+				{...(props as any)}
+			>
+				<CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+					<div className="min-w-0 space-y-2">
+						<CardTitle>Revenue timeline</CardTitle>
+						<CardDescription>Loading revenue timeline...</CardDescription>
+					</div>
+				</CardHeader>
+				<CardContent className="h-[280px] w-full flex items-center justify-center">
+					<div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+				</CardContent>
+			</Card>
+		);
+	}
+
 	return (
 		<Card
 			className={cn(
@@ -190,7 +217,7 @@ export function ConversationVolumeChart({
 				</div>
 			</CardHeader>
 			<CardContent>
-				<ChartContainer className="aspect-22/8 w-full" config={chartConfig}>
+				<ChartContainer className="aspect-[22/8] min-h-[280px] w-full" config={chartConfig}>
 					<AreaChart
 						accessibilityLayer
 						data={chartRows}

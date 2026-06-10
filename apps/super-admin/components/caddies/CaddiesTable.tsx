@@ -88,8 +88,8 @@ export default function CaddiesTable({ initialCaddies }: CaddiesTableProps) {
                 <AlertTriangle size={24} />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-lg text-text mb-1">Delete Caddie?</h3>
-                <p className="text-sm text-text-muted mb-4">
+                <h3 className="font-bold text-lg text-foreground mb-1">Delete Caddie?</h3>
+                <p className="text-sm text-muted-foreground mb-4">
                   Are you sure you want to delete <strong>{confirmName}</strong>? This will permanently remove them from the system, their club's records, and delete all their attendance history. This action cannot be undone.
                 </p>
                 <div className="flex gap-2 justify-end">
@@ -137,7 +137,7 @@ export default function CaddiesTable({ initialCaddies }: CaddiesTableProps) {
           <tbody>
             {caddies.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-12 text-text-muted italic">
+                <td colSpan={8} className="text-center py-12 text-muted-foreground italic">
                   No caddies matching filters found.
                 </td>
               </tr>

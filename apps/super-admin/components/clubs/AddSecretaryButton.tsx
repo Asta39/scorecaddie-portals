@@ -75,7 +75,7 @@ export default function AddSecretaryButton({ clubId, clubName }: { clubId: strin
                 
                 {success.link && (
                   <div className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--color-light)' }}>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Fallback Password Setup Link
                     </label>
                     <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
