@@ -16,44 +16,38 @@ import {
 	ChartLegend,
 	ChartLegendContent,
 } from "@/components/ui/chart";
-import { Delta, DeltaIcon, DeltaValue } from "@/components/delta";
-
-type ChannelKey = "direct" | "email" | "social";
-
-type ChannelDatum = {
-	channel: ChannelKey;
-	share: number;
-	fill: string;
-};
-
-const chartData: ChannelDatum[] = [
-	{ channel: "direct", share: 44, fill: "var(--color-direct)" },
-	{ channel: "email", share: 36, fill: "var(--color-email)" },
-	{ channel: "social", share: 20, fill: "var(--color-social)" },
-];
 
 const chartConfig = {
-	share: {
-		label: "Share",
+	count: {
+		label: "Users",
 	},
-	direct: {
-		label: "Direct",
+	clubs: {
+		label: "Clubs",
 		color: "var(--chart-1)",
 	},
-	email: {
-		label: "Email",
+	caddies: {
+		label: "Caddies",
 		color: "var(--chart-3)",
 	},
-	social: {
-		label: "Social",
+	golfers: {
+		label: "Golfers",
 		color: "var(--chart-5)",
 	},
 } satisfies ChartConfig;
 
 export function ChannelBreakdownChart({
 	className,
+	data,
 	...props
-}: ComponentProps<typeof Card>) {
+}: ComponentProps<typeof Card> & { data?: any }) {
+	const totalUsers = (data?.totalClubs || 0) + (data?.totalCaddies || 0) + (data?.totalGolfers || 0);
+
+	const chartData = [
+		{ role: "clubs", count: data?.totalClubs || 0, fill: "var(--color-clubs)" },
+		{ role: "caddies", count: data?.totalCaddies || 0, fill: "var(--color-caddies)" },
+		{ role: "golfers", count: data?.totalGolfers || 0, fill: "var(--color-golfers)" },
+	];
+
 	return (
 		<Card
 			className={cn("flex flex-col shadow-none dark:ring-0", className)}
@@ -61,14 +55,10 @@ export function ChannelBreakdownChart({
 		>
 			<CardHeader className="items-center space-y-1 pb-0 sm:items-start">
 				<div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-					<CardTitle>Traffic by channel</CardTitle>
-					<Delta value={2.4} variant="badge">
-						<DeltaIcon variant="trend" />
-						<DeltaValue suffix="pp" />
-					</Delta>
+					<CardTitle>Users by Role</CardTitle>
 				</div>
 				<CardDescription>
-					Share of new conversations in last 7 days
+					Distribution of registered users
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="my-auto">
@@ -80,27 +70,29 @@ export function ChannelBreakdownChart({
 						<Pie
 							cornerRadius={8}
 							data={chartData}
-							dataKey="share"
+							dataKey="count"
 							innerRadius={36}
-							nameKey="channel"
+							nameKey="role"
 							outerRadius="88%"
 							stroke="var(--card)"
 							strokeWidth={4}
 						>
 							<LabelList
 								className="fill-background font-medium"
-								dataKey="share"
+								dataKey="count"
 								fill="currentColor"
 								fontWeight={500}
 								formatter={(label) => {
 									const n = Number(label);
-									return Number.isFinite(n) ? `${n}%` : String(label ?? "");
+									if (totalUsers === 0) return "0%";
+									const pct = Math.round((n / totalUsers) * 100);
+									return Number.isFinite(pct) ? `${pct}%` : String(label ?? "");
 								}}
 								position="inside"
 								stroke="none"
 							/>
 						</Pie>
-						<ChartLegend content={<ChartLegendContent nameKey="channel" />} />
+						<ChartLegend content={<ChartLegendContent nameKey="role" />} />
 					</PieChart>
 				</ChartContainer>
 			</CardContent>

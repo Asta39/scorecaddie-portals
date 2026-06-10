@@ -7,17 +7,17 @@ import { DashboardStats } from "@/components/stats";
 import { SupportActivity } from "@/components/support-activity";
 import { TeamOnDuty } from "@/components/team-on-duty";
 
-export function Dashboard() {
+export function Dashboard({ data }: { data: any }) {
 	return (
 		<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-			<DashboardStats />
-			<ConversationVolumeChart />
-			<ChannelBreakdownChart />
-			<CsatResponsesChart />
-			<FirstReplyTimeChart />
-			<TeamOnDuty />
-			<RecentConversations />
-			<SupportActivity />
+			<DashboardStats data={data} />
+			<ConversationVolumeChart data={data} />
+			<ChannelBreakdownChart data={data} />
+			<CsatResponsesChart data={data} />
+			<FirstReplyTimeChart data={data} />
+			<TeamOnDuty data={data} />
+			<RecentConversations data={data} />
+			<SupportActivity data={data} />
 		</div>
 	);
 }

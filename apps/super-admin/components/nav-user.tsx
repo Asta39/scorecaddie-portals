@@ -14,15 +14,17 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserIcon, LogOutIcon } from "lucide-react";
+import { UserIcon, LogOutIcon, Moon, Sun, Monitor } from "lucide-react";
 import { createClient } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
 export function NavUser() {
 	const router = useRouter();
 	const supabase = createClient();
 	const [user, setUser] = useState<{ email: string; name: string } | null>(null);
+	const { setTheme } = useTheme();
 
 	useEffect(() => {
 		const fetchUser = async () => {
@@ -69,6 +71,21 @@ export function NavUser() {
 					<DropdownMenuItem>
 						<UserIcon />
 						Profile
+					</DropdownMenuItem>
+				</DropdownMenuGroup>
+				<DropdownMenuSeparator />
+				<DropdownMenuGroup>
+					<DropdownMenuItem onClick={() => setTheme("light")}>
+						<Sun className="mr-2 h-4 w-4" />
+						Light Mode
+					</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => setTheme("dark")}>
+						<Moon className="mr-2 h-4 w-4" />
+						Dark Mode
+					</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => setTheme("system")}>
+						<Monitor className="mr-2 h-4 w-4" />
+						System Theme
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 				<DropdownMenuSeparator />

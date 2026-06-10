@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import type { ComponentProps } from "react";
-import { Bar, BarChart, Rectangle, XAxis } from "recharts";
+import { Bar, BarChart, Rectangle, XAxis, YAxis } from "recharts";
 import {
 	Card,
 	CardContent,
@@ -17,40 +17,20 @@ import {
 	ChartTooltipContent,
 } from "@/components/ui/chart";
 
-const chartData = [
-	{ day: "Apr 8", direct: 11, email: 9, social: 4 },
-	{ day: "Apr 9", direct: 15, email: 11, social: 5 },
-	{ day: "Apr 10", direct: 13, email: 10, social: 5 },
-	{ day: "Apr 11", direct: 16, email: 12, social: 5 },
-	{ day: "Apr 12", direct: 12, email: 10, social: 5 },
-	{ day: "Apr 13", direct: 14, email: 10, social: 6 },
-	{ day: "Apr 14", direct: 11, email: 9, social: 5 },
-	{ day: "Apr 15", direct: 16, email: 7, social: 4 },
-	{ day: "Apr 16", direct: 13, email: 11, social: 5 },
-	{ day: "Apr 17", direct: 15, email: 11, social: 6 },
-] as const;
-
 const chartConfig = {
-	direct: {
-		label: "Direct",
+	caddies: {
+		label: "Total Caddies",
 		color: "var(--chart-1)",
 	},
-	email: {
-		label: "Email",
-		color: "var(--chart-3)",
-	},
-	social: {
-		label: "Social",
-		color: "var(--chart-5)",
+	active: {
+		label: "Active Subscriptions",
+		color: "var(--chart-2)",
 	},
 } satisfies ChartConfig;
 
 /** Half of bar width (8) so ends read as fully rounded “caps”. */
-const BAR_RADIUS = 5;
+const BAR_RADIUS = 4;
 
-/**
- *  column hover background.
- */
 function ColumnHoverCursor(props: React.ComponentProps<typeof Rectangle>) {
 	return (
 		<Rectangle
@@ -65,62 +45,51 @@ function ColumnHoverCursor(props: React.ComponentProps<typeof Rectangle>) {
 
 export function CsatResponsesChart({
 	className,
+	data,
 	...props
-}: ComponentProps<typeof Card>) {
+}: ComponentProps<typeof Card> & { data?: any }) {
+	const chartRows = data?.clubCaddies || [];
+
 	return (
 		<Card
 			className={cn("shadow-none md:col-span-2 dark:ring-0", className)}
 			{...(props as any)}
 		>
 			<CardHeader>
-				<CardTitle>CSAT responses</CardTitle>
+				<CardTitle>Top Clubs by Caddies</CardTitle>
 				<CardDescription>
-					Post-resolution surveys submitted per day by channel, last 10 days.
+					Distribution of caddies (total vs active subscriptions) per club.
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<ChartContainer className="aspect-video w-full" config={chartConfig}>
-					<BarChart accessibilityLayer data={[...chartData]}>
+					<BarChart accessibilityLayer data={chartRows}>
 						<XAxis
 							axisLine={false}
-							dataKey="day"
+							dataKey="name"
 							interval={0}
-							minTickGap={8}
-							tickFormatter={(value) => String(value)}
+							tickLine={false}
+							tickMargin={10}
+							fontSize={12}
+						/>
+						<YAxis
+							axisLine={false}
 							tickLine={false}
 							tickMargin={10}
 						/>
 						<ChartTooltip
-							content={<ChartTooltipContent hideLabel />}
+							content={<ChartTooltipContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800" />}
 							cursor={<ColumnHoverCursor />}
 						/>
 						<Bar
-							background={{
-								fill: "var(--muted)",
-								radius: BAR_RADIUS,
-							}}
-							barSize={8}
-							dataKey="social"
-							fill="var(--color-social)"
-							overflow="visible"
-							radius={[0, 0, BAR_RADIUS, BAR_RADIUS]}
-							stackId="csat"
-						/>
-						<Bar
-							barSize={8}
-							dataKey="email"
-							fill="var(--color-email)"
-							overflow="visible"
-							radius={0}
-							stackId="csat"
-						/>
-						<Bar
-							barSize={8}
-							dataKey="direct"
-							fill="var(--color-direct)"
-							overflow="visible"
+							dataKey="caddies"
+							fill="var(--color-caddies)"
 							radius={[BAR_RADIUS, BAR_RADIUS, 0, 0]}
-							stackId="csat"
+						/>
+						<Bar
+							dataKey="active"
+							fill="var(--color-active)"
+							radius={[BAR_RADIUS, BAR_RADIUS, 0, 0]}
 						/>
 					</BarChart>
 				</ChartContainer>

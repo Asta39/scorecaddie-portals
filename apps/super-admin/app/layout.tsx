@@ -4,6 +4,7 @@ import './globals.css'
 import { InstallPrompt } from '@/components/layout/InstallPrompt'
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { ThemeProvider } from '@/components/theme-provider'
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -19,10 +20,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
       <body className={inter.className}>
-        <TooltipProvider>
-          {children}
-        </TooltipProvider>
-        <InstallPrompt />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
+          <InstallPrompt />
+        </ThemeProvider>
       </body>
     </html>
   )

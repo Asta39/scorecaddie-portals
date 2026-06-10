@@ -115,7 +115,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden border-none ring-0 focus:ring-0 outline-none">
+      <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden border-none sm:rounded-xl [&>button]:hidden outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0">
         <DialogHeader className="sr-only">
           <DialogTitle>Search</DialogTitle>
         </DialogHeader>
@@ -128,7 +128,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
             placeholder="Search pages or caddies…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none focus:outline-none focus:ring-0 border-none"
           />
           {query && (
             <button

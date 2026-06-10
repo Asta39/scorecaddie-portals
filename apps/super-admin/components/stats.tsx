@@ -12,58 +12,53 @@ type Stat = {
 	value: string;
 	delta: number;
 	footnote: string;
-	/** When true, a negative delta is treated as favorable (e.g. queue depth, reply time). */
 	lowerIsBetter: boolean;
 };
 
-const stats: readonly Stat[] = [
-	{
-		label: "Open queue",
-		value: "38",
-		delta: -12.4,
-		footnote: "vs yesterday",
-		lowerIsBetter: true,
-	},
-	{
-		label: "Active conversations",
-		value: "126",
-		delta: 5.2,
-		footnote: "vs last week",
-		lowerIsBetter: false,
-	},
-	{
-		label: "Median first reply",
-		value: "4.1m",
-		delta: -8.0,
-		footnote: "vs last week",
-		lowerIsBetter: true,
-	},
-	{
-		label: "CSAT (30d)",
-		value: "94%",
-		delta: 1.1,
-		footnote: "vs prior 30d",
-		lowerIsBetter: false,
-	},
-];
+export function DashboardStats({ data }: { data: any }) {
+	const stats: Stat[] = [
+		{
+			label: "Pending Flags",
+			value: String(data.unresolvedFlags),
+			delta: 0, // Not available in current query
+			footnote: "Action required",
+			lowerIsBetter: true,
+		},
+		{
+			label: "Total Caddies",
+			value: String(data.totalCaddies),
+			delta: 0,
+			footnote: "Registered platform-wide",
+			lowerIsBetter: false,
+		},
+		{
+			label: "Total Clubs",
+			value: String(data.totalClubs),
+			delta: 0,
+			footnote: "Active clubs",
+			lowerIsBetter: false,
+		},
+		{
+			label: "MRR",
+			value: `KES ${data.mrr.toLocaleString()}`,
+			delta: 0,
+			footnote: "Monthly recurring revenue",
+			lowerIsBetter: false,
+		},
+	];
 
-export function DashboardStats() {
 	return (
 		<>
 			{stats.map((s) => (
 				<Card className={cn("shadow-none dark:ring-0")} key={s.label}>
 					<CardHeader>
-						<CardTitle className="font-normal text-muted-foreground text-xs">
+						<CardTitle className="font-normal text-muted-foreground text-xs uppercase tracking-wider">
 							{s.label}
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="flex flex-col gap-2">
 						<p className="font-semibold text-2xl tabular-nums">{s.value}</p>
 						<div className="flex items-center gap-1 text-xs">
-							<Delta value={s.delta}>
-								<DeltaIcon />
-								<DeltaValue />
-							</Delta>
 							<span className="text-muted-foreground">{s.footnote}</span>
 						</div>
 					</CardContent>
