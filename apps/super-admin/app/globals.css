@@ -4,14 +4,14 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #0B2B26;
-  --color-primary-hover: #051F20;
-  --color-secondary: #235347;
-  --color-light: #8EB69B;
-  --color-lighter: #DAF1DE;
+  --color-primary: oklch(0.205 0 0);
+  --color-primary-hover: oklch(0.145 0 0);
+  --color-secondary: oklch(0.97 0 0);
+  --color-light: oklch(0.922 0 0);
+  --color-lighter: oklch(0.97 0 0);
   --color-white: #FFFFFF;
-  --color-text: #051F20;
-  --color-text-muted: #163832;
+  --color-text: oklch(0.145 0 0);
+  --color-text-muted: oklch(0.556 0 0);
   --sidebar-width: 260px;
   --sidebar-gap: 12px;
   --content-bg: var(--background);
@@ -362,6 +362,8 @@ a, button, input, select, textarea {
     --sidebar-ring: oklch(0.556 0 0);
     
     /* Legacy variables mapping */
+    --color-primary: oklch(0.922 0 0);
+    --color-secondary: oklch(0.269 0 0);
     --color-text: var(--foreground);
     --color-text-muted: var(--muted-foreground);
     --color-light: var(--muted-foreground);

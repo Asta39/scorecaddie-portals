@@ -359,8 +359,8 @@ export default function PlatformAnalyticsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Platform Analytics</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+          <h1 className="text-2xl font-bold text-foreground">Platform Analytics</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             System-wide operational efficiency, financial performance, and player rounds activity
           </p>
         </div>
@@ -378,21 +378,21 @@ export default function PlatformAnalyticsPage() {
         <div className="space-y-8">
           {/* Top-Level KPI Dashboard Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-            <div className="card p-5 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0B2B26 0%, #235347 100%)' }}>
-              <div className="flex justify-between items-start text-white">
+            <div className="card p-5">
+              <div className="flex justify-between items-start">
                 <div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider block opacity-70">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
                     System Volume (All-Time)
                   </span>
-                  <span className="text-3xl font-black block mt-2 tracking-tight">
+                  <span className="text-2xl font-black text-foreground">
                     KES {kpis.totalVolume.toLocaleString()}
                   </span>
-                  <span className="text-[11px] block mt-1.5 opacity-80">
-                    MRR Rate: <strong className="font-extrabold text-emerald-300">KES {kpis.currentMRR.toLocaleString()}</strong>
+                  <span className="text-xs text-muted-foreground block mt-1.5">
+                    MRR Rate: <strong className="text-emerald-600 dark:text-emerald-400">KES {kpis.currentMRR.toLocaleString()}</strong>
                   </span>
                 </div>
-                <div className="bg-white/10 p-2 rounded-xl">
-                  <TrendingUp size={20} className="text-emerald-300" />
+                <div className="bg-muted p-2 rounded-xl text-foreground">
+                  <TrendingUp size={20} />
                 </div>
               </div>
             </div>
@@ -400,13 +400,13 @@ export default function PlatformAnalyticsPage() {
             <div className="card p-5">
               <div className="flex justify-between items-start">
                 <div>
-                  <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block mb-1">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
                     Registered Users
                   </span>
-                  <span className="text-2xl font-black" style={{ color: 'var(--color-text)' }}>
+                  <span className="text-2xl font-black text-foreground">
                     {kpis.totalUsers} Users
                   </span>
-                  <div className="text-xs text-text-muted mt-1.5 flex gap-2">
+                  <div className="text-xs text-muted-foreground mt-1.5 flex gap-2">
                     <span className="badge badge-active py-0.5 px-1.5 text-[10px]">
                       {kpis.playersCount} Players
                     </span>
@@ -415,7 +415,7 @@ export default function PlatformAnalyticsPage() {
                     </span>
                   </div>
                 </div>
-                <div className="bg-lighter p-2 rounded-xl text-primary">
+                <div className="bg-muted p-2 rounded-xl text-foreground">
                   <Users size={20} />
                 </div>
               </div>
@@ -424,17 +424,17 @@ export default function PlatformAnalyticsPage() {
             <div className="card p-5">
               <div className="flex justify-between items-start">
                 <div>
-                  <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block mb-1">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
                     Active Subscriptions
                   </span>
-                  <span className="text-2xl font-black" style={{ color: 'var(--color-primary)' }}>
+                  <span className="text-2xl font-black text-foreground">
                     {subStatusData.find(s => s.name === 'Active')?.value ?? 0} Caddies
                   </span>
-                  <span className="text-xs text-text-muted block mt-1.5">
-                    Growth: <strong className="text-emerald-600">+{kpis.growthRate}%</strong> MoM
+                  <span className="text-xs text-muted-foreground block mt-1.5">
+                    Growth: <strong className="text-emerald-600 dark:text-emerald-400">+{kpis.growthRate}%</strong> MoM
                   </span>
                 </div>
-                <div className="bg-lighter p-2 rounded-xl text-primary">
+                <div className="bg-muted p-2 rounded-xl text-foreground">
                   <Award size={20} />
                 </div>
               </div>
@@ -443,17 +443,17 @@ export default function PlatformAnalyticsPage() {
             <div className="card p-5">
               <div className="flex justify-between items-start">
                 <div>
-                  <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block mb-1">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
                     Onboarded Clubs
                   </span>
-                  <span className="text-2xl font-black" style={{ color: 'var(--color-text)' }}>
+                  <span className="text-2xl font-black text-foreground">
                     {kpis.totalClubs} Clubs
                   </span>
-                  <span className="text-xs text-text-muted block mt-1.5">
+                  <span className="text-xs text-muted-foreground block mt-1.5">
                     Admins Configured: <strong>{kpis.clubsWithAdmin} / {kpis.totalClubs}</strong>
                   </span>
                 </div>
-                <div className="bg-lighter p-2 rounded-xl text-primary">
+                <div className="bg-muted p-2 rounded-xl text-foreground">
                   <Building size={20} />
                 </div>
               </div>
