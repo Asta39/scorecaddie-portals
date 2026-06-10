@@ -112,6 +112,7 @@ async function getDashboardData() {
     totalRevenue,
     pricePerCaddie,
     monthlyRevenue,
+    allPayments: allPayments ?? [],
     clubCaddies,
     recentPayments: recentPayments ?? [],
     flags: flags ?? [],
