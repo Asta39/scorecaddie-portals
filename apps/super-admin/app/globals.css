@@ -127,7 +127,7 @@ a, button, input, select, textarea {
 }
 
 .data-table th {
-  @apply text-left text-[11px] font-semibold tracking-wide uppercase text-muted-foreground px-4 py-3 border-b border-border bg-muted/50;
+  @apply text-left text-[11px] font-semibold tracking-wide uppercase text-muted-foreground px-4 py-3 border-b border-border bg-muted;
 }
 
 .data-table td {
@@ -135,7 +135,7 @@ a, button, input, select, textarea {
 }
 
 .data-table tr:hover td {
-  @apply bg-muted/30;
+  @apply bg-muted;
 }
 
 /* ═══════════════════════════════════════════════════════════════════

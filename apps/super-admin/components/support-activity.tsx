@@ -52,12 +52,10 @@ export function SupportActivity({
 				</ul>
 			</CardContent>
 			<div className="flex items-center justify-center p-2 border-t mt-auto">
-				<Button size="sm" variant="ghost" asChild>
-                    <a href="/payments">
-                        View All
-                        <ArrowRightIcon aria-hidden="true" className="ml-1 h-4 w-4 inline" />
-                    </a>
-                </Button>
+				<Button size="sm" variant="ghost" render={<a href="/payments" />} nativeButton={false}>
+					View All
+					<ArrowRightIcon aria-hidden="true" className="ml-1 h-4 w-4 inline" />
+				</Button>
 			</div>
 		</Card>
 	);

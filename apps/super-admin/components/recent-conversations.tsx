@@ -80,11 +80,9 @@ export function RecentConversations({
 					</TableBody>
 				</Table>
 				<div className="flex justify-center border-t p-2 mt-auto">
-					<Button size="sm" variant="ghost" asChild>
-                        <a href="/flags">
-                            View all flags
-                            <ArrowRightIcon aria-hidden="true" className="ml-1 h-4 w-4 inline" />
-                        </a>
+					<Button size="sm" variant="ghost" render={<a href="/flags" />} nativeButton={false}>
+                        View all flags
+                        <ArrowRightIcon aria-hidden="true" className="ml-1 h-4 w-4 inline" />
                     </Button>
 				</div>
 			</CardContent>
