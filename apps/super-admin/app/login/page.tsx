@@ -3,6 +3,15 @@
 import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { useRouter } from 'next/navigation'
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
+import { DecorIcon } from "@/components/decor-icon"
+import { AtSignIcon, KeyIcon } from "lucide-react"
 
 export default function LoginPage() {
   const supabase = useMemo(() => createClient(), [])
@@ -30,98 +39,80 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'var(--color-primary)' }}>
-      {/* Left branding panel */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center p-16 text-white">
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            <img src="/logo.png" alt="Score Caddie Logo" className="h-16 w-auto object-contain" />
-            <div>
-              <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.7)' }}>Score Caddie</p>
-              <p className="text-lg font-bold">Super Admin</p>
+    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden px-6 md:px-8 bg-background text-foreground">
+      <div
+        className={cn(
+          "relative flex w-full max-w-sm flex-col justify-between p-6 md:p-8",
+          "dark:bg-[radial-gradient(50%_80%_at_20%_0%,--theme(--color-foreground/.1),transparent)]"
+        )}
+      >
+        <div className="absolute -inset-y-6 -left-px w-px bg-border" />
+        <div className="absolute -inset-y-6 -right-px w-px bg-border" />
+        <div className="absolute -inset-x-6 -top-px h-px bg-border" />
+        <div className="absolute -inset-x-6 -bottom-px h-px bg-border" />
+        <DecorIcon position="top-left" />
+        <DecorIcon position="bottom-right" />
+
+        <div className="w-full max-w-sm animate-in space-y-8">
+          <div className="flex flex-col space-y-3">
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="Score Caddie Logo" className="h-10 w-auto object-contain" />
+              <h1 className="font-bold text-xl tracking-wide">Super Admin</h1>
             </div>
+            <p className="text-base text-muted-foreground">
+              Sign in to manage the Score Caddie platform.
+            </p>
           </div>
-          <h1 className="text-4xl font-bold mb-4 leading-tight">
-            Platform<br />Control Centre
-          </h1>
-          <p className="text-lg" style={{ color: 'rgba(255,255,255,0.75)' }}>
-            Manage clubs, secretaries, caddies, and platform settings from one secure location.
-          </p>
-        </div>
-        <div className="flex gap-8 mt-8">
-          {[
-            { label: 'Clubs', value: '—' },
-            { label: 'Caddies', value: '—' },
-            { label: 'MRR', value: 'KES —' },
-          ].map(stat => (
-            <div key={stat.label} className="text-center">
-              <p className="text-2xl font-bold">{stat.value}</p>
-              <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+          
+          <div className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <InputGroup>
+                  <InputGroupInput
+                    placeholder="Email address"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <InputGroupAddon align="inline-start">
+                    <AtSignIcon className="w-4 h-4 text-muted-foreground" />
+                  </InputGroupAddon>
+                </InputGroup>
 
-      {/* Right login panel */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-10">
-          <div className="mb-8">
-            <img src="/logo.png" alt="Score Caddie Logo" className="h-14 w-auto object-contain mb-4" />
-            <h2 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Sign in</h2>
-            <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>Super Admin access only</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text)' }}>Email address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="ian@scorecaddie.co.ke"
-                required
-                className="input"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text)' }}>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="input"
-              />
-            </div>
-
-            {error && (
-              <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
-                {error === 'Invalid login credentials' ? 'Incorrect email or password.' : error}
+                <InputGroup>
+                  <InputGroupInput
+                    placeholder="Password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <InputGroupAddon align="inline-start">
+                    <KeyIcon className="w-4 h-4 text-muted-foreground" />
+                  </InputGroupAddon>
+                </InputGroup>
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full btn-primary justify-center py-3 text-base"
-              style={{ background: loading ? 'var(--color-secondary)' : 'var(--color-primary)' }}
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="3" strokeDasharray="30 70"/>
-                  </svg>
-                  Signing in…
-                </>
-              ) : 'Sign in →'}
-            </button>
-          </form>
+              {error && (
+                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">
+                  {error === 'Invalid login credentials' ? 'Incorrect email or password.' : error}
+                </div>
+              )}
 
-          <p className="text-center text-xs mt-8" style={{ color: 'var(--color-light)' }}>
-            This portal is restricted to Score Caddie platform administrators.
-          </p>
+              <Button className="w-full" size="default" type="submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Signing in...
+                  </>
+                ) : 'Sign In'}
+              </Button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
