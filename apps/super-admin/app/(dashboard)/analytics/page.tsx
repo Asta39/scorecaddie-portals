@@ -225,9 +225,9 @@ export default function PlatformAnalyticsPage() {
 
       // ── USER DISTRIBUTION ──────────────────────────────────────────
       setUserDistribution([
-        { name: 'Players', value: playersCount, color: '#39d353' },
-        { name: 'Caddies', value: caddiesCount, color: '#235347' },
-        { name: 'Coaches', value: coachesCount, color: '#8EB69B' }
+        { name: 'Players', value: playersCount, color: '#10b981' },
+        { name: 'Caddies', value: caddiesCount, color: '#3b82f6' },
+        { name: 'Coaches', value: coachesCount, color: '#a855f7' }
       ].filter(u => u.value > 0))
 
       // ── CADDIE SUBSCRIPTION STATUSES ──────────────────────────────
@@ -294,9 +294,9 @@ export default function PlatformAnalyticsPage() {
       const coachRetention = coachesCount > 0 ? Math.round((activePlayerIds30d.size / coachesCount) * 100) : 0 // using active rounds as generic activity flag
 
       setRetentionData([
-        { name: 'Player Retention (30d)', value: playerRetention, fill: '#39d353' },
-        { name: 'Caddie Renewal Rate', value: caddieRenewal, fill: '#235347' },
-        { name: 'Coach Retention (30d)', value: coachRetention, fill: '#8EB69B' }
+        { name: 'Player Retention (30d)', value: playerRetention, fill: '#10b981' },
+        { name: 'Caddie Renewal Rate', value: caddieRenewal, fill: '#3b82f6' },
+        { name: 'Coach Retention (30d)', value: coachRetention, fill: '#a855f7' }
       ].filter(r => r.value > 0))
 
       // ── CLUBS HEALTH SCORE RANKING ────────────────────────────────
@@ -521,22 +521,23 @@ export default function PlatformAnalyticsPage() {
                     <AreaChart data={mrrTrend} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
                       <defs>
                         <linearGradient id="mrrColor" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-lighter)" />
-                      <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 10, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(156, 163, 175, 0.15)" />
+                      <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                       <Tooltip
                         contentStyle={{
-                          background: '#fff',
-                          border: '1px solid var(--color-lighter)',
+                          background: 'var(--card)',
+                          border: '1px solid var(--border)',
+                          color: 'var(--card-foreground)',
                           borderRadius: '8px',
                           fontSize: '12px'
                         }}
                       />
-                      <Area type="monotone" dataKey="MRR" stroke="var(--color-primary)" strokeWidth={2.5} fill="url(#mrrColor)" name="Monthly Revenue (KES)" />
+                      <Area type="monotone" dataKey="MRR" stroke="#10b981" strokeWidth={2.5} fill="url(#mrrColor)" name="Monthly Revenue (KES)" isAnimationActive={false} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -559,6 +560,7 @@ export default function PlatformAnalyticsPage() {
                             outerRadius={70}
                             paddingAngle={3}
                             dataKey="value"
+                            isAnimationActive={false}
                           >
                             {subStatusData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
@@ -604,6 +606,7 @@ export default function PlatformAnalyticsPage() {
                             outerRadius={65}
                             paddingAngle={2}
                             dataKey="value"
+                            isAnimationActive={false}
                           >
                             {userDistribution.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
@@ -638,19 +641,19 @@ export default function PlatformAnalyticsPage() {
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                       {retentionData.map((item, idx) => (
-                        <div key={idx} className="p-4 rounded-xl bg-lighter/25 border" style={{ borderColor: 'var(--color-lighter)' }}>
+                        <div key={idx} className="p-4 rounded-xl bg-muted border border-border">
                           <div className="relative w-24 h-24 mx-auto flex items-center justify-center mb-3">
                             <svg className="w-full h-full transform -rotate-90">
-                              <circle cx="48" cy="48" r="40" stroke="var(--color-lighter)" strokeWidth="6" fill="transparent" />
+                              <circle cx="48" cy="48" r="40" stroke="rgba(156, 163, 175, 0.2)" strokeWidth="6" fill="transparent" />
                               <circle cx="48" cy="48" r="40" stroke={item.fill} strokeWidth="6" fill="transparent"
                                 strokeDasharray={251.2}
                                 strokeDashoffset={251.2 - (251.2 * item.value) / 100}
                                 strokeLinecap="round" />
                             </svg>
-                            <span className="absolute text-lg font-black" style={{ color: 'var(--color-primary)' }}>{item.value}%</span>
+                            <span className="absolute text-lg font-black text-foreground">{item.value}%</span>
                           </div>
-                          <h4 className="text-xs font-extrabold uppercase tracking-wide mb-1" style={{ color: 'var(--color-text)' }}>{item.name}</h4>
-                          <p className="text-[10px] text-text-muted leading-tight">Calculated dynamically</p>
+                          <h4 className="text-xs font-extrabold uppercase tracking-wide text-foreground mb-1">{item.name}</h4>
+                          <p className="text-[10px] text-muted-foreground leading-tight">Calculated dynamically</p>
                         </div>
                       ))}
                     </div>
@@ -669,46 +672,47 @@ export default function PlatformAnalyticsPage() {
 
                 <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={mrrTrend} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-lighter)" />
-                    <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(156, 163, 175, 0.15)" />
+                    <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                     <Tooltip
                       contentStyle={{
-                        background: '#fff',
-                        border: '1px solid var(--color-lighter)',
+                        background: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--card-foreground)',
                         borderRadius: '8px',
                         fontSize: '12px'
                       }}
                     />
                     <Legend />
-                    <Bar dataKey="Volume" fill="var(--color-primary)" name="Transaction Volume (KES)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Volume" fill="#10b981" name="Transaction Volume (KES)" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
 
               <div className="space-y-6">
-                <div className="card p-5 bg-lighter/25 border" style={{ borderColor: 'var(--color-lighter)' }}>
-                  <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Average Billing Per Club</span>
-                  <span className="text-3xl font-black block mt-2 text-primary">
+                <div className="card p-5">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Average Billing Per Club</span>
+                  <span className="text-3xl font-black block mt-2 text-foreground">
                     KES {kpis.avgBillingPerClub.toLocaleString()}
                   </span>
-                  <span className="text-xs text-text-muted mt-1 block">Calculated dynamically across active clubs</span>
+                  <span className="text-xs text-muted-foreground mt-1 block">Calculated dynamically across active clubs</span>
                 </div>
 
-                <div className="card p-5 bg-lighter/25 border" style={{ borderColor: 'var(--color-lighter)' }}>
-                  <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Current MRR Rate</span>
-                  <span className="text-3xl font-black block mt-2 text-primary">
+                <div className="card p-5">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Current MRR Rate</span>
+                  <span className="text-3xl font-black block mt-2 text-foreground">
                     KES {kpis.currentMRR.toLocaleString()}
                   </span>
-                  <span className="text-xs text-text-muted mt-1 block">Caddie subscriptions alone</span>
+                  <span className="text-xs text-muted-foreground mt-1 block">Caddie subscriptions alone</span>
                 </div>
 
-                <div className="card p-5 bg-lighter/25 border" style={{ borderColor: 'var(--color-lighter)' }}>
-                  <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Est. Player Sub MRR</span>
-                  <span className="text-3xl font-black block mt-2 text-primary">
+                <div className="card p-5">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Est. Player Sub MRR</span>
+                  <span className="text-3xl font-black block mt-2 text-foreground">
                     KES {(kpis.playersCount * 500).toLocaleString()}
                   </span>
-                  <span className="text-xs text-text-muted mt-1 block">Assuming KES 500 per month player rate</span>
+                  <span className="text-xs text-muted-foreground mt-1 block">Assuming KES 500 per month player rate</span>
                 </div>
               </div>
             </div>
@@ -726,16 +730,16 @@ export default function PlatformAnalyticsPage() {
                     <AreaChart data={roundsTrendData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
                       <defs>
                         <linearGradient id="roundsColor" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--color-light)" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="var(--color-light)" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-lighter)" />
-                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 10, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(156, 163, 175, 0.15)" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} allowDecimals={false} />
                       <Tooltip />
                       <Legend />
-                      <Area type="monotone" dataKey="Rounds Played" stroke="var(--color-light)" fillOpacity={0.2} strokeWidth={2} fill="url(#roundsColor)" />
+                      <Area type="monotone" dataKey="Rounds Played" stroke="#10b981" fillOpacity={0.2} strokeWidth={2} fill="url(#roundsColor)" isAnimationActive={false} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -752,11 +756,11 @@ export default function PlatformAnalyticsPage() {
                     ) : (
                       <div className="space-y-4 max-h-56 overflow-y-auto pr-1">
                         {avgScoresData.map(c => (
-                          <div key={c.name} className="flex justify-between items-center text-xs border-b pb-1.5" style={{ borderColor: 'var(--color-lighter)' }}>
-                            <span className="font-semibold truncate max-w-[140px]">{c.name}</span>
+                          <div key={c.name} className="flex justify-between items-center text-xs border-b border-border pb-1.5">
+                            <span className="font-semibold truncate max-w-[140px] text-foreground">{c.name}</span>
                             <div className="flex items-center gap-1">
                               <Star size={11} className="fill-amber-400 text-amber-500" />
-                              <strong className="font-black text-primary">{c.avgScore}</strong>
+                              <strong className="font-black text-foreground">{c.avgScore}</strong>
                             </div>
                           </div>
                         ))}
@@ -776,11 +780,11 @@ export default function PlatformAnalyticsPage() {
 
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={topCoursesData} layout="vertical" margin={{ top: 5, right: 30, left: 120, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-lighter)" />
-                    <XAxis type="number" tick={{ fontSize: 10 }} allowDecimals={false} />
-                    <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(156, 163, 175, 0.15)" />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
+                    <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: '#9ca3af' }} />
                     <Tooltip />
-                    <Bar dataKey="count" fill="var(--color-secondary)" name="Total Rounds Played" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="count" fill="#6b7280" name="Total Rounds Played" radius={[0, 4, 4, 0]} isAnimationActive={false} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

@@ -30,20 +30,20 @@ export default function ConfigEditor({ config }: { config: ConfigRow[] }) {
   }
 
   return (
-    <div className="divide-y" style={{ borderColor: 'var(--color-lighter)' }}>
+    <div className="divide-y border-t border-border">
       {config.map(row => (
         <div key={row.key} className="px-5 py-4 flex items-center gap-4">
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold font-mono" style={{ color: 'var(--color-text)' }}>{row.key}</p>
+            <p className="text-sm font-semibold font-mono text-foreground">{row.key}</p>
             {row.description && (
-              <p className="text-xs mt-0.5" style={{ color: 'var(--color-light)' }}>{row.description}</p>
+              <p className="text-xs mt-0.5 text-muted-foreground">{row.description}</p>
             )}
           </div>
 
           {editingKey === row.key ? (
             <div className="flex items-center gap-2">
               <input
-                className="input text-sm py-1.5 px-2.5"
+                className="input text-sm py-1.5 px-2.5 bg-background text-foreground border-border"
                 style={{ width: 160 }}
                 value={editValue}
                 onChange={e => setEditValue(e.target.value)}
@@ -54,24 +54,20 @@ export default function ConfigEditor({ config }: { config: ConfigRow[] }) {
                 autoFocus
               />
               <button onClick={() => handleSave(row.key)} disabled={saving}
-                className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: 'var(--color-light)' }}>
-                <Check size={13} style={{ color: 'var(--color-primary)' }} />
+                className="w-7 h-7 rounded-lg flex items-center justify-center bg-primary hover:bg-primary/95 text-primary-foreground">
+                <Check size={13} />
               </button>
               <button onClick={() => setEditingKey(null)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: 'var(--color-lighter)' }}>
-                <X size={13} style={{ color: 'var(--color-text-muted)' }} />
+                className="w-7 h-7 rounded-lg flex items-center justify-center bg-muted hover:bg-muted/80 text-muted-foreground">
+                <X size={13} />
               </button>
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <span className="text-sm font-mono px-3 py-1 rounded-lg"
-                style={{ background: 'var(--color-lighter)', color: 'var(--color-primary)' }}>{row.value}</span>
+              <span className="text-sm font-mono px-3 py-1 rounded-lg bg-muted text-foreground font-medium">{row.value}</span>
               <button onClick={() => startEdit(row)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: 'var(--color-lighter)' }}>
-                <Edit2 size={13} style={{ color: 'var(--color-text-muted)' }} />
+                className="w-7 h-7 rounded-lg flex items-center justify-center bg-muted hover:bg-muted/80 text-muted-foreground">
+                <Edit2 size={13} />
               </button>
             </div>
           )}

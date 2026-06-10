@@ -15,11 +15,11 @@ export function PlatformRevenueChart({ data }: { data: RevenuePoint[] }) {
       <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
         <defs>
           <linearGradient id="saRevenueGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
+            <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(156, 163, 175, 0.15)" />
         <XAxis
           dataKey="month"
           tick={{ fontSize: 11, fill: '#9ca3af' }}
@@ -32,18 +32,20 @@ export function PlatformRevenueChart({ data }: { data: RevenuePoint[] }) {
         />
         <Tooltip
           contentStyle={{
-            background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10,
+            background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10,
             fontSize: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+            color: 'var(--card-foreground)'
           }}
           formatter={(value: any) => [`KES ${Number(value).toLocaleString()}`, 'Revenue']}
-          labelStyle={{ fontWeight: 700, color: '#111827' }}
+          labelStyle={{ fontWeight: 700, color: 'var(--foreground)' }}
         />
         <Area
           type="monotone" dataKey="amount"
-          stroke="var(--color-primary)" strokeWidth={2.5}
+          stroke="#10b981" strokeWidth={2.5}
           fill="url(#saRevenueGrad)"
-          dot={{ r: 4, fill: '#fff', stroke: 'var(--color-primary)', strokeWidth: 2 }}
-          activeDot={{ r: 6, fill: 'var(--color-primary)', stroke: '#fff', strokeWidth: 2 }}
+          dot={{ r: 4, fill: '#fff', stroke: '#10b981', strokeWidth: 2 }}
+          activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }}
+          isAnimationActive={false}
         />
       </AreaChart>
     </ResponsiveContainer>
@@ -52,7 +54,7 @@ export function PlatformRevenueChart({ data }: { data: RevenuePoint[] }) {
 
 // ─── Subscription Breakdown Donut ────────────────────────────────────
 type SubSlice = { name: string; value: number }
-const SUB_COLORS = ['var(--color-primary)', 'var(--color-secondary)', '#e5e7eb']
+const SUB_COLORS = ['#10b981', '#3b82f6', '#ef4444']
 
 export function SubscriptionDonut({ data }: { data: SubSlice[] }) {
   const total = data.reduce((s, d) => s + d.value, 0)
@@ -66,6 +68,7 @@ export function SubscriptionDonut({ data }: { data: SubSlice[] }) {
             innerRadius={58} outerRadius={82}
             paddingAngle={3} dataKey="value"
             startAngle={90} endAngle={-270} stroke="none"
+            isAnimationActive={false}
           >
             {data.map((_, i) => (
               <Cell key={i} fill={SUB_COLORS[i % SUB_COLORS.length]} />
@@ -73,8 +76,8 @@ export function SubscriptionDonut({ data }: { data: SubSlice[] }) {
           </Pie>
           <Tooltip
             contentStyle={{
-              background: '#fff', border: '1px solid #e5e7eb',
-              borderRadius: 8, fontSize: 12,
+              background: 'var(--card)', border: '1px solid var(--border)',
+              borderRadius: 8, fontSize: 12, color: 'var(--card-foreground)'
             }}
           />
         </PieChart>
@@ -83,9 +86,9 @@ export function SubscriptionDonut({ data }: { data: SubSlice[] }) {
         position: 'absolute', top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none',
       }}>
-        <span style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827' }}>{total}</span>
+        <span style={{ fontSize: '1.75rem', fontWeight: 800 }} className="text-foreground">{total}</span>
         <br />
-        <span style={{ fontSize: '0.6rem', color: '#9ca3af', fontWeight: 500 }}>total caddies</span>
+        <span style={{ fontSize: '0.6rem', fontWeight: 500 }} className="text-muted-foreground">total caddies</span>
       </div>
     </div>
   )
@@ -98,7 +101,7 @@ export function ClubCaddiesChart({ data }: { data: ClubBar[] }) {
   return (
     <ResponsiveContainer width="100%" height={240}>
       <BarChart data={data} margin={{ top: 5, right: 10, left: -15, bottom: 0 }} barGap={4}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(156, 163, 175, 0.15)" />
         <XAxis
           dataKey="name"
           tick={{ fontSize: 10, fill: '#9ca3af' }}
@@ -115,16 +118,16 @@ export function ClubCaddiesChart({ data }: { data: ClubBar[] }) {
         />
         <Tooltip
           contentStyle={{
-            background: '#fff', border: '1px solid #e5e7eb',
-            borderRadius: 8, fontSize: 12,
+            background: 'var(--card)', border: '1px solid var(--border)',
+            borderRadius: 8, fontSize: 12, color: 'var(--card-foreground)'
           }}
         />
         <Legend
           iconSize={8} iconType="circle"
           wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
         />
-        <Bar dataKey="caddies" name="Total Caddies" fill="var(--color-secondary)" radius={[4, 4, 0, 0]} barSize={18} />
-        <Bar dataKey="active" name="Active Subs" fill="var(--color-primary)" radius={[4, 4, 0, 0]} barSize={18} />
+        <Bar dataKey="caddies" name="Total Caddies" fill="#6b7280" radius={[4, 4, 0, 0]} barSize={18} isAnimationActive={false} />
+        <Bar dataKey="active" name="Active Subs" fill="#10b981" radius={[4, 4, 0, 0]} barSize={18} isAnimationActive={false} />
       </BarChart>
     </ResponsiveContainer>
   )

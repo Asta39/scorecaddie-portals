@@ -73,7 +73,7 @@ a, button, input, select, textarea {
 
 .portal-content {
   padding: 20px 28px;
-  max-width: 1400px;
+  width: 100%;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -112,11 +112,12 @@ a, button, input, select, textarea {
    STAT CARDS
    ═══════════════════════════════════════════════════════════════════ */
 .stat-card {
-  background: white;
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 20px 24px;
-  border: 1px solid #e8eeeb;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  padding: 1.25rem;
+  box-shadow: var(--tw-shadow, 0 1px 2px 0 rgba(0,0,0,0.05));
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -148,13 +149,23 @@ a, button, input, select, textarea {
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
+  border: 1px solid transparent;
 }
 
-.badge-active { background: #ecfdf5; color: #065f46; }
-.badge-suspended { background: #fef2f2; color: #991b1b; }
-.badge-warning { background: #fffbeb; color: #92400e; }
-.badge-info { background: #eff6ff; color: #1e40af; }
-.badge-critical { background: #fef2f2; color: #991b1b; }
+.badge-active { background: #ecfdf5; color: #065f46; border-color: rgba(6, 95, 70, 0.1); }
+.dark .badge-active { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(52, 211, 153, 0.2); }
+
+.badge-suspended { background: #fef2f2; color: #991b1b; border-color: rgba(153, 27, 27, 0.1); }
+.dark .badge-suspended { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(248, 113, 113, 0.2); }
+
+.badge-warning { background: #fffbeb; color: #92400e; border-color: rgba(146, 64, 14, 0.1); }
+.dark .badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(251, 191, 36, 0.2); }
+
+.badge-info { background: #eff6ff; color: #1e40af; border-color: rgba(30, 64, 175, 0.1); }
+.dark .badge-info { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(96, 165, 250, 0.2); }
+
+.badge-critical { background: #fef2f2; color: #991b1b; border-color: rgba(153, 27, 27, 0.1); }
+.dark .badge-critical { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(248, 113, 113, 0.2); }
 
 /* ═══════════════════════════════════════════════════════════════════
    BUTTONS
@@ -240,7 +251,9 @@ a, button, input, select, textarea {
 }
 
 .modal {
-  background: white;
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 28px;
   width: 100%;

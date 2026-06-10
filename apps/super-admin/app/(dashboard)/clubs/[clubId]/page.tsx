@@ -27,25 +27,23 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
   return (
     <div className="portal-content">
       {/* Back link */}
-      <Link href="/clubs" className="inline-flex items-center gap-2 text-sm mb-6"
-        style={{ color: 'var(--color-text-muted)' }}>
+      <Link href="/clubs" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
         <ArrowLeft size={15} /> Back to Clubs
       </Link>
 
       {/* Club header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-xl flex items-center justify-center"
-            style={{ background: 'var(--color-lighter)' }}>
+          <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-muted">
             {club.logo_url ? (
               <img src={club.logo_url} alt={club.name} className="w-14 h-14 rounded-xl object-cover" />
             ) : (
-              <span className="text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>{club.name.charAt(0)}</span>
+              <span className="text-2xl font-bold text-primary">{club.name.charAt(0)}</span>
             )}
           </div>
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{club.name}</h1>
-            <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+            <h1 className="text-2xl font-bold text-foreground">{club.name}</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
               {club.location ?? ''}{club.region ? ` · ${club.region}` : ''} · Onboarded {format(new Date(club.onboarded_at), 'd MMM yyyy')}
             </p>
           </div>
@@ -55,7 +53,6 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
         </span>
       </div>
 
-      {/* Stats row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
           { label: 'Total Caddies', value: caddies?.length ?? 0 },
@@ -64,8 +61,8 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
           { label: 'Secretary Accounts', value: admins?.length ?? 0 },
         ].map(s => (
           <div key={s.label} className="stat-card text-center">
-            <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{s.value}</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--color-light)' }}>{s.label}</p>
+            <p className="text-2xl font-bold text-foreground">{s.value}</p>
+            <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
           </div>
         ))}
       </div>
@@ -75,8 +72,8 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
         <div className="col-span-2 card">
           <div className="card-header">
             <div className="flex items-center gap-2">
-              <Users size={17} style={{ color: 'var(--color-secondary)' }} />
-              <h3 className="font-semibold" style={{ color: 'var(--color-text)' }}>Caddies</h3>
+              <Users size={17} className="text-muted-foreground" />
+              <h3 className="font-semibold text-foreground">Caddies</h3>
             </div>
           </div>
           <div className="table-responsive-wrapper">
@@ -92,15 +89,15 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
             </thead>
             <tbody>
                {(!caddies || caddies.length === 0) ? (
-                <tr><td colSpan={5} className="text-center py-8" style={{ color: 'var(--color-light)' }}>No caddies registered</td></tr>
+                <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">No caddies registered</td></tr>
               ) : caddies.map((c: any) => {
                 const active = c.paid_until && new Date(c.paid_until) > new Date()
                 return (
                    <tr key={c.id}>
-                    <td className="font-medium text-sm">{c.name}</td>
-                    <td className="text-sm" style={{ color: 'var(--color-text-muted)' }}>{c.phone}</td>
-                    <td><span className="capitalize text-sm">{c.experience_level}</span></td>
-                    <td className="text-sm" style={{ color: active ? 'var(--color-secondary)' : '#7f1d1d' }}>
+                    <td className="font-medium text-sm text-foreground">{c.name}</td>
+                    <td className="text-sm text-muted-foreground">{c.phone}</td>
+                    <td><span className="capitalize text-sm text-foreground">{c.experience_level}</span></td>
+                    <td className={active ? "text-sm text-emerald-600 dark:text-emerald-400 font-medium" : "text-sm text-red-600 dark:text-red-400 font-medium"}>
                       {c.paid_until ? format(new Date(c.paid_until), 'd MMM yyyy') : 'Unpaid'}
                     </td>
                     <td>
@@ -121,8 +118,8 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
           <div className="card">
             <div className="card-header">
               <div className="flex items-center gap-2">
-                <UserCheck size={17} style={{ color: 'var(--color-secondary)' }} />
-                <h3 className="font-semibold" style={{ color: 'var(--color-text)' }}>Secretaries</h3>
+                <UserCheck size={17} className="text-muted-foreground" />
+                <h3 className="font-semibold text-foreground">Secretaries</h3>
               </div>
               <AddSecretaryButton clubId={clubId} clubName={club.name} />
             </div>

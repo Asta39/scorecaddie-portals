@@ -54,21 +54,21 @@ export default async function PaymentsPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         {/* Highlighted Card */}
-        <div className="card p-5 bg-gradient-to-br from-[#0B2B26] to-[#163832] relative overflow-hidden text-white border-0">
+        <div className="card p-5">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-300/70 mb-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2">
                 This Month
               </p>
-              <p className="text-3xl font-extrabold text-white leading-none">
+              <p className="text-3xl font-extrabold text-foreground leading-none">
                 KES {monthTotal.toLocaleString()}
               </p>
-              <p className="text-xs text-emerald-200/60 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 {thisMonth.length} transactions
               </p>
             </div>
-            <div className="w-[38px] h-[38px] rounded-[10px] flex items-center justify-center bg-white/10 shrink-0">
-              <TrendingUp size={18} className="text-emerald-300" strokeWidth={2.5} />
+            <div className="w-[38px] h-[38px] rounded-[10px] flex items-center justify-center shrink-0 bg-emerald-50 dark:bg-emerald-950/30">
+              <TrendingUp size={18} className="text-emerald-600 dark:text-emerald-400" strokeWidth={2.5} />
             </div>
           </div>
         </div>

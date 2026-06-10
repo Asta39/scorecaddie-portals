@@ -50,15 +50,15 @@ export default function SecretaryList({ admins }: { admins: Secretary[] | null }
   if (!admins || admins.length === 0) {
     return (
       <div className="px-5 py-6 text-center">
-        <p className="text-sm" style={{ color: 'var(--color-light)' }}>No secretary accounts yet</p>
+        <p className="text-sm text-muted-foreground">No secretary accounts yet</p>
       </div>
     )
   }
 
   return (
-    <div className="divide-y" style={{ borderColor: 'var(--color-lighter)' }}>
+    <div className="divide-y border-border">
       {error && (
-        <div className="m-4 text-xs text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-100 flex items-start gap-1.5">
+        <div className="m-4 text-xs text-destructive bg-destructive/10 p-2.5 rounded-lg border border-destructive/20 flex items-start gap-1.5">
           <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -67,8 +67,8 @@ export default function SecretaryList({ admins }: { admins: Secretary[] | null }
       {admins.map((a) => (
         <div key={a.id} className="px-5 py-3.5 flex items-center justify-between group">
           <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{a.name ?? a.email}</p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--color-light)' }}>{a.email}</p>
+            <p className="text-sm font-semibold text-foreground">{a.name ?? a.email}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{a.email}</p>
             <span className={`badge mt-1.5 badge-${a.is_active ? 'active' : 'suspended'} text-xs`}>
               {a.is_active ? 'Active' : 'Deactivated'}
             </span>
@@ -77,7 +77,7 @@ export default function SecretaryList({ admins }: { admins: Secretary[] | null }
           <button
             onClick={() => setConfirmDeleteUser(a)}
             disabled={deletingId === a.id}
-            className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-100"
+            className="p-1.5 rounded-lg text-red-600 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-100"
             title="Delete Secretary Account"
           >
             {deletingId === a.id ? (
@@ -92,28 +92,27 @@ export default function SecretaryList({ admins }: { admins: Secretary[] | null }
       {/* Confirmation Modal */}
       {confirmDeleteUser && (
         <div className="modal-overlay" onClick={() => setConfirmDeleteUser(null)}>
-          <div className="modal" style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
+          <div className="modal max-w-sm bg-card border border-border" onClick={e => e.stopPropagation()}>
             <div className="flex flex-col items-center text-center p-2">
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
                 <Trash2 size={24} className="text-red-600" />
               </div>
-              <h3 className="font-bold text-lg mb-1" style={{ color: 'var(--color-text)' }}>Delete Secretary?</h3>
-              <p className="text-sm px-2 mb-6" style={{ color: 'var(--color-text-muted)' }}>
+              <h3 className="font-bold text-lg text-foreground mb-1">Delete Secretary?</h3>
+              <p className="text-sm text-muted-foreground px-2 mb-6">
                 Are you sure you want to delete the account for <strong>{confirmDeleteUser.name || confirmDeleteUser.email}</strong>? This will permanently revoke their access to the Club Admin portal.
               </p>
               <div className="flex gap-3 w-full">
                 <button
                   type="button"
                   onClick={() => setConfirmDeleteUser(null)}
-                  className="btn-secondary flex-1 justify-center py-2 text-sm font-semibold"
+                  className="btn-secondary flex-1 justify-center py-2 text-sm font-semibold text-foreground border-border bg-transparent hover:bg-muted"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDelete(confirmDeleteUser)}
-                  className="btn-primary flex-1 justify-center py-2 text-sm font-semibold"
-                  style={{ background: '#dc2626' }}
+                  className="btn-primary flex-1 justify-center py-2 text-sm font-semibold bg-red-600 text-white hover:bg-red-700"
                 >
                   Delete
                 </button>

@@ -11,11 +11,19 @@ import { SendIcon, BellIcon, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
-const activeItem = navLinks.find((item) => item.isActive);
+import { usePathname } from "next/navigation";
 
 export function AppHeader() {
-	const { theme, setTheme } = useTheme();
+	const { theme, setTheme, resolvedTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
+	const pathname = usePathname();
+
+	const activeItem = navLinks.find(
+		(item) =>
+			item.path &&
+			(pathname === item.path ||
+				(item.path !== "/" && pathname.startsWith(item.path)))
+	);
 
 	useEffect(() => {
 		setMounted(true);
@@ -33,16 +41,16 @@ export function AppHeader() {
 					className="mr-2 h-4 data-[orientation=vertical]:self-center"
 					orientation="vertical"
 				/>
-				<AppBreadcrumbs page={activeItem} />
+				<AppBreadcrumbs />
 			</div>
 			<div className="flex items-center gap-3">
 				<Button
 					aria-label="Toggle theme"
 					size="icon-sm"
 					variant="outline"
-					onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+					onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
 				>
-					{mounted && theme === "dark" ? (
+					{mounted && resolvedTheme === "dark" ? (
 						<Sun className="h-4 w-4" />
 					) : (
 						<Moon className="h-4 w-4" />
