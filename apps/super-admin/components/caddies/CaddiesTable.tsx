@@ -173,13 +173,13 @@ export default function CaddiesTable({ initialCaddies }: CaddiesTableProps) {
                       {c.paid_until ? format(new Date(c.paid_until), 'd MMM yyyy') : 'Unpaid'}
                     </td>
                     <td>
-                      <span className={`badge badge-${c.is_marketplace_visible ? 'active' : 'suspended'}`}>
-                        {c.is_marketplace_visible ? 'Visible' : 'Hidden'}
+                      <span className={`badge badge-${(c.is_marketplace_visible && paid) ? 'active' : 'suspended'}`}>
+                        {(c.is_marketplace_visible && paid) ? 'Visible' : 'Hidden'}
                       </span>
                     </td>
                     <td>
-                      <span className={`badge badge-${c.is_active ? 'active' : 'suspended'}`}>
-                        {c.is_active ? 'Active' : 'Inactive'}
+                      <span className={`badge badge-${(c.is_active && paid) ? 'active' : 'suspended'}`}>
+                        {(c.is_active && paid) ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="text-right" style={{ textAlign: 'right', paddingRight: '24px' }}>

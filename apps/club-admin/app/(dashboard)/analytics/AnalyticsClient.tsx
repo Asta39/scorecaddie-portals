@@ -70,6 +70,20 @@ type CalendarDay = {
   dayNum: string
 }
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-popover text-popover-foreground border border-border p-3 rounded-lg shadow-lg text-xs">
+        <p className="font-semibold mb-1">{label}</p>
+        <p className="text-primary">
+          {`${payload[0].value} Caddies Present`}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function AnalyticsClient() {
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
@@ -946,17 +960,7 @@ export default function AnalyticsClient() {
                     tickLine={false}
                     allowDecimals={false}
                   />
-                  <Tooltip
-                    contentStyle={{
-                      background: '#fff',
-                      border: '1px solid var(--color-lighter)',
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-                    }}
-                    formatter={(value: any) => [`${value} Caddies`, 'Present']}
-                    labelStyle={{ fontWeight: 600, color: 'var(--color-text)' }}
-                  />
+                  <Tooltip content={<CustomTooltip />} />
                   <Area
                     type="monotone"
                     dataKey="present"
