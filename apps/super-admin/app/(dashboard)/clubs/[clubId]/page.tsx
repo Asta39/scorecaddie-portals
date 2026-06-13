@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase'
 import { format } from 'date-fns'
 import AddSecretaryButton from '@/components/clubs/AddSecretaryButton'
+import EditClubButton from '@/components/clubs/EditClubButton'
 import SecretaryList from '@/components/clubs/SecretaryList'
 import { ArrowLeft, Users, UserCheck } from 'lucide-react'
 import Link from 'next/link'
@@ -48,9 +49,12 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
             </p>
           </div>
         </div>
-        <span className={`badge badge-${club.status === 'active' ? 'active' : 'suspended'} text-sm`}>
-          {club.status}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className={`badge badge-${club.status === 'active' ? 'active' : 'suspended'} text-sm`}>
+            {club.status}
+          </span>
+          <EditClubButton club={club} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
