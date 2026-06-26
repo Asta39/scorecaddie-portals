@@ -1,0 +1,30 @@
+node_modules/
+dist/
+.env
+.env.local
+apps/club-admin/node_modules/
+apps/super-admin/node_modules/
+packages/*/node_modules/
+.vercel
+
+# Next.js build output
+.next/
+apps/**/.next/
+
+# Ad-hoc debug and DB inspection scripts (not part of the codebase)
+analyze_duplicates.js
+check_*.js
+cleanup_*.js
+insert_*.js
+inspect_*.js
+list_*.js
+merge_*.js
+test_*.js
+verify_*.js
+
+# Stale lock file backup
+pnpm-lock.yaml.*
+package.json.workspace.bak
+
+# TypeScript build info
+*.tsbuildinfo

@@ -1,0 +1,280 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sidebar-width: 260px;
+  --sidebar-gap: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  @apply bg-background text-foreground;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-light); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-secondary); }
+
+/* Smooth transitions */
+a, button, input, select, textarea {
+  transition: background-color 150ms ease, border-color 150ms ease,
+              color 150ms ease, opacity 150ms ease,
+              transform 150ms ease, box-shadow 150ms ease;
+}
+
+
+.portal-content {
+  padding: 20px 28px;
+  max-width: 1400px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SIDEBAR NAV ITEMS
+   ═══════════════════════════════════════════════════════════════════ */
+.sidebar-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+  position: relative;
+}
+
+.sidebar-nav-link:hover {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.85);
+}
+
+.sidebar-nav-link.active {
+  @apply bg-primary text-primary-foreground font-semibold shadow-sm;
+}
+
+.sidebar-nav-link.active .nav-icon {
+  @apply text-primary-foreground;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   STAT CARDS
+   ═══════════════════════════════════════════════════════════════════ */
+.stat-card {
+  @apply bg-card text-card-foreground rounded-[14px] p-5 border shadow-sm;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DATA TABLES
+   ═══════════════════════════════════════════════════════════════════ */
+.data-table {
+  @apply w-full border-collapse;
+}
+
+.data-table th {
+  @apply text-left text-[11px] font-semibold tracking-wide uppercase text-muted-foreground px-4 py-3 border-b bg-muted;
+}
+
+.data-table td {
+  @apply px-4 py-3.5 text-sm border-b text-foreground;
+}
+
+.data-table tr:hover td {
+  @apply bg-muted;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BADGES
+   ═══════════════════════════════════════════════════════════════════ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-active { background: #ecfdf5; color: #065f46; }
+.badge-suspended { background: #fef2f2; color: #991b1b; }
+.badge-warning { background: #fffbeb; color: #92400e; }
+.badge-info { background: #eff6ff; color: #1e40af; }
+.badge-critical { background: #fef2f2; color: #991b1b; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════════════════════════ */
+.btn-primary {
+  @apply bg-primary text-primary-foreground px-5 py-2.5 rounded-[10px] text-[13.5px] font-semibold inline-flex items-center gap-1.5 transition-opacity hover:opacity-90 border-none cursor-pointer;
+}
+
+.btn-secondary {
+  @apply bg-background text-foreground px-5 py-2.5 rounded-[10px] text-[13.5px] font-semibold inline-flex items-center gap-1.5 transition-colors border hover:bg-muted cursor-pointer;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   INPUTS
+   ═══════════════════════════════════════════════════════════════════ */
+.input {
+  @apply w-full px-3.5 py-2.5 border rounded-[10px] text-sm text-foreground bg-background outline-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CARDS
+   ═══════════════════════════════════════════════════════════════════ */
+.card {
+  @apply bg-card text-card-foreground rounded-[14px] border shadow-sm overflow-hidden;
+}
+
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f4f2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-body { padding: 20px; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MODALS
+   ═══════════════════════════════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 31, 32, 0.35);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  @apply bg-background border border-border;
+  border-radius: 16px;
+  padding: 28px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVENESS
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  /* Table horizontal scrolling wrapper */
+  .table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@layer base {
+  .theme {
+    --font-heading: var(--font-sans);
+    --font-sans: var(--font-sans);
+  }
+  :root {
+    --color-primary: oklch(0.205 0 0);
+    --color-secondary: oklch(0.97 0 0);
+    --color-text: oklch(0.145 0 0);
+    --color-text-muted: oklch(0.556 0 0);
+    --color-light: oklch(0.922 0 0);
+    --color-lighter: oklch(0.97 0 0);
+    
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --radius: 0.625rem;
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+  }
+  .dark {
+    --color-primary: oklch(0.922 0 0);
+    --color-secondary: oklch(0.269 0 0);
+    --color-text: oklch(0.985 0 0);
+    --color-text-muted: oklch(0.708 0 0);
+    --color-light: oklch(1 0 0 / 10%);
+    --color-lighter: oklch(0.269 0 0);
+
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+  }
+  * {
+    @apply border-border outline-ring;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
