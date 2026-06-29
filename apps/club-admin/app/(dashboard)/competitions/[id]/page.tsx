@@ -6,10 +6,11 @@ import { createClient } from '@/lib/supabase-client'
 import {
   Trophy, Users, Edit2, ArrowLeft, CheckCircle, XCircle,
   Calendar, Shuffle, ArrowUpNarrowWide, Clock, Wand2, Download,
-  Printer, Save, RefreshCw, AlertTriangle, X
+  Printer, Save, RefreshCw, AlertTriangle, X, Camera
 } from 'lucide-react'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
+import { ScorecardScannerModal } from '../../../../components/ScorecardScannerModal'
 
 type Competition = {
   id: string
@@ -22,6 +23,7 @@ type Competition = {
   is_template: boolean
   poster_url: string | null
   description: string | null
+  club_id: string
 }
 
 type Entry = {
@@ -46,7 +48,8 @@ type StartListItem = {
   full_name: string
   handicap_index: number
   playing_handicap: number
-  tee_color: string
+  player_id?: string
+  entry_id?: string
 }
 
 type LeaderboardItem = {
@@ -97,6 +100,10 @@ export default function CompetitionDetailsPage() {
   const [generatedGroups, setGeneratedGroups] = useState<GeneratedGroup[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+
+  // Scanner Modal state
+  const [isScannerOpen, setIsScannerOpen] = useState(false)
+  const [scannerData, setScannerData] = useState<{playerId: string, playerName: string, entryId: string} | null>(null)
 
   // Scorecard entry and course holes state
   const [courseHoles, setCourseHoles] = useState<any[]>([])
@@ -1184,6 +1191,7 @@ export default function CompetitionDetailsPage() {
                       <th>Player Name</th>
                       <th>H.I.</th>
                       <th>P.H.</th>
+                      <th>Scan</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1201,6 +1209,24 @@ export default function CompetitionDetailsPage() {
                         <td className="font-semibold text-sm">{st.full_name}</td>
                         <td className="text-sm">{st.handicap_index ?? 'N/A'}</td>
                         <td className="text-sm">{st.playing_handicap ?? '—'}</td>
+                        <td className="text-sm">
+                          {st.player_id && st.entry_id && (
+                            <button
+                              onClick={() => {
+                                setScannerData({
+                                  playerId: st.player_id!,
+                                  playerName: st.full_name,
+                                  entryId: st.entry_id!
+                                })
+                                setIsScannerOpen(true)
+                              }}
+                              className="btn-primary p-1.5 flex items-center justify-center rounded-md text-white shadow-sm hover:shadow"
+                              title={`Scan scorecard for ${st.full_name}`}
+                            >
+                              <Camera size={16} />
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1366,6 +1392,23 @@ export default function CompetitionDetailsPage() {
             </div>
           </div>
         </div>
+      )}
+      {/* Scanner Modal */}
+      {isScannerOpen && scannerData && competition && (
+        <ScorecardScannerModal
+          isOpen={isScannerOpen}
+          onClose={() => setIsScannerOpen(false)}
+          competitionId={competitionId}
+          playerId={scannerData.playerId}
+          playerName={scannerData.playerName}
+          clubId={competition.club_id}
+          clubName={competition.name}
+          onScanSuccess={() => {
+            // Re-fetch everything to ensure leaderboard updates
+            router.refresh()
+            // We could also call fetchDetails here if we refactor it out of useEffect
+          }}
+        />
       )}
     </div>
   )
