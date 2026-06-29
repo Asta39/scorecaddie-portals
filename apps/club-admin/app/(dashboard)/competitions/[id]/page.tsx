@@ -30,6 +30,7 @@ type Entry = {
   entry_status: string
   payment_status: string
   playing_handicap: number | null
+  preferred_time_window?: 'morning' | 'midday' | 'afternoon'
   user: {
     name: string
     handicapIndex: number
@@ -70,7 +71,7 @@ type GeneratedGroup = {
     name: string
     handicapIndex: number
     playingHandicap: number | null
-    entryId: string
+    entryId: string | null
   }[]
 }
 
@@ -137,6 +138,7 @@ export default function CompetitionDetailsPage() {
           entry_status,
           payment_status,
           playing_handicap,
+          preferred_time_window,
           created_at,
           user:User!player_id (name, "handicapIndex")
         `)
@@ -490,86 +492,129 @@ export default function CompetitionDetailsPage() {
   const generateStartSheet = () => {
     if (confirmedEntries.length === 0) return
 
-    // 1. Sort players based on selected method
-    let sorted = [...confirmedEntries]
-    if (sortMethod === 'handicap') {
-      sorted.sort((a, b) => (a.user?.handicapIndex ?? 99) - (b.user?.handicapIndex ?? 99))
-    } else if (sortMethod === 'entry_date') {
-      sorted.sort((a, b) => {
-        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
-        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
-        return dateA - dateB
-      })
-    } else {
-      // Random shuffle using Fisher-Yates
-      for (let i = sorted.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [sorted[i], sorted[j]] = [sorted[j], sorted[i]]
+    // Sort function based on selected method
+    const sortPlayers = (players: Entry[]) => {
+      let sorted = [...players]
+      if (sortMethod === 'handicap') {
+        sorted.sort((a, b) => (a.user?.handicapIndex ?? 99) - (b.user?.handicapIndex ?? 99))
+      } else if (sortMethod === 'entry_date') {
+        sorted.sort((a, b) => {
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
+          return dateA - dateB
+        })
+      } else {
+        // Random shuffle
+        for (let i = sorted.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [sorted[i], sorted[j]] = [sorted[j], sorted[i]]
+        }
       }
+      return sorted
     }
 
-    // 2. Split into groups
+    // Split by preference
+    const morning = confirmedEntries.filter(e => e.preferred_time_window === 'morning')
+    const midday = confirmedEntries.filter(e => e.preferred_time_window === 'midday')
+    const afternoon = confirmedEntries.filter(e => e.preferred_time_window === 'afternoon')
+    const noPref = confirmedEntries.filter(e => !e.preferred_time_window)
+
+    // Combine them sequentially (morning -> midday -> noPref -> afternoon)
+    const sortedAll = [
+      ...sortPlayers(morning),
+      ...sortPlayers(midday),
+      ...sortPlayers(noPref),
+      ...sortPlayers(afternoon)
+    ]
+
+    // 2. Split into groups and pad with vacant slots
     const groups: GeneratedGroup[] = []
     const [hours, minutes] = startTime.split(':').map(Number)
 
-    // Competition date for tee times
     const compDate = competition?.start_date
       ? new Date(competition.start_date)
       : new Date()
     compDate.setHours(hours, minutes, 0, 0)
 
     let groupNumber = 1
-    let slotIndex = 0 // tracks time slots
+    let slotIndex = 0
 
     if (teeConfig === 'hole1') {
       // All groups start on Hole 1, staggered by intervalMinutes
-      for (let i = 0; i < sorted.length; i += groupSize) {
-        const groupPlayers = sorted.slice(i, i + groupSize)
+      for (let i = 0; i < sortedAll.length; i += groupSize) {
+        const groupPlayers = sortedAll.slice(i, i + groupSize)
+        
+        // Pad with dummy vacant slots if needed
+        const paddedPlayers = [...groupPlayers]
+        while (paddedPlayers.length < groupSize) {
+          paddedPlayers.push({
+            id: `vacant-${slotIndex}-${paddedPlayers.length}`,
+            player_id: '',
+            entry_status: '',
+            payment_status: '',
+            playing_handicap: null,
+            user: { name: 'Vacant Slot', handicapIndex: 0 },
+            preferred_time_window: undefined
+          })
+        }
+
         const teeTime = new Date(compDate.getTime() + slotIndex * intervalMinutes * 60000)
 
         groups.push({
           teeTime: teeTime.toISOString(),
           teeNumber: 1,
           groupNumber,
-          players: groupPlayers.map(e => ({
-            name: e.user?.name || 'Unknown',
+          players: paddedPlayers.map(e => ({
+            name: e.user?.name || 'Vacant Slot',
             handicapIndex: e.user?.handicapIndex ?? 0,
             playingHandicap: e.playing_handicap,
-            entryId: e.id,
+            entryId: e.id.startsWith('vacant-') ? null : e.id,
           })),
         })
         groupNumber++
         slotIndex++
       }
     } else {
-      // Hole 1 & 10 simultaneously — alternate groups between tees per slot
-      // Slot 0: Group 1 on hole 1, Group 2 on hole 10
-      // Slot 1: Group 3 on hole 1, Group 4 on hole 10, etc.
-      let teeToggle = 1 // alternates 1 and 10
+      // Hole 1 & 10 simultaneously
+      let teeToggle = 1
       let currentSlot = 0
 
-      for (let i = 0; i < sorted.length; i += groupSize) {
-        const groupPlayers = sorted.slice(i, i + groupSize)
+      for (let i = 0; i < sortedAll.length; i += groupSize) {
+        const groupPlayers = sortedAll.slice(i, i + groupSize)
+        
+        const paddedPlayers = [...groupPlayers]
+        while (paddedPlayers.length < groupSize) {
+          paddedPlayers.push({
+            id: `vacant-${currentSlot}-${teeToggle}-${paddedPlayers.length}`,
+            player_id: '',
+            entry_status: '',
+            payment_status: '',
+            playing_handicap: null,
+            user: { name: 'Vacant Slot', handicapIndex: 0 },
+            preferred_time_window: undefined
+          })
+        }
+
         const teeTime = new Date(compDate.getTime() + currentSlot * intervalMinutes * 60000)
 
         groups.push({
           teeTime: teeTime.toISOString(),
           teeNumber: teeToggle,
           groupNumber,
-          players: groupPlayers.map(e => ({
-            name: e.user?.name || 'Unknown',
+          players: paddedPlayers.map(e => ({
+            name: e.user?.name || 'Vacant Slot',
             handicapIndex: e.user?.handicapIndex ?? 0,
             playingHandicap: e.playing_handicap,
-            entryId: e.id,
+            entryId: e.id.startsWith('vacant-') ? null : e.id,
           })),
         })
 
         groupNumber++
         if (teeToggle === 1) {
-          teeToggle = 10 // next group on hole 10 at same time
+          teeToggle = 10
         } else {
           teeToggle = 1
-          currentSlot++ // advance time slot after both tees are filled
+          currentSlot++
         }
       }
     }

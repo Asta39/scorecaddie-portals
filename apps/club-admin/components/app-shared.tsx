@@ -55,6 +55,11 @@ export const navGroups: SidebarNavGroup[] = [
 				icon: <Trophy />,
 			},
 			{
+				title: "News Feed",
+				path: "/news",
+				icon: <ActivityIcon />,
+			},
+			{
 				title: "Payments",
 				path: "/payments",
 				icon: <CreditCard />,

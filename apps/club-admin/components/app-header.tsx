@@ -7,7 +7,7 @@ import { AppBreadcrumbs } from "@/components/app-breadcrumbs";
 import { CustomSidebarTrigger } from "@/components/custom-sidebar-trigger";
 import { navLinks } from "@/components/app-shared";
 import { NavUser } from "@/components/nav-user";
-import { BellIcon } from "lucide-react";
+import { NotificationBell } from "@/components/notification-bell";
 import { usePathname } from "next/navigation";
 
 export function AppHeader() {
@@ -28,10 +28,7 @@ export function AppHeader() {
 				<AppBreadcrumbs page={activeItem} />
 			</div>
 			<div className="flex items-center gap-3">
-				<Button aria-label="Notifications" size="icon" variant="ghost">
-					<BellIcon
-					/>
-				</Button>
+				<NotificationBell />
 				<Separator
 					className="h-4 data-[orientation=vertical]:self-center"
 					orientation="vertical"
