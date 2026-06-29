@@ -166,6 +166,33 @@ export default function CompetitionDetailsPage() {
       if (lbData) setLeaderboard(lbData)
 
       setLoading(false)
+
+      // Setup Realtime Subscription for Live Scoring
+      const channel = supabase
+        .channel('admin-leaderboard')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'competition_results',
+            filter: `competition_id=eq.${competitionId}`
+          },
+          async () => {
+            // Re-fetch leaderboard when underlying results change
+            const { data: freshLbData } = await supabase
+              .from('competition_leaderboard')
+              .select('*')
+              .eq('competition_id', competitionId)
+              .order('position', { ascending: true })
+            if (freshLbData) setLeaderboard(freshLbData)
+          }
+        )
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(channel)
+      }
     }
 
     fetchDetails()
