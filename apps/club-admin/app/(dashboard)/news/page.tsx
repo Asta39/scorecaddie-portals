@@ -76,11 +76,18 @@ export default function NewsFeedPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single()
+
       const { error } = await supabase
         .from('club_posts')
         .insert({
           club_id: clubId,
           author_id: user.id,
+          author_name: profile?.full_name || 'Club Admin',
           title: newPost.title,
           content: newPost.content,
           post_type: newPost.post_type
