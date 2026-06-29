@@ -5,7 +5,7 @@ const { createClient } = require('@supabase/supabase-js');
 // Parse .env.local manually to avoid external dependency issues
 let supabaseUrl = '';
 let supabaseServiceKey = '';
-let superAdminEmail = 'ian@scorecaddie.co.ke';
+let superAdminEmail = 'scorecaddiee@gmail.com';
 
 try {
   const envContent = fs.readFileSync(path.join(__dirname, '.env.local'), 'utf8');
