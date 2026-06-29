@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, Fragment } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { Calendar, Settings, FileDown, Search, Plus, Trash2 } from 'lucide-react'
 
@@ -208,7 +208,7 @@ export default function TeeTimesPage() {
                     const isExpanded = expandedRow === slot.time_slot
 
                     return (
-                      <React.Fragment key={index}>
+                      <Fragment key={index}>
                         <tr className={slot.is_blocked ? 'bg-red-50/50 cursor-pointer' : 'cursor-pointer hover:bg-gray-50'}
                             onClick={() => players.length > 0 ? setExpandedRow(isExpanded ? null : slot.time_slot) : null}>
                           <td className="font-mono font-medium">
