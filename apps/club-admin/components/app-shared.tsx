@@ -55,6 +55,11 @@ export const navGroups: SidebarNavGroup[] = [
 				icon: <Trophy />,
 			},
 			{
+				title: "Tee Times",
+				path: "/tee-times",
+				icon: <Calendar />,
+			},
+			{
 				title: "News Feed",
 				path: "/news",
 				icon: <ActivityIcon />,
