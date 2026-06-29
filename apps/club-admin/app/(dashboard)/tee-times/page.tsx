@@ -284,7 +284,7 @@ export default function TeeTimesPage() {
                             </td>
                           </tr>
                         )}
-                      </React.Fragment>
+                      </Fragment>
                     )
                   })}
                   {timeSlots.length === 0 && (
