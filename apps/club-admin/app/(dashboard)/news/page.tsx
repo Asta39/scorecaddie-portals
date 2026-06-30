@@ -77,8 +77,8 @@ export default function NewsFeedPage() {
       if (!user) return
 
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name')
+        .from('User')
+        .select('name')
         .eq('id', user.id)
         .single()
 
@@ -87,7 +87,7 @@ export default function NewsFeedPage() {
         .insert({
           club_id: clubId,
           author_id: user.id,
-          author_name: profile?.full_name || 'Club Admin',
+          author_name: profile?.name || 'Club Admin',
           title: newPost.title,
           content: newPost.content,
           post_type: newPost.post_type
