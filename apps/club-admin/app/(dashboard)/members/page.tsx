@@ -73,9 +73,24 @@ export default function MembersPage() {
         .update({ status: newStatus })
         .eq('id', membershipId)
       
-      if (error) throw error
-    } catch (err) {
+      if (error) {
+        // 23505 = unique_violation (player already has a home club)
+        if (error.code === '23505' && newStatus === 'active') {
+          const { error: retryError } = await supabase
+            .from('player_club_memberships')
+            .update({ status: newStatus, is_home_club: false })
+            .eq('id', membershipId)
+          
+          if (retryError) throw retryError
+          
+          alert('Player already has a home club. They have been approved as a regular member.')
+        } else {
+          throw error
+        }
+      }
+    } catch (err: any) {
       console.error('Error updating status:', err)
+      alert(err?.message || 'Error updating status')
       // Revert on error
       fetchMembers(clubId)
     }
