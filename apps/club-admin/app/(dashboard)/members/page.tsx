@@ -273,7 +273,7 @@ export default function MembersPage() {
               Template
             </button>
 
-            <label className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-primary)] text-white text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity cursor-pointer">
+            <label className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-primary)] text-black text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity cursor-pointer">
               <Upload size={16} />
               {isUploading ? 'Uploading...' : 'Import CSV'}
               <input 
@@ -287,14 +287,14 @@ export default function MembersPage() {
 
             <button 
               onClick={() => { setAddRole('player'); setShowAddModal(true) }}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border shadow-sm text-sm font-semibold hover:bg-gray-50 transition-colors">
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity">
               <UserPlus size={16} />
               Add Player
             </button>
 
             <button 
               onClick={() => { setAddRole('coach'); setShowAddModal(true) }}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-semibold shadow-sm hover:bg-indigo-100 transition-colors">
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity">
               <Plus size={16} />
               Add Coach
             </button>
@@ -572,43 +572,43 @@ export default function MembersPage() {
 
       {/* Manual Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-background border border-[var(--color-border)] rounded-2xl w-full max-w-md shadow-2xl p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">Add {addRole === 'coach' ? 'Coach' : 'Player'}</h2>
-              <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600">
+              <h2 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>Add {addRole === 'coach' ? 'Coach' : 'Player'}</h2>
+              <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-white">
                 <X size={20} />
               </button>
             </div>
             
             <form onSubmit={handleManualAdd} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Full Name</label>
-                <input required type="text" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} className="w-full border rounded-lg p-2.5 text-sm" />
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text)' }}>Full Name</label>
+                <input required type="text" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} className="w-full bg-transparent border border-[var(--color-border)] rounded-lg p-2.5 text-sm outline-none focus:border-[var(--color-primary)]" style={{ color: 'var(--color-text)' }} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
-                <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full border rounded-lg p-2.5 text-sm" />
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text)' }}>Email</label>
+                <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-transparent border border-[var(--color-border)] rounded-lg p-2.5 text-sm outline-none focus:border-[var(--color-primary)]" style={{ color: 'var(--color-text)' }} />
               </div>
               
               {addRole === 'player' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Membership Number (Optional)</label>
-                    <input type="text" value={formData.membership_number} onChange={e => setFormData({...formData, membership_number: e.target.value})} className="w-full border rounded-lg p-2.5 text-sm" />
+                    <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text)' }}>Membership Number (Optional)</label>
+                    <input type="text" value={formData.membership_number} onChange={e => setFormData({...formData, membership_number: e.target.value})} className="w-full bg-transparent border border-[var(--color-border)] rounded-lg p-2.5 text-sm outline-none focus:border-[var(--color-primary)]" style={{ color: 'var(--color-text)' }} />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Handicap Index</label>
-                    <input required type="number" step="0.1" value={formData.handicap_index} onChange={e => setFormData({...formData, handicap_index: e.target.value})} className="w-full border rounded-lg p-2.5 text-sm" />
+                    <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text)' }}>Handicap Index</label>
+                    <input required type="number" step="0.1" value={formData.handicap_index} onChange={e => setFormData({...formData, handicap_index: e.target.value})} className="w-full bg-transparent border border-[var(--color-border)] rounded-lg p-2.5 text-sm outline-none focus:border-[var(--color-primary)]" style={{ color: 'var(--color-text)' }} />
                   </div>
                 </>
               )}
 
               <div className="flex justify-end gap-3 mt-6">
-                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 font-medium text-sm text-gray-600 hover:text-gray-800">
+                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 font-medium text-sm text-gray-400 hover:text-white">
                   Cancel
                 </button>
-                <button type="submit" className="px-4 py-2 bg-[var(--color-primary)] text-white text-sm font-bold rounded-xl shadow hover:opacity-90">
+                <button type="submit" className="px-4 py-2 bg-[var(--color-primary)] text-black text-sm font-bold rounded-xl shadow hover:opacity-90">
                   Add {addRole === 'coach' ? 'Coach' : 'Player'}
                 </button>
               </div>
