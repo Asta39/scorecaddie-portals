@@ -41,10 +41,10 @@ export async function middleware(request: NextRequest) {
     console.error('Error fetching user in middleware:', err)
   }
 
-  const isLoginPage = request.nextUrl.pathname === '/login'
+  const isPublicPage = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/update-password'
 
-  // If not logged in and not on login page → redirect to login
-  if (!user && !isLoginPage) {
+  // If not logged in and not on public page → redirect to login
+  if (!user && !isPublicPage) {
     if (request.nextUrl.pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -52,11 +52,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // If logged in, verify they are super_admin
-  if (user && !isLoginPage) {
+  if (user && !isPublicPage) {
     let isSuperAdmin = false
     try {
       const { data: profile } = await supabase
-        .from('profiles')
+        .from('User')
         .select('role')
         .eq('id', user.id)
         .single()

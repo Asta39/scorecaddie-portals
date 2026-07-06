@@ -66,7 +66,7 @@ async function runMiddleware(request: NextRequest) {
 
     try {
       const [profileRes, adminRes] = await Promise.all([
-        supabase.from('profiles').select('role').eq('id', user.id).single(),
+        supabase.from('User').select('role').eq('id', user.id).single(),
         supabase.from('club_admins').select('is_active').eq('user_id', user.id).single()
       ])
 
