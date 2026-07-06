@@ -82,8 +82,8 @@ export async function POST(req: NextRequest) {
       message: `Account created. A password setup email has been sent to ${email}.`,
       actionLink, // Super-admin can copy & share this if the email doesn't arrive
     })
-  } catch (err) {
+  } catch (err: any) {
     console.error('Unexpected error:', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: err.message || String(err) }, { status: 500 })
   }
 }
