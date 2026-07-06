@@ -5,7 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 const CLUB_ADMIN_URL = process.env.CLUB_ADMIN_URL ?? 
   process.env.NEXT_PUBLIC_CLUB_ADMIN_URL ?? 
   (process.env.NODE_ENV === 'production' 
-    ? 'https://club-admin-kappa.vercel.app' 
+    ? 'https://scorecaddie-portals-club-admin-v49s.vercel.app' 
     : 'http://localhost:3001')
 
 export async function POST(req: NextRequest) {
