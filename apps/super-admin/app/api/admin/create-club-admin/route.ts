@@ -30,9 +30,9 @@ export async function POST(req: NextRequest) {
 
     const userId = authData.user.id
 
-    // 2. Set role in profiles table
+    // 2. Set role in User table
     const { error: profileError } = await supabaseAdmin
-      .from('profiles')
+      .from('User')
       .upsert({ id: userId, role: 'club_admin' })
 
     if (profileError) {
