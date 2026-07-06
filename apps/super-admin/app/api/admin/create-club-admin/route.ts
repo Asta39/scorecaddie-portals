@@ -16,9 +16,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Name, email, and club are required' }, { status: 400 })
     }
 
-    // 1. Create the Supabase Auth user (no password — they'll set one via the link)
+    // 1. Create the Supabase Auth user (with a dummy password, so it doesn't try to send a welcome email)
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: email.trim(),
+      password: Math.random().toString(36).slice(-10) + 'A1!',
       email_confirm: true, // Skip email confirmation, we'll send a recovery link instead
       user_metadata: { name, role: 'club_admin' },
     })
