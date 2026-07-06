@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
       userId,
       message: `Account created. A password setup email has been sent to ${email}.`,
       actionLink, // Super-admin can copy & share this if the email doesn't arrive
+      debugRedirectTo: `${CLUB_ADMIN_URL}/auth/callback`
     })
   } catch (err: any) {
     console.error('Unexpected error:', err)
