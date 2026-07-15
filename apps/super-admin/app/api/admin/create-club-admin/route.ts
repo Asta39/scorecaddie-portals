@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
-// The club-admin portal URL — update for production
-const CLUB_ADMIN_URL = process.env.CLUB_ADMIN_URL ?? 
-  process.env.NEXT_PUBLIC_CLUB_ADMIN_URL ?? 
-  (process.env.NODE_ENV === 'production' 
-    ? 'https://scorecaddie-portals-club-admin-v49s.vercel.app' 
-    : 'http://localhost:3001')
+// Hardcode the club-admin portal URL directly to guarantee it routes correctly,
+// bypassing any potentially bad Vercel environment variables.
+const CLUB_ADMIN_URL = 'https://scorecaddie-portals-club-admin-v49s.vercel.app'
 
 export async function POST(req: NextRequest) {
   try {
