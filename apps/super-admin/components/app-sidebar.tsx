@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/sidebar";
 import { NavGroup } from "@/components/nav-group";
 import { footerNavLinks, navGroups } from "@/components/app-shared";
-import { LatestChange } from "@/components/latest-change";
 import { PlusIcon, SearchIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
@@ -44,8 +43,7 @@ export function AppSidebar() {
 				))}
 			</SidebarContent>
 			<SidebarFooter>
-				<LatestChange />
-				<SidebarMenu className="mt-2">
+				<SidebarMenu>
 					{footerNavLinks.map((item) => {
 						const isSignOut = item.path === "#sign-out";
 						return (

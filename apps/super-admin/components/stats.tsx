@@ -1,12 +1,3 @@
-import { cn } from "@/lib/utils";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Delta, DeltaIcon, DeltaValue } from "@/components/delta";
-
 type Stat = {
 	label: string;
 	value: string;
@@ -50,19 +41,15 @@ export function DashboardStats({ data }: { data: any }) {
 	return (
 		<>
 			{stats.map((s) => (
-				<Card className={cn("shadow-none dark:ring-0")} key={s.label}>
-					<CardHeader>
-						<CardTitle className="font-normal text-muted-foreground text-xs uppercase tracking-wider">
-							{s.label}
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="flex flex-col gap-2">
-						<p className="font-semibold text-2xl tabular-nums">{s.value}</p>
-						<div className="flex items-center gap-1 text-xs">
-							<span className="text-muted-foreground">{s.footnote}</span>
-						</div>
-					</CardContent>
-				</Card>
+				<div className="card p-5" key={s.label}>
+					<div className="font-normal text-muted-foreground text-xs uppercase tracking-wider">
+						{s.label}
+					</div>
+					<p className="font-semibold money-lg mt-1.5">{s.value}</p>
+					<div className="flex items-center gap-1 text-xs mt-2">
+						<span className="text-muted-foreground">{s.footnote}</span>
+					</div>
+				</div>
 			))}
 		</>
 	);
