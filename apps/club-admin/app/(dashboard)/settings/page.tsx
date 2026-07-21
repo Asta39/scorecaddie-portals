@@ -20,6 +20,12 @@ export default function SettingsPage() {
   const [clubSuccessMsg, setClubSuccessMsg] = useState('')
   const [clubErrorMsg, setClubErrorMsg] = useState('')
 
+  // Brand color states
+  const [brandColor, setBrandColor] = useState('#0f766e')
+  const [savedBrandColor, setSavedBrandColor] = useState('#0f766e')
+  const [savingBrand, setSavingBrand] = useState(false)
+  const [brandErrorMsg, setBrandErrorMsg] = useState('')
+
   // Password change form states
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -43,6 +49,8 @@ export default function SettingsPage() {
           const club = Array.isArray(admin.clubs) ? admin.clubs[0] : admin.clubs
           setClubInfo(club)
           setCaddiesAbout(club?.caddies_about || '')
+          setBrandColor(club?.brand_color || '#0f766e')
+          setSavedBrandColor(club?.brand_color || '#0f766e')
         }
       }
       setLoading(false)
@@ -70,6 +78,28 @@ export default function SettingsPage() {
       setClubInfo({ ...clubInfo, caddies_about: caddiesAbout })
     }
     setUpdatingClub(false)
+  }
+
+  const handleSaveBrandColor = async () => {
+    if (!/^#[0-9a-fA-F]{6}$/.test(brandColor)) {
+      setBrandErrorMsg('Enter a valid hex color like #0f766e')
+      return
+    }
+    setSavingBrand(true)
+    setBrandErrorMsg('')
+    const res = await fetch('/api/club/update-branding', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ brand_color: brandColor }),
+    })
+    setSavingBrand(false)
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setBrandErrorMsg(data.error ?? 'Failed to save brand color')
+      return
+    }
+    // Full reload so the server layout re-reads the club and re-themes the portal
+    window.location.reload()
   }
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -312,6 +342,41 @@ export default function SettingsPage() {
                 <Laptop className={theme === 'system' ? 'text-primary' : 'text-muted-foreground'} />
                 <span className="text-sm font-medium">System</span>
               </button>
+            </div>
+
+            {/* Brand color */}
+            <div className="mt-6 pt-5 border-t border-border">
+              <label className="block text-sm font-semibold mb-1 text-foreground">Club brand color</label>
+              <p className="text-xs text-muted-foreground mb-3">
+                Sets the accent color across your whole portal — buttons, links, active states, and charts.
+              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <input
+                  type="color"
+                  value={/^#[0-9a-fA-F]{6}$/.test(brandColor) ? brandColor : '#0f766e'}
+                  onChange={e => setBrandColor(e.target.value)}
+                  className="h-9 w-12 rounded-lg border border-border bg-card cursor-pointer p-1"
+                  aria-label="Brand color"
+                />
+                <input
+                  type="text"
+                  value={brandColor}
+                  onChange={e => setBrandColor(e.target.value)}
+                  className="input w-28 text-[13px]"
+                  placeholder="#0f766e"
+                  maxLength={7}
+                />
+                <button
+                  onClick={handleSaveBrandColor}
+                  disabled={savingBrand || brandColor === savedBrandColor}
+                  className="btn-primary disabled:opacity-50"
+                >
+                  {savingBrand ? 'Saving…' : 'Save Color'}
+                </button>
+              </div>
+              {brandErrorMsg && (
+                <p className="text-xs mt-2" style={{ color: 'var(--color-bad)' }}>{brandErrorMsg}</p>
+              )}
             </div>
           </div>
         </div>

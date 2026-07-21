@@ -1,14 +1,8 @@
 import type { Metadata } from 'next'
-import { Inter, Geist } from 'next/font/google'
 import './globals.css'
 import { InstallPrompt } from '@/components/layout/InstallPrompt'
-import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { ThemeProvider } from '@/components/theme-provider'
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Score Caddie — Super Admin',
@@ -16,10 +10,11 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 }
 
+// Type is set globally in globals.css: the Apple-calm SF-adjacent system stack.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <TooltipProvider>
             {children}

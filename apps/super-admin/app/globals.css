@@ -11,6 +11,30 @@
 
 
 
+/* ═══════════════════════════════════════════════════════════════════
+   APPLE-CALM UTILITIES (ported from the Tallry admin design language)
+   ═══════════════════════════════════════════════════════════════════ */
+.hairline { border: 0.5px solid var(--color-ink-200); }
+.hairline-b { border-bottom: 0.5px solid var(--color-ink-200); }
+.hairline-t { border-top: 0.5px solid var(--color-ink-200); }
+
+/* Large quiet numerals — fluid size so long figures stay on one line */
+.money-lg {
+  font-size: clamp(1.1rem, 1.7vw + 0.55rem, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* Translucent sidebar chrome */
+.sidebar-chrome {
+  background: var(--sidebar);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -157,12 +181,12 @@ a, button, input, select, textarea {
    BUTTONS
    ═══════════════════════════════════════════════════════════════════ */
 .btn-primary {
-  background: var(--primary);
+  background: var(--color-accent-500);
   color: var(--primary-foreground);
-  padding: 9px 20px;
-  border-radius: 10px;
+  padding: 8px 18px;
+  border-radius: 6px;
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   border: none;
   display: inline-flex;
@@ -171,18 +195,18 @@ a, button, input, select, textarea {
 }
 
 .btn-primary:hover {
-  opacity: 0.9;
+  background: var(--color-accent-600);
 }
 
 .btn-secondary {
-  background: var(--card);
-  color: var(--foreground);
-  padding: 9px 20px;
-  border-radius: 10px;
+  background: transparent;
+  color: var(--color-ink-600);
+  padding: 8px 18px;
+  border-radius: 6px;
   font-size: 13.5px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  border: 1px solid var(--border);
+  border: 1px solid var(--color-ink-200);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -190,6 +214,7 @@ a, button, input, select, textarea {
 
 .btn-secondary:hover {
   background: var(--muted);
+  color: var(--foreground);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -215,7 +240,12 @@ a, button, input, select, textarea {
    CARDS
    ═══════════════════════════════════════════════════════════════════ */
 .card {
-  @apply bg-card text-card-foreground rounded-xl border border-border shadow-sm overflow-hidden;
+  background: var(--card);
+  color: var(--card-foreground);
+  border-radius: 12px;
+  border: 0.5px solid var(--border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
 }
 
 .card-header {
@@ -298,91 +328,134 @@ a, button, input, select, textarea {
     --font-sans: var(--font-sans);
   }
   :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    /*
+      Design language: "Apple calm" (ported from the Tallry admin aesthetic).
+      SF-adjacent type, hairline separators, one restrained accent derived
+      from --color-brand, soft 12px-radius cards, quiet tabular numerals.
+
+      --color-brand is injected per-org at the layout level (inline style on
+      the wrapper). Everything colored below derives from it via color-mix,
+      so changing the brand color re-themes the whole portal.
+    */
+    --color-brand: #0f766e;
+
+    --color-ink-900: #1d1d1f;
+    --color-ink-600: #515154;
+    --color-ink-400: #86868b;
+    --color-ink-200: #d2d2d7;
+    --color-ink-100: #e8e8ed;
+    --color-ink-50: #f5f5f7;
+
+    --color-good: #1f8a4c;
+    --color-warn: #b8860b;
+    --color-bad: #c0392b;
+
+    --color-accent-50: color-mix(in srgb, var(--color-brand) 10%, white);
+    --color-accent-100: color-mix(in srgb, var(--color-brand) 20%, white);
+    --color-accent-500: var(--color-brand);
+    --color-accent-600: color-mix(in srgb, var(--color-brand) 85%, black);
+    --color-accent-700: color-mix(in srgb, var(--color-brand) 70%, black);
+
+    --background: var(--color-ink-50);
+    --foreground: var(--color-ink-900);
+    --card: #ffffff;
+    --card-foreground: var(--color-ink-900);
+    --popover: #ffffff;
+    --popover-foreground: var(--color-ink-900);
+    --primary: var(--color-accent-500);
+    --primary-foreground: #ffffff;
+    --secondary: var(--color-ink-100);
+    --secondary-foreground: var(--color-ink-900);
+    --muted: var(--color-ink-50);
+    --muted-foreground: var(--color-ink-400);
+    --accent: var(--color-accent-50);
+    --accent-foreground: var(--color-accent-700);
+    --destructive: var(--color-bad);
+    --border: var(--color-ink-100);
+    --input: var(--color-ink-200);
+    --ring: var(--color-accent-500);
+    --chart-1: var(--color-accent-500);
+    --chart-2: var(--color-accent-600);
+    --chart-3: var(--color-ink-400);
+    --chart-4: var(--color-ink-200);
+    --chart-5: var(--color-accent-100);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --sidebar: rgba(245, 245, 247, 0.85);
+    --sidebar-foreground: var(--color-ink-600);
+    --sidebar-primary: var(--color-accent-500);
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: rgba(255, 255, 255, 0.8);
+    --sidebar-accent-foreground: var(--color-accent-700);
+    --sidebar-border: var(--color-ink-100);
+    --sidebar-ring: var(--color-accent-500);
 
     /* Legacy variables mapping */
-    --color-primary: oklch(0.205 0 0);
-    --color-primary-hover: oklch(0.145 0 0);
-    --color-secondary: oklch(0.97 0 0);
-    --color-light: oklch(0.922 0 0);
-    --color-lighter: oklch(0.97 0 0);
+    --color-primary: var(--color-accent-500);
+    --color-primary-hover: var(--color-accent-600);
+    --color-secondary: var(--color-ink-600);
+    --color-light: var(--color-ink-200);
+    --color-lighter: var(--color-ink-50);
     --color-white: #FFFFFF;
-    --color-text: oklch(0.145 0 0);
-    --color-text-muted: oklch(0.556 0 0);
+    --color-text: var(--color-ink-900);
+    --color-text-muted: var(--color-ink-400);
     --sidebar-width: 260px;
     --sidebar-gap: 12px;
     --content-bg: var(--background);
   }
   .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
-    
+    --color-ink-900: #f5f5f7;
+    --color-ink-600: #b9b9c0;
+    --color-ink-400: #86868b;
+    --color-ink-200: #3a3a3f;
+    --color-ink-100: #2c2c30;
+    --color-ink-50: #1c1c1e;
+
+    /* Brighten the accent on dark ground so it keeps contrast */
+    --color-accent-50: color-mix(in srgb, var(--color-brand) 22%, #1c1c1e);
+    --color-accent-100: color-mix(in srgb, var(--color-brand) 32%, #1c1c1e);
+    --color-accent-500: color-mix(in srgb, var(--color-brand) 80%, white);
+    --color-accent-600: color-mix(in srgb, var(--color-brand) 65%, white);
+    --color-accent-700: color-mix(in srgb, var(--color-brand) 50%, white);
+
+    --background: #161618;
+    --foreground: var(--color-ink-900);
+    --card: #212124;
+    --card-foreground: var(--color-ink-900);
+    --popover: #212124;
+    --popover-foreground: var(--color-ink-900);
+    --primary: var(--color-accent-500);
+    --primary-foreground: #0c0c0d;
+    --secondary: var(--color-ink-100);
+    --secondary-foreground: var(--color-ink-900);
+    --muted: var(--color-ink-100);
+    --muted-foreground: var(--color-ink-400);
+    --accent: var(--color-accent-50);
+    --accent-foreground: var(--color-accent-700);
+    --destructive: #e0806f;
+    --border: rgba(255, 255, 255, 0.08);
+    --input: rgba(255, 255, 255, 0.14);
+    --ring: var(--color-accent-500);
+    --chart-1: var(--color-accent-500);
+    --chart-2: var(--color-accent-600);
+    --chart-3: var(--color-ink-400);
+    --chart-4: var(--color-ink-200);
+    --chart-5: var(--color-accent-100);
+    --sidebar: rgba(28, 28, 30, 0.85);
+    --sidebar-foreground: var(--color-ink-600);
+    --sidebar-primary: var(--color-accent-500);
+    --sidebar-primary-foreground: #0c0c0d;
+    --sidebar-accent: rgba(255, 255, 255, 0.06);
+    --sidebar-accent-foreground: var(--color-accent-700);
+    --sidebar-border: rgba(255, 255, 255, 0.08);
+    --sidebar-ring: var(--color-accent-500);
+
     /* Legacy variables mapping */
-    --color-primary: oklch(0.922 0 0);
-    --color-secondary: oklch(0.269 0 0);
+    --color-primary: var(--color-accent-500);
+    --color-primary-hover: var(--color-accent-600);
+    --color-secondary: var(--color-ink-600);
     --color-text: var(--foreground);
     --color-text-muted: var(--muted-foreground);
-    --color-light: var(--muted-foreground);
+    --color-light: var(--color-ink-200);
     --color-lighter: var(--muted);
     --content-bg: var(--background);
   }
@@ -393,6 +466,8 @@ a, button, input, select, textarea {
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+      Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 }
