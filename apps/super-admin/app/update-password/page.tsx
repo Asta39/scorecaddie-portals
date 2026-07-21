@@ -11,13 +11,14 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 import { DecorIcon } from "@/components/decor-icon"
-import { KeyIcon } from "lucide-react"
+import { KeyIcon, Eye, EyeOff } from "lucide-react"
 
 export default function UpdatePasswordPage() {
   const supabase = useMemo(() => createClient(), [])
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   // null = still checking for a recovery session; true = ready to accept a new
   // password; false = no session materialized, this page was reached directly
   // with no valid recovery link, so redirect away instead of showing a bare form.
@@ -124,13 +125,24 @@ export default function UpdatePasswordPage() {
                 <InputGroup>
                   <InputGroupInput
                     placeholder="New Password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                   <InputGroupAddon align="inline-start">
                     <KeyIcon className="w-4 h-4 text-muted-foreground" />
+                  </InputGroupAddon>
+                  <InputGroupAddon align="inline-end">
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(v => !v)}
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </InputGroupAddon>
                 </InputGroup>
               </div>
