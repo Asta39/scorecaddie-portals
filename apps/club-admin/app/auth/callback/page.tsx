@@ -1,31 +1,28 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase-client'
 
 /**
  * Auth callback — establishes a session from whichever link format Supabase sent.
  *
- * This must be a client page, not a server Route Handler. Admin-generated
- * links (supabaseAdmin.auth.admin.generateLink(), used by the club-admin
- * invite flow) deliver the session via the *implicit* flow: tokens arrive in
- * the URL fragment (#access_token=...&refresh_token=...&type=recovery).
- * Fragments are never sent to the server — a Route Handler literally cannot
- * see them, which is why invite links were failing ("expired or already
- * used" immediately, even for the actual recipient). Client-initiated flows
- * (e.g. a user clicking "Forgot password?" themselves) use PKCE instead,
- * delivering a `?code=` query param. This page handles both, plus the
- * OTP `?token_hash=&type=` email-template format, and picks whichever is
- * present.
+ * This must be a client page, not a server Route Handler, because admin-
+ * generated links (supabaseAdmin.auth.admin.generateLink(), used by the
+ * club-admin invite flow) deliver the session via the *implicit* flow:
+ * tokens arrive in the URL fragment (#access_token=...&type=recovery), and
+ * fragments are never sent to the server at all.
+ *
+ * The actual session establishment happens server-side via
+ * /api/auth/set-session, not here — calling supabase.auth.setSession() on
+ * the browser client writes cookies via document.cookie, which was not
+ * reliably visible to the server on the very next request (confirmed via
+ * runtime logs: middleware logged "Auth session missing!" repeatedly).
+ * This page's only job is to extract whichever token format is present and
+ * hand it to that endpoint, which returns a real Set-Cookie header.
  */
 export default function AuthCallbackPage() {
-  const router = useRouter()
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const supabase = createClient()
-
     const run = async () => {
       const url = new URL(window.location.href)
       const code = url.searchParams.get('code')
@@ -41,37 +38,45 @@ export default function AuthCallbackPage() {
 
       // Supabase reports a failed verify (expired/used/invalid link) via an
       // `error`/`error_description` param instead of a token, in either the
-      // query string or the fragment. Surface that real reason instead of a
-      // generic message.
+      // query string or the fragment.
       const errorDescription =
         url.searchParams.get('error_description') ||
         hashParams.get('error_description') ||
         url.searchParams.get('error') ||
         hashParams.get('error')
 
+      if (errorDescription) {
+        setError(decodeURIComponent(errorDescription).replace(/\+/g, ' '))
+        return
+      }
+
+      if (!(accessToken && refreshToken) && !code && !(tokenHash && type)) {
+        setError('No auth token present in the link')
+        return
+      }
+
       try {
-        if (errorDescription) {
-          throw new Error(decodeURIComponent(errorDescription).replace(/\+/g, ' '))
-        } else if (accessToken && refreshToken) {
-          const { error } = await supabase.auth.setSession({
+        const res = await fetch('/api/auth/set-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
             access_token: accessToken,
             refresh_token: refreshToken,
-          })
-          if (error) throw error
-        } else if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code)
-          if (error) throw error
-        } else if (tokenHash && type) {
-          const { error } = await supabase.auth.verifyOtp({
-            type: type as any,
+            code,
             token_hash: tokenHash,
-          })
-          if (error) throw error
-        } else {
-          throw new Error('No auth token present in the link')
+            type,
+          }),
+        })
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.error || 'This link is invalid or has expired.')
         }
 
-        router.replace(next)
+        // Full navigation, not a client-side route change — the browser
+        // client on the next page must re-initialize from the cookies the
+        // server just set, and middleware must see them immediately too.
+        window.location.href = next
       } catch (err: any) {
         console.error('Auth callback failed:', err)
         setError(err?.message || 'This link is invalid or has expired.')
@@ -79,7 +84,7 @@ export default function AuthCallbackPage() {
     }
 
     run()
-  }, [router])
+  }, [])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
