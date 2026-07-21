@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { LayoutDashboard, Calendar, Users, CreditCard, BarChart3, Settings, HelpCircleIcon, ActivityIcon, Trophy, UserCheck } from "lucide-react";
+import { LayoutDashboard, Calendar, Users, CreditCard, BarChart3, Settings, HelpCircleIcon, ActivityIcon, Trophy, UserCheck, UtensilsCrossed } from "lucide-react";
 
 export type SidebarNavItem = {
 	title: string;
@@ -68,6 +68,11 @@ export const navGroups: SidebarNavGroup[] = [
 				title: "Payments",
 				path: "/payments",
 				icon: <CreditCard />,
+			},
+			{
+				title: "Restaurant",
+				path: "/restaurant",
+				icon: <UtensilsCrossed />,
 			},
 		],
 	},
