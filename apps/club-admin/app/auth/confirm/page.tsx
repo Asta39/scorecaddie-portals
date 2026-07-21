@@ -62,8 +62,16 @@ export default function ConfirmPage() {
     // Mark the account active now that a password is actually set. Without
     // this, an invited-but-never-logged-in secretary showed as "Active" in
     // the super-admin admins list the instant the account was created.
+    // Pass the access token explicitly — relying on the just-established
+    // client session having already synced into a cookie the server can
+    // read is a race (@supabase/ssr's browser client writes the auth
+    // cookie via document.cookie, not a server round-trip).
     try {
-      const res = await fetch('/api/auth/activate', { method: 'POST' })
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/auth/activate', {
+        method: 'POST',
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+      })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error || 'Failed to activate account')

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createClient } from '@supabase/supabase-js'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
 /**
@@ -11,23 +10,30 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
  * secretary who has never logged in must not show as "Active" in the
  * super-admin admins list. Uses the service-role client for the write
  * (club_admins has no UPDATE policy for authenticated users), but only after
- * verifying the session belongs to the account being activated.
+ * verifying the caller's own session.
+ *
+ * Verifies via the Authorization: Bearer <access_token> header rather than
+ * cookies. This route is called moments after the client just established
+ * its session client-side (via setSession/updateUser on the confirm page) —
+ * relying on that session having already round-tripped into a cookie the
+ * server can read is a real race in practice, since @supabase/ssr's browser
+ * client writes the auth cookie via document.cookie, not a server Set-Cookie
+ * header. Passing the token explicitly sidesteps that entirely.
  */
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
+    const authHeader = req.headers.get('authorization')
+    const token = authHeader?.replace(/^Bearer\s+/i, '')
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll() },
-          setAll() {},
-        },
-      }
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser(token)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
