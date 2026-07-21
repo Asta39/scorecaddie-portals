@@ -74,10 +74,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Failed to set up the account profile: ${profileError.message}` }, { status: 500 })
     }
 
-    // 3. Insert club_admins row linking user to club
+    // 3. Insert club_admins row linking user to club. is_active starts false —
+    //    the secretary isn't "active" until they've actually set their password
+    //    and logged in (see apps/club-admin/app/api/auth/activate/route.ts,
+    //    called from /auth/confirm on success). Without this, the admins list
+    //    showed every invited-but-never-logged-in account as "Active" the
+    //    instant it was created.
     const { error: adminError } = await supabaseAdmin
       .from('club_admins')
-      .insert({ user_id: userId, club_id, name: name.trim(), email: email.trim() })
+      .insert({ user_id: userId, club_id, name: name.trim(), email: email.trim(), is_active: false })
 
     if (adminError) {
       console.error('Club admin insert error:', adminError)

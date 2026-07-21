@@ -57,6 +57,21 @@ export default function ConfirmPage() {
       return
     }
 
+    // Mark the account active now that a password is actually set. Without
+    // this, an invited-but-never-logged-in secretary showed as "Active" in
+    // the super-admin admins list the instant the account was created.
+    try {
+      const res = await fetch('/api/auth/activate', { method: 'POST' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to activate account')
+      }
+    } catch (activateError: any) {
+      setError(`Password set, but activation failed: ${activateError.message}. Contact your administrator.`)
+      setLoading(false)
+      return
+    }
+
     router.push('/dashboard')
     router.refresh()
   }
