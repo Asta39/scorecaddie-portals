@@ -1,0 +1,79 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase-client'
+
+/**
+ * Auth callback — establishes a session from whichever link format Supabase sent.
+ *
+ * This must be a client page, not a server Route Handler. Any admin/dashboard-
+ * triggered link (e.g. Supabase dashboard's "Send recovery") delivers the
+ * session via the *implicit* flow: tokens arrive in the URL fragment
+ * (#access_token=...&refresh_token=...&type=recovery). Fragments are never
+ * sent to the server — a Route Handler cannot see them at all. The
+ * "Forgot password?" link on /login is client-initiated and uses PKCE
+ * instead (`?code=`). This page handles both, plus the OTP
+ * `?token_hash=&type=` email-template format.
+ */
+export default function AuthCallbackPage() {
+  const router = useRouter()
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    const run = async () => {
+      const url = new URL(window.location.href)
+      const code = url.searchParams.get('code')
+      const tokenHash = url.searchParams.get('token_hash')
+      const type = url.searchParams.get('type')
+      const next = url.searchParams.get('next') ?? '/update-password'
+
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+      const accessToken = hashParams.get('access_token')
+      const refreshToken = hashParams.get('refresh_token')
+
+      try {
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          })
+          if (error) throw error
+        } else if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code)
+          if (error) throw error
+        } else if (tokenHash && type) {
+          const { error } = await supabase.auth.verifyOtp({
+            type: type as any,
+            token_hash: tokenHash,
+          })
+          if (error) throw error
+        } else {
+          throw new Error('No auth token present in the link')
+        }
+
+        router.replace(next)
+      } catch (err: any) {
+        console.error('Auth callback failed:', err)
+        setError(err?.message || 'This link is invalid or has expired.')
+      }
+    }
+
+    run()
+  }, [router])
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+      {error ? (
+        <div className="text-sm text-center max-w-sm px-6">
+          <p className="text-destructive font-medium mb-2">{error}</p>
+          <a href="/login" className="underline text-muted-foreground">Back to sign in</a>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">Signing you in…</p>
+      )}
+    </div>
+  )
+}
