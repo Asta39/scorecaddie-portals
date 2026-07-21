@@ -8,6 +8,9 @@ export default function TeeTimesPage() {
   const supabase = createClient()
   const [activeTab, setActiveTab] = useState<'sheet' | 'settings'>('sheet')
   const [clubId, setClubId] = useState<string | null>(null)
+  // course_tee_time_settings / casual_tee_time_bookings key off Course.id (text),
+  // a different id space than clubs.id — must not conflate the two.
+  const [courseId, setCourseId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   
   // Settings State
@@ -30,36 +33,39 @@ export default function TeeTimesPage() {
       if (user) {
         const { data: admin } = await supabase
           .from('club_admins')
-          .select('club_id')
+          .select('club_id, clubs(course_id)')
           .eq('user_id', user.id)
           .single()
         if (admin) {
           setClubId(admin.club_id)
+          const club = Array.isArray(admin.clubs) ? admin.clubs[0] : admin.clubs
+          setCourseId(club?.course_id ?? null)
         }
       }
+      setLoading(false)
     }
     loadClub()
   }, [])
 
   useEffect(() => {
-    if (clubId) {
+    if (courseId) {
       loadSettings()
     }
-  }, [clubId])
+  }, [courseId])
 
   useEffect(() => {
-    if (clubId && activeTab === 'sheet') {
+    if (courseId && activeTab === 'sheet') {
       loadTeeSheet()
     }
-  }, [clubId, activeTab, selectedDate])
+  }, [courseId, activeTab, selectedDate])
 
   const loadSettings = async () => {
     const { data } = await supabase
       .from('course_tee_time_settings')
       .select('*')
-      .eq('course_id', clubId)
+      .eq('course_id', courseId)
       .single()
-      
+
     if (data) {
       setInterval(data.tee_interval_minutes)
       setFirstTime(data.first_tee_time)
@@ -70,9 +76,10 @@ export default function TeeTimesPage() {
   }
 
   const saveSettings = async () => {
+    if (!courseId) return
     setSavingSettings(true)
     await supabase.from('course_tee_time_settings').upsert({
-      course_id: clubId,
+      course_id: courseId,
       tee_interval_minutes: interval,
       first_tee_time: firstTime,
       last_tee_time: lastTime,
@@ -84,12 +91,13 @@ export default function TeeTimesPage() {
   }
 
   const loadTeeSheet = async () => {
+    if (!courseId) return
     setLoading(true)
     const { data: slots } = await supabase.rpc('get_available_tee_times', {
-      p_course_id: clubId,
+      p_course_id: courseId,
       p_date: selectedDate
     })
-    
+
     const { data: bookingsData } = await supabase
       .from('casual_tee_time_bookings')
       .select(`
@@ -104,20 +112,21 @@ export default function TeeTimesPage() {
           )
         )
       `)
-      .eq('course_id', clubId)
+      .eq('course_id', courseId)
       .eq('booking_date', selectedDate)
       .neq('status', 'CANCELLED')
-      
+
     if (slots) setTimeSlots(slots)
     if (bookingsData) setBookings(bookingsData)
-    
+
     setLoading(false)
   }
 
   const blockTimeSlot = async (timeSlot: string) => {
+    if (!courseId) return
     const reason = prompt("Enter reason for blocking this time:")
     if (!reason) return
-    
+
     // Create a time string for end time by adding interval
     const [hours, minutes] = timeSlot.split(':').map(Number)
     const endMinutes = minutes + interval
@@ -126,7 +135,7 @@ export default function TeeTimesPage() {
     const endTime = `${endHours.toString().padStart(2, '0')}:${finalEndMinutes.toString().padStart(2, '0')}:00`
 
     await supabase.from('course_blocks').insert({
-      course_id: clubId,
+      course_id: courseId,
       block_date: selectedDate,
       start_time: timeSlot,
       end_time: endTime,
@@ -147,6 +156,13 @@ export default function TeeTimesPage() {
         </div>
       </div>
 
+      {!loading && !courseId ? (
+        <div className="card py-10 text-center text-text-muted">
+          This club isn't linked to a course yet, so casual tee times can't be managed here.
+          Ask the platform admin to link a course to this club.
+        </div>
+      ) : (
+      <>
       {/* Tabs */}
       <div className="flex border-b border-light mb-6">
         <button
@@ -375,6 +391,8 @@ export default function TeeTimesPage() {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   )

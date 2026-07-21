@@ -72,14 +72,14 @@ export default function AddSecretaryButton({ clubId, clubName }: { clubId: strin
                 <div className="text-sm bg-green-50 p-4 rounded-lg border border-green-200 text-green-700 text-center font-medium">
                   ✓ {success.message}
                 </div>
-                
+
                 {success.link && (
                   <div className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--color-light)' }}>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Fallback Password Setup Link
+                      Password Setup Link
                     </label>
                     <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                      If the email doesn't arrive due to mail service limits, copy and send this link to the secretary directly:
+                      Copy and send this link to the secretary. They open it to set their password and activate their account.
                     </p>
                     <div className="flex gap-2">
                       <input

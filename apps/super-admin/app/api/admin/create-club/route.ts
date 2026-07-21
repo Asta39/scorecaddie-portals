@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
 
     const { data, error } = await supabaseAdmin
       .from('clubs')
-      .insert({ name: name.trim(), location, region, contact_name, contact_phone })
+      .insert({ name: name.trim(), location, region, contact_name, contact_phone, course_id: course_id || null })
       .select()
       .single()
 

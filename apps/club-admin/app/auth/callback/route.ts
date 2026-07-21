@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import type { EmailOtpType } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextResponse, type NextRequest } from 'next/server'
 
@@ -11,10 +12,15 @@ import { NextResponse, type NextRequest } from 'next/server'
  */
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
+  // PKCE flow delivers `?code=`; the OTP/token_hash email template delivers
+  // `?token_hash=&type=`. Support both so the link resolves regardless of how
+  // the Supabase project's email template is configured.
   const code = requestUrl.searchParams.get('code')
+  const tokenHash = requestUrl.searchParams.get('token_hash')
+  const type = requestUrl.searchParams.get('type') as EmailOtpType | null
   const next = requestUrl.searchParams.get('next') ?? '/auth/confirm'
 
-  if (code) {
+  if (code || (tokenHash && type)) {
     const cookieStore = await cookies()
 
     const supabase = createServerClient(
@@ -34,15 +40,18 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { error } = code
+      ? await supabase.auth.exchangeCodeForSession(code)
+      : await supabase.auth.verifyOtp({ type: type!, token_hash: tokenHash! })
 
     if (!error) {
-      // Code exchanged successfully — redirect to the set-password page
-      return NextResponse.redirect(new URL('/auth/confirm', requestUrl.origin))
+      // Session established — redirect to the set-password page
+      return NextResponse.redirect(new URL(next, requestUrl.origin))
     }
+    console.error('Auth callback failed to establish session:', error.message)
   }
 
-  // If code is missing or exchange failed, send to login with an error
+  // If no token is present or verification failed, send to login with an error
   return NextResponse.redirect(
     new URL('/login?error=link_expired', requestUrl.origin)
   )

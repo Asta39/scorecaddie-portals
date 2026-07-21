@@ -51,8 +51,17 @@ async function runMiddleware(request: NextRequest) {
   const isLoginPage = request.nextUrl.pathname === '/login'
   const isAuthRoute = request.nextUrl.pathname.startsWith('/auth/')
 
-  // If not logged in and not on login/auth pages → redirect to login
-  if (!user && !isLoginPage && !isAuthRoute) {
+  // Activation routes (/auth/callback exchanges the invite code, /auth/confirm
+  // sets the first password) must ALWAYS pass through untouched. A freshly
+  // invited secretary is mid-provisioning and may not yet have a fully set-up
+  // role/club_admins row, so running the authorization gate here would sign
+  // them out and bounce them to /login before they can set a password.
+  if (isAuthRoute) {
+    return supabaseResponse
+  }
+
+  // If not logged in and not on the login page → redirect to login
+  if (!user && !isLoginPage) {
     if (request.nextUrl.pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -87,12 +96,8 @@ async function runMiddleware(request: NextRequest) {
     }
   }
 
-  // If logged in and on login/auth page → redirect to dashboard
-  if (user && (isLoginPage || isAuthRoute)) {
-    // Exception: let /auth/confirm through even when logged in (they need to set password)
-    if (request.nextUrl.pathname === '/auth/confirm') {
-      return supabaseResponse
-    }
+  // If logged in and on the login page → redirect to dashboard
+  if (user && isLoginPage) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

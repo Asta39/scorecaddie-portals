@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
-// Hardcode the club-admin portal URL directly to guarantee it routes correctly,
-// bypassing any potentially bad Vercel environment variables.
-const CLUB_ADMIN_URL = 'https://scorecaddie-portals-club-admin-v49s.vercel.app'
+// Must point at the club-admin portal's real, stable production domain — never a
+// per-deployment Vercel preview URL (those regenerate on every deploy and expire).
+// Set CLUB_ADMIN_URL in this project's Vercel environment variables.
+function getClubAdminUrl(): string {
+  const url = process.env.CLUB_ADMIN_URL
+  if (url) return url
+  if (process.env.NODE_ENV !== 'production') return 'http://localhost:3001'
+  throw new Error('CLUB_ADMIN_URL environment variable is not configured')
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +19,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Name, email, and club are required' }, { status: 400 })
     }
 
-    // 1. Create the Supabase Auth user (with a dummy password, so it doesn't try to send a welcome email)
+    let clubAdminUrl: string
+    try {
+      clubAdminUrl = getClubAdminUrl()
+    } catch (e: any) {
+      console.error(e)
+      return NextResponse.json({ error: 'Server is misconfigured: CLUB_ADMIN_URL is not set' }, { status: 500 })
+    }
+
+    // Verify the club actually exists before creating an Auth user around it.
+    const { data: club, error: clubLookupError } = await supabaseAdmin
+      .from('clubs')
+      .select('id')
+      .eq('id', club_id)
+      .single()
+
+    if (clubLookupError || !club) {
+      return NextResponse.json({ error: 'Club not found' }, { status: 400 })
+    }
+
+    // 1. Create the Supabase Auth user (with a random password, so it doesn't try to send a welcome email)
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: email.trim(),
       password: Math.random().toString(36).slice(-10) + 'A1!',
@@ -28,14 +53,25 @@ export async function POST(req: NextRequest) {
 
     const userId = authData.user.id
 
-    // 2. Set role in User table
+    // 2. Set role in User table. The live "User" table requires email, name,
+    //    and updatedAt (NOT NULL, no defaults) — upserting only {id, role}
+    //    fails, and a missing/wrong-role User row means the club-admin
+    //    middleware rejects the account forever. So this must succeed, and a
+    //    failure must roll back the auth user instead of leaving a dead invite.
     const { error: profileError } = await supabaseAdmin
       .from('User')
-      .upsert({ id: userId, role: 'club_admin' })
+      .upsert({
+        id: userId,
+        email: email.trim(),
+        name: name.trim(),
+        role: 'club_admin',
+        updatedAt: new Date().toISOString(),
+      })
 
     if (profileError) {
       console.error('Profile upsert error:', profileError)
-      // Don't fail — the trigger may have already created a row
+      await supabaseAdmin.auth.admin.deleteUser(userId)
+      return NextResponse.json({ error: `Failed to set up the account profile: ${profileError.message}` }, { status: 500 })
     }
 
     // 3. Insert club_admins row linking user to club
@@ -49,37 +85,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: adminError.message }, { status: 500 })
     }
 
-    // 4. Send a password-setup link pointing to /auth/callback
-    //    Supabase appends the PKCE `code` param to this URL.
-    //    /auth/callback exchanges it for a session, then redirects to /auth/confirm.
+    // 4. Generate ONE password-setup link pointing to /auth/callback.
+    //    IMPORTANT: use a single token. Calling generateLink AND
+    //    resetPasswordForEmail issues two recovery tokens, and the second
+    //    silently invalidates the first — which is what made the copyable
+    //    link land on an "expired" error. generateLink returns the action_link
+    //    directly and does not depend on transactional email delivery working.
+    //    /auth/callback exchanges the link's code for a session, then sends the
+    //    secretary to /auth/confirm to set their password.
     let actionLink = ''
+    let linkError = ''
     try {
-      // First, generate the link so we have it in the UI as a fallback
-      const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
+      const { data: linkData, error: genError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'recovery',
         email: email.trim(),
         options: {
-          redirectTo: `${CLUB_ADMIN_URL}/auth/callback`,
+          redirectTo: `${clubAdminUrl}/auth/callback`,
         },
       })
-      if (linkData?.properties?.action_link) {
+      if (genError) {
+        linkError = genError.message
+        console.error('Failed to generate password setup link:', genError)
+      } else if (linkData?.properties?.action_link) {
         actionLink = linkData.properties.action_link
       }
-
-      // Second, actually SEND the email via Supabase
-      await supabaseAdmin.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${CLUB_ADMIN_URL}/auth/callback`,
-      })
-    } catch (e) {
-      console.error('Failed to generate/send link:', e)
+    } catch (e: any) {
+      linkError = e?.message || String(e)
+      console.error('Failed to generate password setup link:', e)
     }
 
     return NextResponse.json({
       success: true,
       userId,
-      message: `Account created. A password setup email has been sent to ${email}.`,
-      actionLink, // Super-admin can copy & share this if the email doesn't arrive
-      debugRedirectTo: `${CLUB_ADMIN_URL}/auth/callback`
+      message: actionLink
+        ? `Account created for ${email}. Share the password setup link below with the secretary.`
+        : `Account created for ${email}, but the setup link could not be generated${linkError ? `: ${linkError}` : ''}. You can resend it from the club page.`,
+      actionLink, // The single, valid link the super-admin copies & sends
     })
   } catch (err: any) {
     console.error('Unexpected error:', err)

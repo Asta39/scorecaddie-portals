@@ -18,23 +18,61 @@ export default function UpdatePasswordPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  // null = still checking for a recovery session; true = ready to accept a new
+  // password; false = no session materialized, this page was reached directly
+  // with no valid recovery link, so redirect away instead of showing a bare form.
+  const [ready, setReady] = useState<boolean | null>(null)
   const router = useRouter()
 
   useEffect(() => {
-    // If the URL has an access_token fragment, Supabase JS will automatically
-    // pick it up and establish a session. We just need to listen for it.
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          // Ready to accept new password
-        }
+    let settled = false
+    const markReady = () => {
+      if (!settled) {
+        settled = true
+        setReady(true)
       }
-    )
+    }
+
+    // If the URL has a recovery token, Supabase JS picks it up asynchronously
+    // and either fires PASSWORD_RECOVERY or establishes a session directly.
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+        markReady()
+      }
+    })
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) markReady()
+    })
+
+    // Give Supabase a moment to process any recovery token in the URL before
+    // concluding there isn't one.
+    const timeout = setTimeout(() => {
+      if (!settled) {
+        settled = true
+        setReady(false)
+      }
+    }, 2000)
 
     return () => {
       authListener.subscription.unsubscribe()
+      clearTimeout(timeout)
     }
   }, [supabase.auth])
+
+  useEffect(() => {
+    if (ready === false) {
+      router.replace('/login')
+    }
+  }, [ready, router])
+
+  if (ready !== true) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background text-foreground">
+        <p className="text-sm text-muted-foreground">Checking your reset link…</p>
+      </div>
+    )
+  }
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -4,9 +4,10 @@ import { createClient } from '@supabase/supabase-js';
 // Vercel cron endpoints can be triggered via GET request
 export async function GET(request: Request) {
   try {
-    // Optional: secure the route so only Vercel can call it
+    // Secure the route so only Vercel's cron invoker (holding CRON_SECRET) can call it.
+    // Fail closed: if the secret isn't configured, refuse rather than allow public access.
     const authHeader = request.headers.get('authorization');
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
@@ -26,11 +27,14 @@ export async function GET(request: Request) {
       },
     });
 
-    // Auto check out all caddies who have time_in but no time_out.
-    // We update time_out to "23:00" for all such records.
+    // Auto check out today's caddies who have time_in but no time_out.
+    // Scoped to today's date only — must not touch past open shifts (real
+    // attendance history), which would corrupt them with a fabricated checkout time.
+    const todayStr = new Date().toISOString().split('T')[0];
     const { data, error } = await supabaseAdmin
       .from('caddie_attendance')
       .update({ time_out: '23:00' })
+      .eq('date', todayStr)
       .not('time_in', 'is', null)
       .is('time_out', null)
       .select('id');
