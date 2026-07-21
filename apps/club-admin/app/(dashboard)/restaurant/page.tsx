@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
-import { MapPin, UtensilsCrossed, Grid3x3, Plus, Trash2, Pencil, X, Check } from 'lucide-react'
+import { MapPin, UtensilsCrossed, Grid3x3, Plus, Trash2, Pencil, X, Check, FileText, Upload } from 'lucide-react'
 
 type Location = {
   id: string
@@ -18,6 +18,13 @@ type TableRow = {
   shape: 'round' | 'rectangular'
   seat_count: number
   is_active: boolean
+}
+
+type MenuDocument = {
+  id: string
+  name: string
+  pdf_path: string
+  sort_order: number
 }
 
 type MenuItem = {
@@ -42,6 +49,7 @@ export default function RestaurantPage() {
   const [locations, setLocations] = useState<Location[]>([])
   const [tables, setTables] = useState<TableRow[]>([])
   const [menu, setMenu] = useState<MenuItem[]>([])
+  const [menuDocs, setMenuDocs] = useState<MenuDocument[]>([])
 
   useEffect(() => { loadClub() }, [])
 
@@ -59,6 +67,7 @@ export default function RestaurantPage() {
       await Promise.all([
         fetchLocations(admin.club_id),
         fetchMenu(admin.club_id),
+        fetchMenuDocs(admin.club_id),
       ])
     }
     setLoading(false)
@@ -93,6 +102,15 @@ export default function RestaurantPage() {
       .eq('club_id', cId)
       .order('sort_order')
     if (data) setMenu(data)
+  }
+
+  const fetchMenuDocs = async (cId: string) => {
+    const { data } = await supabase
+      .from('club_menu_documents')
+      .select('*')
+      .eq('club_id', cId)
+      .order('sort_order')
+    if (data) setMenuDocs(data)
   }
 
   if (loading) {
@@ -152,6 +170,8 @@ export default function RestaurantPage() {
           clubId={clubId}
           menu={menu}
           onChange={() => fetchMenu(clubId)}
+          menuDocs={menuDocs}
+          onDocsChange={() => fetchMenuDocs(clubId)}
         />
       )}
     </div>
@@ -374,10 +394,53 @@ function TablesTab({ locations, tables, onChange }: { locations: Location[], tab
   )
 }
 
-function MenuTab({ clubId, menu, onChange }: { clubId: string, menu: MenuItem[], onChange: () => void }) {
+function MenuTab({ clubId, menu, onChange, menuDocs, onDocsChange }: {
+  clubId: string
+  menu: MenuItem[]
+  onChange: () => void
+  menuDocs: MenuDocument[]
+  onDocsChange: () => void
+}) {
   const supabase = createClient()
   const [isCreating, setIsCreating] = useState(false)
   const [form, setForm] = useState({ name: '', description: '', category: 'main', price_kes: '', chef_name: '', is_new: false })
+  const [isUploading, setIsUploading] = useState(false)
+
+  const uploadDoc = async (file: File) => {
+    if (file.type !== 'application/pdf') {
+      alert('Please choose a PDF file')
+      return
+    }
+    setIsUploading(true)
+    try {
+      const path = `${clubId}/${Date.now()}-${file.name}`
+      const { error: uploadError } = await supabase.storage.from('menu-pdfs').upload(path, file, {
+        contentType: 'application/pdf',
+      })
+      if (uploadError) throw uploadError
+
+      const { error: insertError } = await supabase.from('club_menu_documents').insert({
+        club_id: clubId,
+        name: file.name.replace(/\.pdf$/i, ''),
+        pdf_path: path,
+        sort_order: menuDocs.length,
+      })
+      if (insertError) throw insertError
+      onDocsChange()
+    } catch (err) {
+      console.error(err)
+      alert('Failed to upload menu PDF')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const removeDoc = async (doc: MenuDocument) => {
+    if (!confirm(`Delete "${doc.name}"?`)) return
+    await supabase.storage.from('menu-pdfs').remove([doc.pdf_path])
+    await supabase.from('club_menu_documents').delete().eq('id', doc.id)
+    onDocsChange()
+  }
 
   const create = async () => {
     if (!form.name.trim()) return
@@ -412,6 +475,47 @@ function MenuTab({ clubId, menu, onChange }: { clubId: string, menu: MenuItem[],
   }
 
   return (
+    <div className="space-y-6">
+    <div className="card p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h3 className="font-medium">Menu PDFs</h3>
+          <p className="text-sm text-text-muted">Upload a full menu or wine list as a PDF — players see a preview of the first page and can open the whole document in the app.</p>
+        </div>
+        <label className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium cursor-pointer ${isUploading ? 'bg-gray-200 text-gray-400' : 'bg-primary text-white'}`}>
+          <Upload size={16} /> {isUploading ? 'Uploading…' : 'Upload PDF'}
+          <input
+            type="file"
+            accept="application/pdf"
+            disabled={isUploading}
+            className="hidden"
+            onChange={e => {
+              const file = e.target.files?.[0]
+              if (file) uploadDoc(file)
+              e.target.value = ''
+            }}
+          />
+        </label>
+      </div>
+
+      <div className="space-y-2">
+        {menuDocs.map(doc => (
+          <div key={doc.id} className="flex items-center justify-between p-4 rounded-xl border border-light">
+            <div className="flex items-center gap-3">
+              <FileText size={18} className="text-text-muted" />
+              <span className="font-medium">{doc.name}</span>
+            </div>
+            <button onClick={() => removeDoc(doc)} className="p-2 rounded-lg hover:bg-red-50 text-red-600">
+              <Trash2 size={16} />
+            </button>
+          </div>
+        ))}
+        {menuDocs.length === 0 && (
+          <div className="text-center py-8 text-text-muted text-sm">No menu PDFs uploaded yet.</div>
+        )}
+      </div>
+    </div>
+
     <div className="card p-6">
       <div className="flex justify-between items-center mb-6">
         <p className="text-sm text-text-muted">Dishes shown to players in the mobile app's Restaurant tab.</p>
@@ -488,6 +592,7 @@ function MenuTab({ clubId, menu, onChange }: { clubId: string, menu: MenuItem[],
           <div className="text-center py-10 text-text-muted text-sm">No dishes yet — add your first one above.</div>
         )}
       </div>
+    </div>
     </div>
   )
 }
