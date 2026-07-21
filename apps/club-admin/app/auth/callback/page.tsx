@@ -39,8 +39,20 @@ export default function AuthCallbackPage() {
       const accessToken = hashParams.get('access_token')
       const refreshToken = hashParams.get('refresh_token')
 
+      // Supabase reports a failed verify (expired/used/invalid link) via an
+      // `error`/`error_description` param instead of a token, in either the
+      // query string or the fragment. Surface that real reason instead of a
+      // generic message.
+      const errorDescription =
+        url.searchParams.get('error_description') ||
+        hashParams.get('error_description') ||
+        url.searchParams.get('error') ||
+        hashParams.get('error')
+
       try {
-        if (accessToken && refreshToken) {
+        if (errorDescription) {
+          throw new Error(decodeURIComponent(errorDescription).replace(/\+/g, ' '))
+        } else if (accessToken && refreshToken) {
           const { error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
