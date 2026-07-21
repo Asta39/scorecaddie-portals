@@ -20,14 +20,26 @@ export default async function DashboardLayout({ children }: { children: React.Re
     // Fall back to the default brand color baked into globals.css
   }
 
+  // Defensive: this value is about to go into a raw <style> tag, so don't
+  // trust the DB blindly even though the only write path validates it.
+  if (brandColor && !/^#[0-9a-fA-F]{6}$/.test(brandColor)) {
+    brandColor = null
+  }
+
   return (
-    <div
-      className="contents"
-      style={brandColor ? ({ '--color-brand': brandColor } as React.CSSProperties) : undefined}
-    >
+    <>
+      {brandColor && (
+        // A real stylesheet rule targeting :root, not an inline style on a
+        // wrapper div. Inline-style inheritance through the component tree
+        // is fragile — it silently breaks under any child that portals out
+        // of that DOM subtree (which the sidebar primitive here does for
+        // some variants). A :root rule always wins regardless of where
+        // anything renders.
+        <style dangerouslySetInnerHTML={{ __html: `:root { --color-brand: ${brandColor}; }` }} />
+      )}
       <AppShell>
         {children}
       </AppShell>
-    </div>
+    </>
   )
 }

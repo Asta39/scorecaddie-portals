@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function POST(req: NextRequest) {
   try {
-    const { id, name, location, region, status } = await req.json()
+    const { id, name, location, region, status, course_id } = await req.json()
 
     if (!id) {
       return NextResponse.json({ error: 'Club ID is required' }, { status: 400 })
@@ -14,11 +14,12 @@ export async function POST(req: NextRequest) {
 
     const { data, error } = await supabaseAdmin
       .from('clubs')
-      .update({ 
-        name: name.trim(), 
-        location: location?.trim() || null, 
-        region: region?.trim() || null, 
-        status 
+      .update({
+        name: name.trim(),
+        location: location?.trim() || null,
+        region: region?.trim() || null,
+        status,
+        course_id: course_id || null,
       })
       .eq('id', id)
       .select()

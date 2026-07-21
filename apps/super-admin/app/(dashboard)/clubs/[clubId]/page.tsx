@@ -13,11 +13,12 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
   const supabase = await createClient()
   const { clubId } = await params
 
-  const [{ data: club }, { data: caddies }, { data: admins }, { data: payments }] = await Promise.all([
+  const [{ data: club }, { data: caddies }, { data: admins }, { data: payments }, { data: courses }] = await Promise.all([
     supabase.from('clubs').select('*').eq('id', clubId).single(),
     supabase.from('caddies').select('*').eq('club_id', clubId).order('name'),
     supabase.from('club_admins').select('*').eq('club_id', clubId),
     supabase.from('caddie_payments').select('*').eq('club_id', clubId).order('created_at', { ascending: false }).limit(10),
+    supabase.from('Course').select('id, name').order('name'),
   ])
 
   if (!club) return notFound()
@@ -53,7 +54,7 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
           <span className={`badge badge-${club.status === 'active' ? 'active' : 'suspended'} text-sm`}>
             {club.status}
           </span>
-          <EditClubButton club={club} />
+          <EditClubButton club={club} courses={courses ?? []} />
         </div>
       </div>
 

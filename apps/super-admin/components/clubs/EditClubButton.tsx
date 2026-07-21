@@ -10,9 +10,15 @@ interface Club {
   location: string | null
   region: string | null
   status: string
+  course_id: string | null
 }
 
-export default function EditClubButton({ club }: { club: Club }) {
+interface Course {
+  id: string
+  name: string
+}
+
+export default function EditClubButton({ club, courses = [] }: { club: Club; courses?: Course[] }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -23,6 +29,7 @@ export default function EditClubButton({ club }: { club: Club }) {
     location: club.location ?? '',
     region: club.region ?? '',
     status: club.status,
+    course_id: club.course_id ?? '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,6 +103,19 @@ export default function EditClubButton({ club }: { club: Club }) {
                 <select className="input" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
                   <option value="active">Active</option>
                   <option value="suspended">Suspended</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text)' }}>Linked Course</label>
+                <p className="text-xs mb-2" style={{ color: 'var(--color-text-muted)' }}>
+                  Required for casual tee-time management in the club portal.
+                </p>
+                <select className="input" value={form.course_id} onChange={e => setForm(f => ({ ...f, course_id: e.target.value }))}>
+                  <option value="">— Not linked —</option>
+                  {courses.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
                 </select>
               </div>
 
