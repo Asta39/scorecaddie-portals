@@ -188,7 +188,7 @@ export default function TeeTimesPage() {
       </div>
 
       {activeTab === 'sheet' && (
-        <div className="card">
+        <div className="card p-6">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-3">
               <input 
@@ -319,10 +319,10 @@ export default function TeeTimesPage() {
 
       {activeTab === 'settings' && (
         <div className="max-w-2xl">
-          <div className="card">
+          <div className="card p-6">
             <h3 className="text-lg font-bold mb-6">Tee Time Configuration</h3>
-            
-            <div className="space-y-5">
+
+            <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium mb-1">Tee Interval (Minutes)</label>
                 <input 
