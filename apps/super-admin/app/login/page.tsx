@@ -19,6 +19,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [mode, setMode] = useState<'signin' | 'reset'>('signin')
+  const [resetSent, setResetSent] = useState(false)
   const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -36,6 +38,26 @@ export default function LoginPage() {
 
     router.push('/dashboard')
     router.refresh()
+  }
+
+  const handleResetRequest = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    // Explicit redirectTo, rather than relying on Supabase's dashboard-triggered
+    // reset (which uses the project's Site URL with no path) — that's what was
+    // landing recovery links on a bare, unauthenticated /login.
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    })
+
+    setLoading(false)
+    if (error) {
+      setError(error.message)
+      return
+    }
+    setResetSent(true)
   }
 
   return (
@@ -60,13 +82,82 @@ export default function LoginPage() {
               <h1 className="font-bold text-xl tracking-wide">Super Admin</h1>
             </div>
             <p className="text-base text-muted-foreground">
-              Sign in to manage the Score Caddie platform.
+              {mode === 'signin' ? 'Sign in to manage the Score Caddie platform.' : 'Enter your email to get a password reset link.'}
             </p>
           </div>
-          
+
           <div className="space-y-4">
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
+            {mode === 'signin' ? (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <InputGroup>
+                    <InputGroupInput
+                      placeholder="Email address"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                    <InputGroupAddon align="inline-start">
+                      <AtSignIcon className="w-4 h-4 text-muted-foreground" />
+                    </InputGroupAddon>
+                  </InputGroup>
+
+                  <InputGroup>
+                    <InputGroupInput
+                      placeholder="Password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <InputGroupAddon align="inline-start">
+                      <KeyIcon className="w-4 h-4 text-muted-foreground" />
+                    </InputGroupAddon>
+                  </InputGroup>
+                </div>
+
+                {error && (
+                  <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">
+                    {error === 'Invalid login credentials' ? 'Incorrect email or password.' : error}
+                  </div>
+                )}
+
+                <Button className="w-full" size="default" type="submit" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Signing in...
+                    </>
+                  ) : 'Sign In'}
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => { setMode('reset'); setError(''); setResetSent(false) }}
+                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground underline"
+                >
+                  Forgot password?
+                </button>
+              </form>
+            ) : resetSent ? (
+              <div className="space-y-4">
+                <div className="text-sm bg-green-50 p-4 rounded-lg border border-green-200 text-green-700 text-center font-medium">
+                  ✓ If an account exists for {email}, a password reset link has been sent.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setMode('signin'); setResetSent(false) }}
+                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground underline"
+                >
+                  Back to sign in
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleResetRequest} className="space-y-4">
                 <InputGroup>
                   <InputGroupInput
                     placeholder="Email address"
@@ -80,38 +171,25 @@ export default function LoginPage() {
                   </InputGroupAddon>
                 </InputGroup>
 
-                <InputGroup>
-                  <InputGroupInput
-                    placeholder="Password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <InputGroupAddon align="inline-start">
-                    <KeyIcon className="w-4 h-4 text-muted-foreground" />
-                  </InputGroupAddon>
-                </InputGroup>
-              </div>
+                {error && (
+                  <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">
+                    {error}
+                  </div>
+                )}
 
-              {error && (
-                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">
-                  {error === 'Invalid login credentials' ? 'Incorrect email or password.' : error}
-                </div>
-              )}
+                <Button className="w-full" size="default" type="submit" disabled={loading}>
+                  {loading ? 'Sending…' : 'Send reset link'}
+                </Button>
 
-              <Button className="w-full" size="default" type="submit" disabled={loading}>
-                {loading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Signing in...
-                  </>
-                ) : 'Sign In'}
-              </Button>
-            </form>
+                <button
+                  type="button"
+                  onClick={() => { setMode('signin'); setError('') }}
+                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground underline"
+                >
+                  Back to sign in
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>

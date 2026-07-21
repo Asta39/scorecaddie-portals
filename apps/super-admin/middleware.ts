@@ -42,6 +42,15 @@ export async function middleware(request: NextRequest) {
   }
 
   const isPublicPage = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/update-password'
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth/')
+
+  // /auth/callback exchanges a recovery-link code for a session and must
+  // always pass through untouched — there is no session cookie yet on the
+  // first hit, so the "not logged in" check below would otherwise bounce it
+  // to /login before the exchange ever runs.
+  if (isAuthRoute) {
+    return supabaseResponse
+  }
 
   // If not logged in and not on public page → redirect to login
   if (!user && !isPublicPage) {
