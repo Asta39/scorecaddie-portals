@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
-import { MapPin, UtensilsCrossed, Grid3x3, Plus, Trash2, Pencil, X, Check, FileText, Upload } from 'lucide-react'
+import { MapPin, UtensilsCrossed, Grid3x3, Plus, Trash2, Pencil, X, Check, FileText, Upload, CalendarCheck } from 'lucide-react'
 
 type Location = {
   id: string
@@ -27,6 +27,21 @@ type MenuDocument = {
   sort_order: number
 }
 
+type Reservation = {
+  id: string
+  player_id: string
+  reservation_date: string
+  reservation_time: string
+  party_size: number
+  status: string
+  notes: string | null
+  club_restaurant_tables: {
+    table_number: string
+    club_restaurant_locations: { name: string } | null
+  } | null
+  playerName?: string
+}
+
 type MenuItem = {
   id: string
   name: string
@@ -42,7 +57,7 @@ const CATEGORIES = ['starter', 'main', 'dessert', 'drink', 'special']
 
 export default function RestaurantPage() {
   const supabase = createClient()
-  const [activeTab, setActiveTab] = useState<'locations' | 'tables' | 'menu'>('locations')
+  const [activeTab, setActiveTab] = useState<'locations' | 'tables' | 'menu' | 'reservations'>('locations')
   const [clubId, setClubId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -50,6 +65,7 @@ export default function RestaurantPage() {
   const [tables, setTables] = useState<TableRow[]>([])
   const [menu, setMenu] = useState<MenuItem[]>([])
   const [menuDocs, setMenuDocs] = useState<MenuDocument[]>([])
+  const [reservations, setReservations] = useState<Reservation[]>([])
 
   useEffect(() => { loadClub() }, [])
 
@@ -68,6 +84,7 @@ export default function RestaurantPage() {
         fetchLocations(admin.club_id),
         fetchMenu(admin.club_id),
         fetchMenuDocs(admin.club_id),
+        fetchReservations(admin.club_id),
       ])
     }
     setLoading(false)
@@ -113,6 +130,31 @@ export default function RestaurantPage() {
     if (data) setMenuDocs(data)
   }
 
+  const fetchReservations = async (cId: string) => {
+    const today = new Date().toISOString().split('T')[0]
+    const { data, error } = await supabase
+      .from('club_restaurant_reservations')
+      .select(`
+        id, player_id, reservation_date, reservation_time, party_size, status, notes,
+        club_restaurant_tables ( table_number, club_restaurant_locations ( name ) )
+      `)
+      .eq('club_id', cId)
+      .gte('reservation_date', today)
+      .neq('status', 'cancelled')
+      .order('reservation_date')
+      .order('reservation_time')
+    if (error) console.error('Failed to load reservations:', error)
+    if (!data) return
+
+    const playerIds = [...new Set(data.map((r: any) => r.player_id))]
+    const { data: players } = playerIds.length
+      ? await supabase.from('User').select('id, name').in('id', playerIds)
+      : { data: [] as { id: string; name: string }[] }
+    const nameById = new Map((players ?? []).map(p => [p.id, p.name]))
+
+    setReservations((data as any[]).map(r => ({ ...r, playerName: nameById.get(r.player_id) ?? 'Unknown' })))
+  }
+
   if (loading) {
     return <div className="p-8 text-text-muted">Loading…</div>
   }
@@ -135,6 +177,7 @@ export default function RestaurantPage() {
           { key: 'locations', label: 'Locations', icon: MapPin },
           { key: 'tables', label: 'Tables', icon: Grid3x3 },
           { key: 'menu', label: 'Menu', icon: UtensilsCrossed },
+          { key: 'reservations', label: 'Reservations', icon: CalendarCheck },
         ] as const).map(t => (
           <button
             key={t.key}
@@ -173,6 +216,65 @@ export default function RestaurantPage() {
           menuDocs={menuDocs}
           onDocsChange={() => fetchMenuDocs(clubId)}
         />
+      )}
+      {activeTab === 'reservations' && (
+        <ReservationsTab
+          reservations={reservations}
+          onChange={() => fetchReservations(clubId)}
+        />
+      )}
+    </div>
+  )
+}
+
+function ReservationsTab({ reservations, onChange }: { reservations: Reservation[], onChange: () => void }) {
+  const supabase = createClient()
+
+  const cancel = async (id: string) => {
+    if (!confirm('Cancel this reservation?')) return
+    await supabase.from('club_restaurant_reservations').update({ status: 'cancelled' }).eq('id', id)
+    onChange()
+  }
+
+  const byDate = new Map<string, Reservation[]>()
+  for (const r of reservations) {
+    byDate.set(r.reservation_date, [...(byDate.get(r.reservation_date) ?? []), r])
+  }
+
+  return (
+    <div className="card p-6">
+      <p className="text-sm text-text-muted mb-6">Upcoming table reservations across all dining areas.</p>
+
+      {reservations.length === 0 ? (
+        <div className="text-center py-10 text-text-muted text-sm">No upcoming reservations.</div>
+      ) : (
+        <div className="space-y-6">
+          {[...byDate.entries()].map(([date, resList]) => (
+            <div key={date}>
+              <h3 className="text-xs font-semibold uppercase text-text-muted mb-2">
+                {new Date(date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
+              </h3>
+              <div className="space-y-2">
+                {resList.map(r => (
+                  <div key={r.id} className="flex items-center justify-between p-4 rounded-xl border border-light">
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm font-mono font-semibold w-16">{r.reservation_time.substring(0, 5)}</div>
+                      <div>
+                        <div className="font-medium">{r.playerName}</div>
+                        <div className="text-xs text-text-muted">
+                          {r.club_restaurant_tables?.club_restaurant_locations?.name} · Table {r.club_restaurant_tables?.table_number} · {r.party_size} guests
+                        </div>
+                      </div>
+                    </div>
+                    <button onClick={() => cancel(r.id)} className="p-2 rounded-lg hover:bg-red-50 text-red-600">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )

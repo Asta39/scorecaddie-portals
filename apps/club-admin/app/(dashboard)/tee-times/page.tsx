@@ -3,6 +3,8 @@
 import React, { useState, useEffect, Fragment } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { Calendar, Settings, FileDown, Search, Plus, Trash2 } from 'lucide-react'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 export default function TeeTimesPage() {
   const supabase = createClient()
@@ -11,6 +13,7 @@ export default function TeeTimesPage() {
   // course_tee_time_settings / casual_tee_time_bookings key off Course.id (text),
   // a different id space than clubs.id — must not conflate the two.
   const [courseId, setCourseId] = useState<string | null>(null)
+  const [clubName, setClubName] = useState<string>('')
   const [loading, setLoading] = useState(true)
   
   // Settings State
@@ -33,13 +36,14 @@ export default function TeeTimesPage() {
       if (user) {
         const { data: admin } = await supabase
           .from('club_admins')
-          .select('club_id, clubs(course_id)')
+          .select('club_id, clubs(name, course_id)')
           .eq('user_id', user.id)
           .single()
         if (admin) {
           setClubId(admin.club_id)
           const club = Array.isArray(admin.clubs) ? admin.clubs[0] : admin.clubs
           setCourseId(club?.course_id ?? null)
+          setClubName(club?.name ?? '')
         }
       }
       setLoading(false)
@@ -98,14 +102,14 @@ export default function TeeTimesPage() {
       p_date: selectedDate
     })
 
-    const { data: bookingsData } = await supabase
+    const { data: bookingsData, error: bookingsError } = await supabase
       .from('casual_tee_time_bookings')
       .select(`
         id, tee_time,
         casual_tee_time_players (
-          player_id, guest_name, status,
+          user_id, custom_name,
           User (
-            name,
+            name, handicap:handicapIndex,
             player_club_memberships (
               club_id, status
             )
@@ -116,10 +120,65 @@ export default function TeeTimesPage() {
       .eq('booking_date', selectedDate)
       .neq('status', 'CANCELLED')
 
+    if (bookingsError) console.error('Failed to load tee sheet bookings:', bookingsError)
+
     if (slots) setTimeSlots(slots)
     if (bookingsData) setBookings(bookingsData)
 
     setLoading(false)
+  }
+
+  const exportTeeSheetPdf = () => {
+    const doc = new jsPDF()
+
+    doc.setFontSize(16)
+    doc.setFont('helvetica', 'bold')
+    doc.text(clubName || 'Tee Sheet', 14, 18)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Daily Tee Sheet — ${selectedDate}`, 14, 26)
+
+    const rows: (string | { content: string; colSpan: number; styles: any })[][] = []
+
+    const sortedSlots = [...timeSlots].sort((a, b) => a.time_slot.localeCompare(b.time_slot))
+    for (const slot of sortedSlots) {
+      const slotBookings = bookings.filter(b => b.tee_time === slot.time_slot)
+      const players = slotBookings.flatMap(b => b.casual_tee_time_players)
+
+      if (players.length === 0) continue
+
+      rows.push([
+        {
+          content: `${slot.time_slot.substring(0, 5)}  (${players.length} of ${maxPlayers} booked)`,
+          colSpan: 3,
+          styles: { fillColor: [240, 245, 235], fontStyle: 'bold', textColor: [40, 40, 40] },
+        },
+      ])
+
+      for (const p of players) {
+        const name = p.custom_name || p.User?.name || 'Unknown'
+        const type = p.custom_name ? 'Guest' : 'Member'
+        const handicap = !p.custom_name && p.User?.handicap != null ? p.User.handicap : '—'
+        rows.push([name, type, String(handicap)])
+      }
+    }
+
+    if (rows.length === 0) {
+      doc.setFontSize(11)
+      doc.text('No bookings for this date.', 14, 38)
+    } else {
+      autoTable(doc, {
+        startY: 34,
+        head: [['Player', 'Type', 'Handicap']],
+        body: rows as any,
+        theme: 'grid',
+        headStyles: { fillColor: [27, 122, 78] },
+        styles: { fontSize: 10, cellPadding: 3 },
+        columnStyles: { 2: { halign: 'center', cellWidth: 30 } },
+      })
+    }
+
+    doc.save(`tee-sheet-${selectedDate}.pdf`)
   }
 
   const blockTimeSlot = async (timeSlot: string) => {
@@ -198,7 +257,7 @@ export default function TeeTimesPage() {
                 className="bg-background border rounded-xl px-4 py-2 outline-none text-sm font-medium"
               />
             </div>
-            <button className="btn-secondary" onClick={() => window.print()}>
+            <button className="btn-secondary" onClick={exportTeeSheetPdf}>
               <FileDown size={18} />
               Export PDF
             </button>
@@ -278,14 +337,17 @@ export default function TeeTimesPage() {
                                       </div>
                                       <div className="flex-1">
                                         <p className="font-medium text-sm text-gray-900">
-                                          {p.guest_name ? p.guest_name : (p.User?.name || 'Unknown')}
+                                          {p.custom_name ? p.custom_name : (p.User?.name || 'Unknown')}
                                         </p>
-                                        {!p.guest_name && !isMember && (
+                                        {!p.custom_name && p.User?.handicap != null && (
+                                          <p className="text-xs text-gray-500">Handicap: <span className="font-medium">{p.User.handicap}</span></p>
+                                        )}
+                                        {!p.custom_name && !isMember && (
                                           <p className="text-xs text-gray-500">Home Club: <span className="font-medium">{homeClub.replace('-', ' ').toUpperCase()}</span></p>
                                         )}
                                       </div>
                                       <div className="flex items-center gap-2">
-                                        {p.guest_name ? (
+                                        {p.custom_name ? (
                                           <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Guest</span>
                                         ) : isMember ? (
                                           <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">Member</span>
