@@ -114,7 +114,7 @@ export default function TeeTimesPage() {
           user_id, custom_name,
           User (
             name, handicap:handicapIndex,
-            player_club_memberships (
+            player_club_memberships!player_club_memberships_player_id_fkey (
               club_id, status
             )
           )
