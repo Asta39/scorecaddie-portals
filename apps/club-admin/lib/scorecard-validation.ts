@@ -87,6 +87,23 @@ export function validateScorecard(holes: HoleRow[], tees: TeeRow[]): Issue[] {
   }
 
   for (const tee of tees) {
+    // WHS course handicap = Handicap Index × (Slope / 113) + (Rating − Par).
+    // Without both numbers a verified card can't drive handicap maths, and
+    // the app would have to invent them.
+    if (tee.courseRating == null || tee.slopeRating == null) {
+      issues.push({
+        level: 'error',
+        message: `${tee.name}: enter the course rating and slope from your KGU rating certificate — handicaps can't be calculated without them.`,
+      })
+    } else {
+      if (tee.slopeRating < 55 || tee.slopeRating > 155) {
+        issues.push({ level: 'error', message: `${tee.name}: slope ${tee.slopeRating} is outside the WHS range of 55–155.` })
+      }
+      if (tee.courseRating < 55 || tee.courseRating > 80) {
+        issues.push({ level: 'warning', message: `${tee.name}: course rating ${tee.courseRating} looks unusual. Check the rating certificate.` })
+      }
+    }
+
     const yards = holes.map(h => h.yardages[tee.id] ?? null)
 
     if (yards.some(y => y === null)) {
