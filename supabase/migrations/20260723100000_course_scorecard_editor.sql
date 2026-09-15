@@ -118,6 +118,27 @@ begin
   end if;
 end $$;
 
+-- Live "CourseHole" was created without "teeId" (schema drift: the repo's
+-- 20260413 migration declares it, production never got it — the app's hole
+-- pull even selects around it). Yardage is per tee, so the editor needs it.
+alter table public."CourseHole"
+  add column if not exists "teeId" text;
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'coursehole_tee_id_fkey') then
+    begin
+      alter table public."CourseHole"
+        add constraint coursehole_tee_id_fkey
+        foreign key ("teeId") references public."Tee"("id") on delete cascade;
+    exception when others then
+      -- Tee.id type drifted too, or orphan rows exist. The column is still
+      -- usable without the FK; don't fail the whole migration over it.
+      raise notice 'Skipped CourseHole.teeId FK: %', sqlerrm;
+    end;
+  end if;
+end $$;
+
 -- One row per hole per tee.
 create unique index if not exists uniq_coursehole_tee_hole
   on public."CourseHole"("teeId", "holeNumber")
