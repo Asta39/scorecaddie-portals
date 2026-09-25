@@ -18,6 +18,7 @@ import { PlusIcon, SearchIcon, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
 import { GlobalSearch } from "@/components/global-search";
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 export function AppSidebar() {
 	const router = useRouter();
@@ -29,13 +30,9 @@ export function AppSidebar() {
 	useEffect(() => {
 		const loadSecretaryDetails = async () => {
 			try {
-				const { data: { user } } = await supabase.auth.getUser()
+				const user = await getCurrentUser()
 				if (user) {
-					const { data: admin } = await supabase
-						.from('club_admins')
-						.select('name, clubs(name)')
-						.eq('user_id', user.id)
-						.single()
+					const { data: admin } = await getCurrentAdminRow()
 					if (admin) {
 						setSecretaryName(admin.name || 'Secretary')
 						setClubName((admin.clubs as any)?.name || 'Score Caddie')

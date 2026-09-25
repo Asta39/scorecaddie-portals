@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase-client'
 import { DashboardSkeleton } from '@/components/dashboard-skeleton'
 import { Shield, Settings as SettingsIcon, Check, AlertCircle, Building, Key, FileText, Sun, Moon, Laptop } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { getCurrentUser } from '@/lib/current-admin'
 
 export default function SettingsPage() {
   const supabase = createClient()
@@ -37,7 +38,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const loadDetails = async () => {
       setLoading(true)
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (user) {
         const { data: admin } = await supabase
           .from('club_admins')

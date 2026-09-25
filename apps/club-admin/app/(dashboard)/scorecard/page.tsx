@@ -13,6 +13,7 @@ import {
   type Issue,
 } from '@/lib/scorecard-validation'
 import { HeaderSkeleton, CardSkeleton, RowsSkeleton } from '@/components/ui/page-skeletons'
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 const GENDERS = ['men', 'women', 'unisex']
 
@@ -41,14 +42,10 @@ export default function ScorecardPage() {
   const load = async () => {
     setLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (!user) return
 
-      const { data: admin } = await supabase
-        .from('club_admins')
-        .select('club_id, clubs(name, course_id)')
-        .eq('user_id', user.id)
-        .single()
+      const { data: admin } = await getCurrentAdminRow()
 
       const club = Array.isArray(admin?.clubs) ? admin.clubs[0] : admin?.clubs
       const cid = club?.course_id ?? null
@@ -219,7 +216,7 @@ export default function ScorecardPage() {
       const { error: holeErr } = await supabase.from('CourseHole').insert(holeRows)
       if (holeErr) throw holeErr
 
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       const { error: courseErr } = await supabase
         .from('Course')
         .update({

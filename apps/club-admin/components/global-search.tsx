@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SearchIcon, User, LayoutDashboard, Calendar, Users, CreditCard, BarChart3, Settings, HelpCircle, Activity, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase-client";
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 // ─── Nav pages ────────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
@@ -66,14 +67,10 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
     const run = async () => {
       // First get club_id for the current admin
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       if (!user || cancelled) return;
 
-      const { data: adminData } = await supabase
-        .from("club_admins")
-        .select("club_id")
-        .eq("user_id", user.id)
-        .single();
+      const { data: adminData } = await getCurrentAdminRow();
 
       if (!adminData || cancelled) { setCaddieLoading(false); return; }
 

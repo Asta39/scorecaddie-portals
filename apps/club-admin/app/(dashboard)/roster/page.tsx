@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase-client'
 import { TableSkeleton } from '@/components/ui/table-skeleton'
 import { startOfWeek, addDays, format, isSameDay, parseISO } from 'date-fns'
 import { Calendar as CalendarIcon, Check, X, Clock, AlertCircle, ChevronLeft, ChevronRight, User, Search, Download } from 'lucide-react'
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 type Caddie = {
   id: string
@@ -50,13 +51,9 @@ export default function RosterPage() {
   // 1. Fetch user club details
   useEffect(() => {
     const loadClub = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (user) {
-        const { data: admin } = await supabase
-          .from('club_admins')
-          .select('club_id')
-          .eq('user_id', user.id)
-          .single()
+        const { data: admin } = await getCurrentAdminRow()
         if (admin) {
           setClubId(admin.club_id)
         }

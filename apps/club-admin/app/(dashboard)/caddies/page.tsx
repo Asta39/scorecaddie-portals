@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase-client'
 import { Plus, Search, User, Check, X, Camera, Edit2, AlertTriangle, Upload, Download, BarChart3 } from 'lucide-react'
 import Papa from 'papaparse'
 import { CaddieStatsDrawer } from '@/components/caddies/CaddieStatsDrawer'
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 type Caddie = {
   id: string
@@ -58,13 +59,9 @@ export default function CaddiesPage() {
   // 1. Fetch user club details
   useEffect(() => {
     const loadClub = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (user) {
-        const { data: admin } = await supabase
-          .from('club_admins')
-          .select('club_id')
-          .eq('user_id', user.id)
-          .single()
+        const { data: admin } = await getCurrentAdminRow()
         if (admin) {
           setClubId(admin.club_id)
         }

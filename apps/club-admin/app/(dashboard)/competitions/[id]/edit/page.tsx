@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { Save, X, Trophy, Image as ImageIcon } from 'lucide-react'
 import { HeaderSkeleton, FormSkeleton } from '@/components/ui/page-skeletons'
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 export default function EditCompetitionPage() {
   const router = useRouter()
@@ -48,14 +49,10 @@ export default function EditCompetitionPage() {
 
   useEffect(() => {
     const loadClubAndCompetition = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       let currentClubId = null
       if (user) {
-        const { data: admin } = await supabase
-          .from('club_admins')
-          .select('club_id')
-          .eq('user_id', user.id)
-          .single()
+        const { data: admin } = await getCurrentAdminRow()
         if (admin) {
           currentClubId = admin.club_id
           setClubId(currentClubId)

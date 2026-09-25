@@ -1,7 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { cacheAccess, forgetAccess, isAccessCached } from '@/lib/access-cache'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -33,10 +34,14 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  let user = null
+  // getClaims() verifies the JWT locally (ES256 signing keys) instead of a
+  // round trip to the Auth server on every request.
+  let user: { id: string; email?: string } | null = null
   try {
-    const { data } = await supabase.auth.getUser()
-    user = data?.user ?? null
+    const { data } = await supabase.auth.getClaims()
+    if (data?.claims?.sub) {
+      user = { id: data.claims.sub, email: data.claims.email as string | undefined }
+    }
   } catch (err) {
     console.error('Error fetching user in middleware:', err)
   }
@@ -61,7 +66,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // If logged in, verify they are super_admin
-  if (user && !isPublicPage) {
+  if (user && !isPublicPage && !isAccessCached(user.id)) {
     let isSuperAdmin = false
     try {
       const { data: profile } = await supabase
@@ -81,7 +86,10 @@ export async function middleware(request: NextRequest) {
     const expectedEmail = process.env.SUPER_ADMIN_EMAIL
     const emailOk = !expectedEmail || user.email === expectedEmail
 
-    if (!isSuperAdmin || !emailOk) {
+    if (isSuperAdmin && emailOk) {
+      cacheAccess(user.id)
+    } else {
+      forgetAccess(user.id)
       try {
         await supabase.auth.signOut()
       } catch (_) {}

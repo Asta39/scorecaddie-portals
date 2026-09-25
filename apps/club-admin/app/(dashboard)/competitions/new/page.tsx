@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { Save, X, Trophy, Image as ImageIcon } from 'lucide-react'
 import { HeaderSkeleton, FormSkeleton } from '@/components/ui/page-skeletons'
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 function NewCompetitionForm() {
   const router = useRouter()
@@ -51,13 +52,9 @@ function NewCompetitionForm() {
 
   useEffect(() => {
     const loadClub = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (user) {
-        const { data: admin } = await supabase
-          .from('club_admins')
-          .select('club_id')
-          .eq('user_id', user.id)
-          .single()
+        const { data: admin } = await getCurrentAdminRow()
         if (admin) {
           setClubId(admin.club_id)
         }

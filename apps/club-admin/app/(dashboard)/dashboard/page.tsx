@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase'
+import { getServerAdmin } from '@/lib/server-admin'
 import { format } from 'date-fns'
 import { Users, UserCheck, CreditCard, Clock } from 'lucide-react'
 import { Dashboard } from '@/components/dashboard'
@@ -152,17 +153,7 @@ async function DashboardContent({ clubId }: { clubId: string }) {
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) throw new Error('Not authenticated')
-
-  const { data: admin } = await supabase
-    .from('club_admins')
-    .select('club_id')
-    .eq('user_id', user.id)
-    .single()
-
+  const admin = await getServerAdmin()
   if (!admin) throw new Error('Club admin record not found')
 
   return (
@@ -181,7 +172,7 @@ export default async function DashboardPage() {
       </div>
       
       <Suspense fallback={<DashboardSkeleton />}>
-        <DashboardContent clubId={admin.club_id} />
+        <DashboardContent clubId={admin.clubId} />
       </Suspense>
     </div>
   )

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 type AdminNotification = {
   id: string
@@ -29,14 +30,10 @@ export function NotificationBell() {
 
   const loadData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (!user) return
 
-      const { data: admin } = await supabase
-        .from('club_admins')
-        .select('club_id')
-        .eq('user_id', user.id)
-        .single()
+      const { data: admin } = await getCurrentAdminRow()
       
       if (admin && admin.club_id) {
         setClubId(admin.club_id)

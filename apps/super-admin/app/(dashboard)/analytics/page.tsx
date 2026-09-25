@@ -2,61 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
-import { format, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns'
+import { format } from 'date-fns'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Legend, PieChart, Pie, Cell
 } from 'recharts'
 import {
   TrendingUp, Users, ShieldAlert, Award, Zap,
-  Building, CheckCircle, RefreshCw, BarChart3, Star, Compass
+  Building, CheckCircle, RefreshCw, Star
 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
-
-type Club = {
-  id: string
-  name: string
-  location: string | null
-  status: string
-  created_at: string
-}
-
-type ClubAdmin = {
-  id: string
-  club_id: string
-  name: string | null
-}
-
-type Caddie = {
-  id: string
-  club_id: string
-  is_active: boolean
-  paid_until: string | null
-  created_at: string
-}
-
-type Payment = {
-  id: string
-  club_id: string
-  amount_kes: number
-  caddie_count: number
-  status: string
-  paid_at: string
-}
-
-type DatabaseUser = {
-  id: string
-  role: string
-  createdAt: string
-}
-
-type Round = {
-  id: string
-  userId: string
-  courseName: string | null
-  totalScore: number | null
-  playedAt: string
-}
 
 type ClubRow = {
   id: string
@@ -105,71 +60,27 @@ export default function PlatformAnalyticsPage() {
   const loadPlatformAnalytics = async () => {
     setLoading(true)
     try {
-      // 1. Fetch raw data from Supabase
-      const [
-        clubsRes,
-        adminsRes,
-        caddiesRes,
-        paymentsRes,
-        usersRes,
-        flagsRes,
-        attendanceRes,
-        roundsRes
-      ] = await Promise.all([
-        supabase.from('clubs').select('*'),
-        supabase.from('club_admins').select('*'),
-        supabase.from('caddies').select('*'),
-        supabase.from('caddie_payments').select('*').eq('status', 'confirmed'),
-        supabase.from('User').select('*'),
-        supabase.from('platform_flags').select('*').eq('resolved', false),
-        supabase.from('caddie_attendance').select('*'),
-        supabase.from('Round').select('*')
-      ])
+      // One server-side aggregate instead of downloading eight whole tables
+      // (every user, round and attendance row) and counting in the browser.
+      // That grew with the platform and silently undercounted past
+      // PostgREST's 1000-row response cap.
+      const { data: a, error } = await supabase.rpc('platform_analytics')
+      if (error || !a) throw error ?? new Error('No analytics data')
 
-      const clubs: Club[] = clubsRes.data ?? []
-      const admins: ClubAdmin[] = adminsRes.data ?? []
-      const caddies: Caddie[] = caddiesRes.data ?? []
-      const payments: Payment[] = paymentsRes.data ?? []
-      const users: DatabaseUser[] = usersRes.data ?? []
-      const flags = flagsRes.data ?? []
-      const attendance = attendanceRes.data ?? []
-      const rounds: Round[] = roundsRes.data ?? []
+      const n = (v: unknown) => Number(v ?? 0)
 
-      const now = new Date()
-
-      // ── PLATFORM OVERVIEW KPIs ──────────────────────────────────────
-      const totalClubs = clubs.length
-      const clubsWithAdmin = clubs.filter(c => admins.some(a => a.club_id === c.id)).length
-
-      const playersCount = users.filter(u => u.role?.toUpperCase() === 'PLAYER').length
-      const coachesCount = users.filter(u => u.role?.toUpperCase() === 'COACH').length
-      const caddiesCount = caddies.length
+      const playersCount = n(a.players)
+      const coachesCount = n(a.coaches)
+      const caddiesCount = n(a.caddies)
       const totalUsers = playersCount + coachesCount + caddiesCount
-
-      // Active users: players who played a round in the last 7/30 days + caddies checked in
-      const activePlayerIds30d = new Set(rounds.filter(r => new Date(r.playedAt) > subDays(now, 30)).map(r => r.userId))
-      const activeCaddieIds30d = new Set(attendance.filter(a => a.time_in && new Date(a.date) > subDays(now, 30)).map(a => a.caddie_id))
-      const active30d = activePlayerIds30d.size + activeCaddieIds30d.size
-
-      const activePlayerIds7d = new Set(rounds.filter(r => new Date(r.playedAt) > subDays(now, 7)).map(r => r.userId))
-      const activeCaddieIds7d = new Set(attendance.filter(a => a.time_in && new Date(a.date) > subDays(now, 7)).map(a => a.caddie_id))
-      const active7d = activePlayerIds7d.size + activeCaddieIds7d.size
-
-      // Payments volume
-      const totalVolume = payments.reduce((sum, p) => sum + (p.amount_kes ?? 0), 0)
-      
-      // MRR calculation (caddies paid * 280 KES monthly fee)
-      const activePaidCaddies = caddies.filter(c => c.is_active && c.paid_until && new Date(c.paid_until) > now).length
+      const activePlayers30d = n(a.activePlayers30d)
+      const activePaidCaddies = n(a.activePaidCaddies)
+      const totalClubs = n(a.totalClubs)
+      const totalVolume = n(a.totalVolume)
       const currentMRR = activePaidCaddies * 280
 
-      const avgBillingPerClub = totalClubs > 0 ? totalVolume / totalClubs : 0
-
-      // User Growth Rate (MoM)
-      const usersLast30d = users.filter(u => new Date(u.createdAt) > subDays(now, 30)).length
-      const usersPrev30d = users.filter(u => {
-        const d = new Date(u.createdAt)
-        return d > subDays(now, 60) && d <= subDays(now, 30)
-      }).length
+      const usersLast30d = n(a.usersLast30d)
+      const usersPrev30d = n(a.usersPrev30d)
       const growthRate = usersPrev30d > 0
         ? parseFloat((((usersLast30d - usersPrev30d) / usersPrev30d) * 100).toFixed(1))
         : usersLast30d > 0 ? 100.0 : 0.0
@@ -179,50 +90,23 @@ export default function PlatformAnalyticsPage() {
         playersCount,
         coachesCount,
         caddiesCount,
-        active7d,
-        active30d,
+        active7d: n(a.activePlayers7d) + n(a.activeCaddies7d),
+        active30d: activePlayers30d + n(a.activeCaddies30d),
         totalClubs,
-        clubsWithAdmin,
+        clubsWithAdmin: n(a.clubsWithAdmin),
         growthRate,
         totalVolume,
         currentMRR,
-        avgBillingPerClub,
-        flaggedIssues: flags.length,
+        avgBillingPerClub: totalClubs > 0 ? totalVolume / totalClubs : 0,
+        flaggedIssues: n(a.flaggedIssues),
       })
 
       // ── FINANCIAL TRENDS (Last 6 Months) ──────────────────────────
-      const mrrTrendData = []
-      const monthOffsets = [5, 4, 3, 2, 1, 0]
-      
-      for (const offset of monthOffsets) {
-        const date = subMonths(now, offset)
-        const label = format(date, 'MMM yyyy')
-        const monthStart = startOfMonth(date)
-        const monthEnd = endOfMonth(date)
-
-        // Confirmed payments inside this month
-        const monthPayments = payments.filter(p => {
-          const paidAt = new Date(p.paid_at)
-          return paidAt >= monthStart && paidAt <= monthEnd
-        })
-        const vol = monthPayments.reduce((sum, p) => sum + p.amount_kes, 0)
-        
-        // Active subscriptions at this month's end
-        const paidCaddiesCount = caddies.filter(c => {
-          const created = new Date(c.created_at)
-          const paidUntil = c.paid_until ? new Date(c.paid_until) : null
-          return created <= monthEnd && paidUntil && paidUntil >= monthEnd
-        }).length
-        
-        const mrrVal = paidCaddiesCount * 280
-
-        mrrTrendData.push({
-          month: label,
-          MRR: mrrVal,
-          Volume: vol
-        })
-      }
-      setMrrTrend(mrrTrendData)
+      setMrrTrend((a.months ?? []).map((m: { start: string; volume: number; paidCaddies: number }) => ({
+        month: format(new Date(`${m.start}T12:00:00`), 'MMM yyyy'),
+        MRR: n(m.paidCaddies) * 280,
+        Volume: n(m.volume),
+      })))
 
       // ── USER DISTRIBUTION ──────────────────────────────────────────
       setUserDistribution([
@@ -232,67 +116,29 @@ export default function PlatformAnalyticsPage() {
       ].filter(u => u.value > 0))
 
       // ── CADDIE SUBSCRIPTION STATUSES ──────────────────────────────
-      const activeCount = caddies.filter(c => c.is_active && c.paid_until && new Date(c.paid_until) > now).length
-      const expiringCount = caddies.filter(c =>
-        c.is_active && c.paid_until &&
-        new Date(c.paid_until) > now &&
-        new Date(c.paid_until) < new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-      ).length
-      const expiredCount = caddies.length - activeCount
-
       setSubStatusData([
-        { name: 'Active', value: activeCount, color: '#10b981' },
-        { name: 'Expiring Soon', value: expiringCount, color: '#f59e0b' },
-        { name: 'Expired', value: expiredCount, color: '#ef4444' }
+        { name: 'Active', value: activePaidCaddies, color: '#10b981' },
+        { name: 'Expiring Soon', value: n(a.expiring7d), color: '#f59e0b' },
+        { name: 'Expired', value: caddiesCount - activePaidCaddies, color: '#ef4444' }
       ].filter(s => s.value > 0))
 
       // ── GOLFER ACTIVITY & ROUNDS ──────────────────────────────────
-      const dailyRounds = []
-      for (let i = 29; i >= 0; i--) {
-        const day = subDays(now, i)
-        const dateStr = format(day, 'yyyy-MM-dd')
-        const count = rounds.filter(r => r.playedAt && r.playedAt.startsWith(dateStr)).length
-        dailyRounds.push({
-          date: format(day, 'dd MMM'),
-          'Rounds Played': count
-        })
-      }
-      setRoundsTrendData(dailyRounds)
+      setRoundsTrendData((a.dailyRounds ?? []).map((d: { date: string; count: number }) => ({
+        date: format(new Date(`${d.date}T12:00:00`), 'dd MMM'),
+        'Rounds Played': n(d.count),
+      })))
 
-      // Top courses played
-      const courseCounts: { [key: string]: number } = {}
-      rounds.forEach(r => {
-        const name = r.courseName || 'Unknown Course'
-        courseCounts[name] = (courseCounts[name] || 0) + 1
-      })
-      const topCourses = Object.entries(courseCounts).map(([name, count]) => ({
-        name,
-        count
-      })).sort((a, b) => b.count - a.count)
-      setTopCoursesData(topCourses)
-
-      // Average score by course
-      const courseScores: { [key: string]: { sum: number; count: number } } = {}
-      rounds.forEach(r => {
-        const name = r.courseName || 'Unknown Course'
-        if (r.totalScore) {
-          if (!courseScores[name]) {
-            courseScores[name] = { sum: 0, count: 0 }
-          }
-          courseScores[name].sum += r.totalScore
-          courseScores[name].count++
-        }
-      })
-      const avgScores = Object.entries(courseScores).map(([name, d]) => ({
-        name,
-        avgScore: parseFloat((d.sum / d.count).toFixed(1))
-      })).sort((a, b) => b.avgScore - a.avgScore)
-      setAvgScoresData(avgScores)
+      const courses: { name: string; count: number; avgScore: number | null }[] = a.courses ?? []
+      setTopCoursesData(courses.map(c => ({ name: c.name, count: n(c.count) })))
+      setAvgScoresData(courses
+        .filter(c => c.avgScore != null)
+        .map(c => ({ name: c.name, avgScore: n(c.avgScore) }))
+        .sort((x, y) => y.avgScore - x.avgScore))
 
       // ── RETENTION & HEALTH RATIOS ─────────────────────────────────
-      const playerRetention = playersCount > 0 ? Math.round((activePlayerIds30d.size / playersCount) * 100) : 0
+      const playerRetention = playersCount > 0 ? Math.round((activePlayers30d / playersCount) * 100) : 0
       const caddieRenewal = caddiesCount > 0 ? Math.round((activePaidCaddies / caddiesCount) * 100) : 0
-      const coachRetention = coachesCount > 0 ? Math.round((activePlayerIds30d.size / coachesCount) * 100) : 0 // using active rounds as generic activity flag
+      const coachRetention = coachesCount > 0 ? Math.round((activePlayers30d / coachesCount) * 100) : 0 // using active rounds as generic activity flag
 
       setRetentionData([
         { name: 'Player Retention (30d)', value: playerRetention, fill: '#10b981' },
@@ -301,19 +147,12 @@ export default function PlatformAnalyticsPage() {
       ].filter(r => r.value > 0))
 
       // ── CLUBS HEALTH SCORE RANKING ────────────────────────────────
-      const clubRows: ClubRow[] = clubs.map(club => {
-        const clubCaddies = caddies.filter(c => c.club_id === club.id)
-        const rosterSize = clubCaddies.length
-        const activeSubs = clubCaddies.filter(c => c.paid_until && new Date(c.paid_until) > now).length
-        const hasAdmin = admins.some(a => a.club_id === club.id)
-        
-        // Count actual check-ins at this club in the last 30 days
-        const checkInCount30d = attendance.filter(a =>
-          a.club_id === club.id &&
-          a.time_in &&
-          !a.is_absent &&
-          new Date(a.date) > subDays(now, 30)
-        ).length
+      type ClubAgg = { id: string; name: string | null; location: string | null; rosterSize: number; activeSubs: number; hasAdmin: boolean; checkIns30d: number }
+      const clubRows: ClubRow[] = (a.clubs ?? []).map((club: ClubAgg) => {
+        const rosterSize = n(club.rosterSize)
+        const activeSubs = n(club.activeSubs)
+        const hasAdmin = !!club.hasAdmin
+        const checkInCount30d = n(club.checkIns30d)
 
         // Health Index weightings (no mock activity values)
         const healthScore = Math.min(100, Math.round(

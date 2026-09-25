@@ -8,6 +8,7 @@ import {
   LayoutDashboard, Calendar, Users, Megaphone,
   CreditCard, Settings, LogOut, ChevronRight, BarChart3, Menu, X, UserCheck
 } from 'lucide-react'
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -31,13 +32,9 @@ export default function Sidebar() {
   useEffect(() => {
     const loadSecretaryDetails = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
+        const user = await getCurrentUser()
         if (user) {
-          const { data: admin } = await supabase
-            .from('club_admins')
-            .select('name, clubs(name)')
-            .eq('user_id', user.id)
-            .single()
+          const { data: admin } = await getCurrentAdminRow()
           if (admin) {
             setSecretaryName(admin.name || 'Secretary')
             setClubName((admin.clubs as any)?.name || 'Golf Club')

@@ -7,6 +7,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { computeHandicaps, formatHandicaps, type HandicapTee } from '@/lib/handicap'
 import { RowsSkeleton } from '@/components/ui/page-skeletons'
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 export default function TeeTimesPage() {
   const supabase = createClient()
@@ -40,13 +41,9 @@ export default function TeeTimesPage() {
 
   useEffect(() => {
     const loadClub = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (user) {
-        const { data: admin } = await supabase
-          .from('club_admins')
-          .select('club_id, clubs(name, course_id)')
-          .eq('user_id', user.id)
-          .single()
+        const { data: admin } = await getCurrentAdminRow()
         if (admin) {
           setClubId(admin.club_id)
           const club = Array.isArray(admin.clubs) ? admin.clubs[0] : admin.clubs

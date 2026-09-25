@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { MapPin, UtensilsCrossed, Grid3x3, Plus, Trash2, Pencil, X, Check, FileText, Upload, CalendarCheck } from 'lucide-react'
 import { HeaderSkeleton, TabsSkeleton, CardSkeleton } from '@/components/ui/page-skeletons'
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 type Location = {
   id: string
@@ -72,13 +73,9 @@ export default function RestaurantPage() {
 
   const loadClub = async () => {
     setLoading(true)
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getCurrentUser()
     if (!user) { setLoading(false); return }
-    const { data: admin } = await supabase
-      .from('club_admins')
-      .select('club_id')
-      .eq('user_id', user.id)
-      .single()
+    const { data: admin } = await getCurrentAdminRow()
     if (admin?.club_id) {
       setClubId(admin.club_id)
       await Promise.all([

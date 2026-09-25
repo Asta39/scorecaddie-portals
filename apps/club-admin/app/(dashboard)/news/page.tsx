@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Trash2, Megaphone, Calendar, Trophy, Plus, RefreshCw } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { HeaderSkeleton, FormSkeleton, CardSkeleton } from '@/components/ui/page-skeletons'
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 type ClubPost = {
   id: string
@@ -39,14 +40,10 @@ export default function NewsFeedPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (!user) return
 
-      const { data: admin } = await supabase
-        .from('club_admins')
-        .select('club_id')
-        .eq('user_id', user.id)
-        .single()
+      const { data: admin } = await getCurrentAdminRow()
       
       if (admin && admin.club_id) {
         setClubId(admin.club_id)
@@ -74,7 +71,7 @@ export default function NewsFeedPage() {
     setIsCreating(true)
     
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (!user) return
 
       const { data: profile } = await supabase

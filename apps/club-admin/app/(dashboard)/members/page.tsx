@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase-client'
 import { TableSkeleton } from '@/components/ui/table-skeleton'
 import { Check, X, Search, User, AlertTriangle, Upload, Plus, Download, Trash, UserPlus, Users } from 'lucide-react'
 import Papa from 'papaparse'
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 type Member = {
   id: string
@@ -56,13 +57,9 @@ export default function MembersPage() {
 
   useEffect(() => {
     const loadClubAndData = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (user) {
-        const { data: admin } = await supabase
-          .from('club_admins')
-          .select('club_id')
-          .eq('user_id', user.id)
-          .single()
+        const { data: admin } = await getCurrentAdminRow()
         
         if (admin?.club_id) {
           setClubId(admin.club_id)

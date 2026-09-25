@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { cacheAccess, forgetAccess, isAccessCached } from '@/lib/access-cache'
 
 async function runMiddleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -33,15 +34,16 @@ async function runMiddleware(request: NextRequest) {
     }
   )
 
-  let user = null
+  // getClaims() verifies the JWT locally against the project's cached
+  // signing keys (ES256), instead of getUser()'s round trip to the Auth
+  // server on every request. It still refreshes an expiring session.
+  let user: { id: string } | null = null
   try {
-    const { data, error } = await supabase.auth.getUser()
+    const { data, error } = await supabase.auth.getClaims()
     if (error) {
       console.error('Supabase Auth error in proxy:', error.message)
-      // If refresh token is invalid or missing, we can force a clear
-      // by setting user to null so they get redirected.
-    } else {
-      user = data?.user ?? null
+    } else if (data?.claims?.sub) {
+      user = { id: data.claims.sub }
     }
   } catch (err) {
     console.error('Unhandled fetch error in proxy:', err)
@@ -69,7 +71,7 @@ async function runMiddleware(request: NextRequest) {
   }
 
   // If logged in, verify they are club_admin and active
-  if (user && !isLoginPage) {
+  if (user && !isLoginPage && !isAccessCached(user.id)) {
     let isClubAdmin = false
     let isActive = false
 
@@ -85,7 +87,10 @@ async function runMiddleware(request: NextRequest) {
       console.error('Error fetching admin profile in middleware:', err)
     }
 
-    if (!isClubAdmin || !isActive) {
+    if (isClubAdmin && isActive) {
+      cacheAccess(user.id)
+    } else {
+      forgetAccess(user.id)
       try {
         await supabase.auth.signOut()
       } catch (_) {}
@@ -105,11 +110,11 @@ async function runMiddleware(request: NextRequest) {
 }
 
 // The main logic is now inside the try-catch to ensure we never crash the Edge runtime.
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   try {
     return await runMiddleware(request)
   } catch (error) {
-    console.error('Critical failure in middleware:', error)
+    console.error('Critical failure in proxy:', error)
     const isApi = request.nextUrl.pathname.startsWith('/api/')
     if (isApi) {
       return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

@@ -9,8 +9,12 @@ export const dynamic = 'force-dynamic'
 
 async function getDashboardData() {
   const supabase = await createClient()
+  const nowIso = new Date().toISOString()
+  const in7DaysIso = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
 
-  // ── Core counts ────────────────────────────────────────────────
+  // Everything below is independent, so fire it all at once. This used to
+  // run as a chain of sequential awaits plus two count queries per club in a
+  // loop, and downloaded every confirmed payment ever made.
   const [
     { count: totalClubs },
     { count: totalCaddies },
@@ -18,88 +22,63 @@ async function getDashboardData() {
     { count: expiredSubscriptions },
     { count: expiringIn7Days },
     { count: unresolvedFlags },
+    { data: priceConfig },
+    { data: summary, error: summaryError },
+    { data: recentPayments },
+    { data: flags },
   ] = await Promise.all([
     supabase.from('clubs').select('*', { count: 'exact', head: true }).eq('status', 'active'),
     supabase.from('caddies').select('*', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('caddies').select('*', { count: 'exact', head: true })
-      .eq('is_active', true).gt('paid_until', new Date().toISOString()),
+      .eq('is_active', true).gt('paid_until', nowIso),
     supabase.from('caddies').select('*', { count: 'exact', head: true })
-      .eq('is_active', true).lt('paid_until', new Date().toISOString()),
+      .eq('is_active', true).lt('paid_until', nowIso),
     supabase.from('caddies').select('*', { count: 'exact', head: true })
-      .eq('is_active', true)
-      .gt('paid_until', new Date().toISOString())
-      .lt('paid_until', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()),
+      .eq('is_active', true).gt('paid_until', nowIso).lt('paid_until', in7DaysIso),
     supabase.from('platform_flags').select('*', { count: 'exact', head: true }).eq('resolved', false),
+    supabase.from('platform_config').select('value').eq('key', 'caddie_monthly_fee_kes').single(),
+    supabase.rpc('platform_dashboard_summary', { p_club_limit: 10 }),
+    supabase.from('caddie_payments').select('*, clubs(name)')
+      .order('created_at', { ascending: false }).limit(6),
+    supabase.from('platform_flags').select('*, clubs(name)')
+      .eq('resolved', false).order('created_at', { ascending: false }).limit(5),
   ])
 
-  // ── Pricing & MRR ─────────────────────────────────────────────
-  const { data: priceConfig } = await supabase
-    .from('platform_config')
-    .select('value')
-    .eq('key', 'caddie_monthly_fee_kes')
-    .single()
+  if (summaryError) console.error('platform_dashboard_summary failed:', summaryError.message)
 
   const pricePerCaddie = parseInt(priceConfig?.value ?? '280', 10)
   const mrr = (activeSubscriptions ?? 0) * pricePerCaddie
 
-  // ── All payments (for revenue chart) ──────────────────────────
-  const { data: allPayments } = await supabase
-    .from('caddie_payments')
-    .select('amount_kes, created_at')
-    .eq('status', 'confirmed')
+  // Confirmed revenue per day; same {created_at, amount_kes} shape the
+  // revenue chart already reads.
+  const allPayments: { created_at: string; amount_kes: number }[] =
+    (summary?.daily ?? []).map((d: { created_at: string; amount_kes: number | string }) => ({
+      created_at: d.created_at,
+      amount_kes: Number(d.amount_kes),
+    }))
+  const totalRevenue = allPayments.reduce((sum, p) => sum + p.amount_kes, 0)
 
-  const totalRevenue = (allPayments ?? []).reduce((sum, p) => sum + (p.amount_kes ?? 0), 0)
-
-  // Monthly revenue for last 6 months
   const now = new Date()
   const monthlyRevenue: { month: string; amount: number }[] = []
   for (let i = 5; i >= 0; i--) {
     const m = subMonths(now, i)
-    const label = format(m, 'MMM')
-    const mStart = startOfMonth(m).toISOString()
-    const mEnd = endOfMonth(m).toISOString()
-    const total = (allPayments ?? [])
-      .filter(p => p.created_at >= mStart && p.created_at <= mEnd)
-      .reduce((sum, p) => sum + (p.amount_kes ?? 0), 0)
-    monthlyRevenue.push({ month: label, amount: total })
+    const mStart = startOfMonth(m).getTime()
+    const mEnd = endOfMonth(m).getTime()
+    const total = allPayments
+      .filter(p => {
+        const t = new Date(p.created_at).getTime()
+        return t >= mStart && t <= mEnd
+      })
+      .reduce((sum, p) => sum + p.amount_kes, 0)
+    monthlyRevenue.push({ month: format(m, 'MMM'), amount: total })
   }
 
-  // ── Per-club breakdown (for bar chart) ────────────────────────
-  const { data: clubs } = await supabase
-    .from('clubs')
-    .select('id, name')
-    .eq('status', 'active')
-    .order('name', { ascending: true })
-    .limit(10)
-
-  const clubCaddies: { name: string; caddies: number; active: number }[] = []
-  for (const club of (clubs ?? [])) {
-    const [{ count: total }, { count: activeCt }] = await Promise.all([
-      supabase.from('caddies').select('*', { count: 'exact', head: true }).eq('club_id', club.id).eq('is_active', true),
-      supabase.from('caddies').select('*', { count: 'exact', head: true })
-        .eq('club_id', club.id).eq('is_active', true).gt('paid_until', new Date().toISOString()),
-    ])
-    clubCaddies.push({
-      name: club.name.length > 18 ? club.name.substring(0, 16) + '…' : club.name,
-      caddies: total ?? 0,
-      active: activeCt ?? 0,
-    })
-  }
-
-  // ── Recent payments ────────────────────────────────────────────
-  const { data: recentPayments } = await supabase
-    .from('caddie_payments')
-    .select('*, clubs(name)')
-    .order('created_at', { ascending: false })
-    .limit(6)
-
-  // ── Recent flags ───────────────────────────────────────────────
-  const { data: flags } = await supabase
-    .from('platform_flags')
-    .select('*, clubs(name)')
-    .eq('resolved', false)
-    .order('created_at', { ascending: false })
-    .limit(5)
+  const clubCaddies: { name: string; caddies: number; active: number }[] =
+    (summary?.clubs ?? []).map((c: { name: string; caddies: number; active: number }) => ({
+      name: c.name.length > 18 ? c.name.substring(0, 16) + '…' : c.name,
+      caddies: Number(c.caddies),
+      active: Number(c.active),
+    }))
 
   return {
     totalClubs: totalClubs ?? 0,
@@ -112,7 +91,7 @@ async function getDashboardData() {
     totalRevenue,
     pricePerCaddie,
     monthlyRevenue,
-    allPayments: allPayments ?? [],
+    allPayments,
     clubCaddies,
     recentPayments: recentPayments ?? [],
     flags: flags ?? [],

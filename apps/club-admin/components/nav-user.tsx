@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserIcon, SettingsIcon, LogOutIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 export function NavUser() {
 	const router = useRouter();
@@ -26,13 +27,9 @@ export function NavUser() {
 
 	useEffect(() => {
 		const loadUser = async () => {
-			const { data: { user: authUser } } = await supabase.auth.getUser()
+			const authUser = await getCurrentUser()
 			if (authUser) {
-				const { data: admin } = await supabase
-					.from('club_admins')
-					.select('name')
-					.eq('user_id', authUser.id)
-					.single()
+				const { data: admin } = await getCurrentAdminRow()
 				
 				const name = admin?.name || "Secretary";
 				setUser({
