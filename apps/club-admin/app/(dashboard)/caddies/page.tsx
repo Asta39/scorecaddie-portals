@@ -8,6 +8,8 @@ import { Plus, Search, User, Check, X, Camera, Edit2, AlertTriangle, Upload, Dow
 import Papa from 'papaparse'
 import { CaddieStatsDrawer } from '@/components/caddies/CaddieStatsDrawer'
 import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
+import { usePaged, Pager } from '@/components/ui/pager'
+import { fetchAll } from '@/lib/fetch-all'
 
 type Caddie = {
   id: string
@@ -78,16 +80,20 @@ export default function CaddiesPage() {
     const todayStr = new Date().toISOString().split('T')[0]
     
     const [caddiesRes, attendanceRes] = await Promise.all([
-      supabase
+      fetchAll((from, to) => supabase
         .from('caddies')
         .select('*')
         .eq('club_id', clubId)
-        .order('name', { ascending: true }),
-      supabase
+        .order('name', { ascending: true })
+        .order('id')
+        .range(from, to)),
+      fetchAll((from, to) => supabase
         .from('caddie_attendance')
         .select('caddie_id, time_in, time_out, is_absent')
         .eq('club_id', clubId)
         .eq('date', todayStr)
+        .order('caddie_id')
+        .range(from, to))
     ])
 
     if (caddiesRes.data) {
@@ -383,6 +389,7 @@ export default function CaddiesPage() {
     c.phone.includes(searchQuery) ||
     (c.id_number && c.id_number.includes(searchQuery))
   )
+  const caddiesPage = usePaged(filteredCaddies)
 
   return (
     <div className="portal-content">
@@ -451,7 +458,7 @@ export default function CaddiesPage() {
                     </div>
                   </td>
                 </tr>
-              ) : filteredCaddies.map(c => {
+              ) : caddiesPage.pageItems.map(c => {
                 const isPaid = c.paid_until && new Date(c.paid_until) > new Date()
                 return (
                   <tr key={c.id}>
@@ -511,6 +518,7 @@ export default function CaddiesPage() {
               })}
             </tbody>
             </table>
+                  <Pager {...caddiesPage} />
           </div>
         </div>
       )}

@@ -6,6 +6,8 @@ import { TableSkeleton } from '@/components/ui/table-skeleton'
 import { Check, X, Search, User, AlertTriangle, Upload, Plus, Download, Trash, UserPlus, Users } from 'lucide-react'
 import Papa from 'papaparse'
 import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
+import { usePaged, Pager } from '@/components/ui/pager'
+import { fetchAll } from '@/lib/fetch-all'
 
 type Member = {
   id: string
@@ -74,11 +76,13 @@ export default function MembersPage() {
   }, [])
 
   const fetchAppMembers = async (cId: string) => {
-    const { data } = await supabase
+    const { data } = await fetchAll((from, to) => supabase
       .from('player_club_memberships')
       .select('id, player_id, status, joined_at, user_profiles:User!player_club_memberships_player_id_fkey(name, email, handicap:handicapIndex)')
       .eq('club_id', cId)
       .order('joined_at', { ascending: false })
+      .order('id')
+      .range(from, to))
 
     if (data) {
       setMembers(data as any)
@@ -87,11 +91,13 @@ export default function MembersPage() {
 
   const fetchRoster = async (cId: string) => {
     setLoading(true)
-    const { data } = await supabase
+    const { data } = await fetchAll((from, to) => supabase
       .from('club_member_roster')
       .select('*')
       .eq('club_id', cId)
       .order('uploaded_at', { ascending: false })
+      .order('id')
+      .range(from, to))
 
     if (data) {
       setRoster(data as any)
@@ -127,15 +133,30 @@ export default function MembersPage() {
           }
         }).filter(r => r.email)
 
-        for (const row of toInsert) {
-          const { error } = await supabase
+        // Upsert in chunks rather than one request per row. If a chunk is
+        // rejected, retry its rows one by one so the report still names
+        // exactly which emails failed and why.
+        const CHUNK = 500
+        for (let i = 0; i < toInsert.length; i += CHUNK) {
+          const chunk = toInsert.slice(i, i + CHUNK)
+          const { error: chunkError } = await supabase
             .from('club_member_roster')
-            .upsert(row, { onConflict: 'club_id, email' })
-          
-          if (error) {
-            errors.push({ email: row.email, error: error.message })
-          } else {
-            successCount++
+            .upsert(chunk, { onConflict: 'club_id, email' })
+
+          if (!chunkError) {
+            successCount += chunk.length
+            continue
+          }
+
+          for (const row of chunk) {
+            const { error } = await supabase
+              .from('club_member_roster')
+              .upsert(row, { onConflict: 'club_id, email' })
+            if (error) {
+              errors.push({ email: row.email, error: error.message })
+            } else {
+              successCount++
+            }
           }
         }
 
@@ -250,6 +271,10 @@ export default function MembersPage() {
   )
   const pendingMembers = filteredAppMembers.filter(m => m.status === 'pending')
   const activeMembers = filteredAppMembers.filter(m => m.status === 'active')
+  const activePage = usePaged(activeMembers)
+  const pendingPage = usePaged(pendingMembers)
+  const playersPage = usePaged(rosterPlayers)
+  const coachesPage = usePaged(rosterCoaches)
 
   return (
     <div className="portal-content">
@@ -369,7 +394,7 @@ export default function MembersPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {rosterCoaches.map(m => (
+                      {coachesPage.pageItems.map(m => (
                         <tr key={m.id}>
                           <td className="font-semibold">{m.full_name}</td>
                           <td className="text-sm text-muted-foreground">{m.email}</td>
@@ -383,6 +408,7 @@ export default function MembersPage() {
                       ))}
                     </tbody>
                   </table>
+                  <Pager {...coachesPage} />
                 </div>
               </div>
             </div>
@@ -409,7 +435,7 @@ export default function MembersPage() {
                     {rosterPlayers.length === 0 ? (
                       <tr><td colSpan={6} className="text-center py-10">No players in roster</td></tr>
                     ) : (
-                      rosterPlayers.map(m => (
+                      playersPage.pageItems.map(m => (
                         <tr key={m.id}>
                           <td className="font-semibold">{m.full_name}</td>
                           <td className="text-sm text-muted-foreground">{m.email}</td>
@@ -430,6 +456,7 @@ export default function MembersPage() {
                     )}
                   </tbody>
                 </table>
+                  <Pager {...playersPage} />
               </div>
             </div>
           </div>
@@ -456,7 +483,7 @@ export default function MembersPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {pendingMembers.map(m => (
+                      {pendingPage.pageItems.map(m => (
                         <tr key={m.id}>
                           <td>
                             <div className="flex items-center gap-3">
@@ -497,6 +524,7 @@ export default function MembersPage() {
                       ))}
                     </tbody>
                   </table>
+                  <Pager {...pendingPage} />
                 </div>
               </div>
             </div>
@@ -532,7 +560,7 @@ export default function MembersPage() {
                         </td>
                       </tr>
                     ) : (
-                      activeMembers.map(m => (
+                      activePage.pageItems.map(m => (
                         <tr key={m.id}>
                           <td>
                             <div className="flex items-center gap-3">
@@ -561,6 +589,7 @@ export default function MembersPage() {
                     )}
                   </tbody>
                 </table>
+                  <Pager {...activePage} />
               </div>
             </div>
           </div>

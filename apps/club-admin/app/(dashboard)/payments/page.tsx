@@ -10,6 +10,8 @@ import {
   HelpCircle, Clock, X 
 } from 'lucide-react'
 import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
+import { fetchAll } from '@/lib/fetch-all'
+import { usePaged, Pager } from '@/components/ui/pager'
 
 type Caddie = {
   id: string
@@ -49,12 +51,14 @@ export default function PaymentsPage() {
   const fetchCaddiesData = async () => {
     if (!clubId) return
     setLoading(true)
-    const { data } = await supabase
+    const { data } = await fetchAll((from, to) => supabase
       .from('caddies')
       .select('id, name, phone, paid_until, is_marketplace_visible')
       .eq('club_id', clubId)
       .eq('is_active', true)
       .order('name', { ascending: true })
+      .order('id')
+      .range(from, to))
 
     if (data) setCaddies(data)
     setLoading(false)
@@ -113,6 +117,7 @@ export default function PaymentsPage() {
       unpaidList: unpaid
     }
   }, [filteredCaddies])
+  const unpaidPage = usePaged(unpaidList)
 
   // Helper: toggle selection of an entire list of caddies (e.g. a batch or unpaid list)
   const toggleSelectBatch = (batchCaddies: Caddie[]) => {
@@ -419,7 +424,7 @@ export default function PaymentsPage() {
                           </td>
                         </tr>
                       ) : (
-                        unpaidList.map(c => {
+                        unpaidPage.pageItems.map(c => {
                           const isSelected = selectedIds.includes(c.id)
                           return (
                             <tr key={c.id} className={isSelected ? 'bg-red-50/30' : ''}>
@@ -447,6 +452,7 @@ export default function PaymentsPage() {
                       )}
                     </tbody>
                   </table>
+            <Pager {...unpaidPage} />
                 </div>
               </div>
             </div>

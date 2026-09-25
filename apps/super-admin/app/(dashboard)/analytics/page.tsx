@@ -57,16 +57,20 @@ export default function PlatformAnalyticsPage() {
   const [clubsRanking, setClubsRanking] = useState<ClubRow[]>([])
   const [retentionData, setRetentionData] = useState<any[]>([])
 
-  const loadPlatformAnalytics = async () => {
+  const [computedAt, setComputedAt] = useState<string | null>(null)
+
+  const loadPlatformAnalytics = async (force = false) => {
     setLoading(true)
     try {
       // One server-side aggregate instead of downloading eight whole tables
       // (every user, round and attendance row) and counting in the browser.
       // That grew with the platform and silently undercounted past
       // PostgREST's 1000-row response cap.
-      const { data: a, error } = await supabase.rpc('platform_analytics')
+      // Served from a 5-minute cache unless the admin asks for a refresh.
+      const { data: a, error } = await supabase.rpc('platform_analytics', { p_force: force })
       if (error || !a) throw error ?? new Error('No analytics data')
 
+      setComputedAt(a.computedAt ?? null)
       const n = (v: unknown) => Number(v ?? 0)
 
       const playersCount = n(a.players)
@@ -203,8 +207,13 @@ export default function PlatformAnalyticsPage() {
           <p className="text-sm text-muted-foreground mt-0.5">
             System-wide operational efficiency, financial performance, and player rounds activity
           </p>
+          {computedAt && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Figures as of {format(new Date(computedAt), 'd MMM, HH:mm')} · refreshed every 5 minutes
+            </p>
+          )}
         </div>
-        <button onClick={loadPlatformAnalytics} className="btn-secondary flex items-center gap-2">
+        <button onClick={() => loadPlatformAnalytics(true)} className="btn-secondary flex items-center gap-2">
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
           Reload System Data
         </button>

@@ -9,7 +9,7 @@
 // Row-level security still applies to every query, so a revoked admin can't
 // read or write club data in that window, only load page shells.
 
-export const ACCESS_TTL_MS = 60_000
+export const ACCESS_TTL_MS = 15_000
 const MAX_ENTRIES = 5_000
 
 const allowed = new Map<string, number>()

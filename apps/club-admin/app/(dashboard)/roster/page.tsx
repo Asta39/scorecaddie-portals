@@ -7,6 +7,8 @@ import { TableSkeleton } from '@/components/ui/table-skeleton'
 import { startOfWeek, addDays, format, isSameDay, parseISO } from 'date-fns'
 import { Calendar as CalendarIcon, Check, X, Clock, AlertCircle, ChevronLeft, ChevronRight, User, Search, Download } from 'lucide-react'
 import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
+import { fetchAll } from '@/lib/fetch-all'
+import { usePaged, Pager } from '@/components/ui/pager'
 
 type Caddie = {
   id: string
@@ -84,18 +86,24 @@ export default function RosterPage() {
     const endOfWeekStr = format(addDays(currentWeekStart, 6), 'yyyy-MM-dd')
 
     const [caddiesRes, attendanceRes] = await Promise.all([
-      supabase
+      fetchAll((from, to) => supabase
         .from('caddies')
         .select('id, name, phone, is_present, paid_until')
         .eq('club_id', clubId)
         .eq('is_active', true)
-        .order('name', { ascending: true }),
-      supabase
+        .order('name', { ascending: true })
+        .order('id')
+        .range(from, to)),
+      // A week of attendance is caddies x 7 rows; past ~140 caddies that
+      // exceeded the 1000-row response cap and days went missing.
+      fetchAll((from, to) => supabase
         .from('caddie_attendance')
         .select('*')
         .eq('club_id', clubId)
         .gte('date', startOfCurrentWeekStr)
         .lte('date', endOfWeekStr)
+        .order('id')
+        .range(from, to))
     ])
 
     if (caddiesRes.data) setCaddies(caddiesRes.data)
@@ -141,10 +149,11 @@ export default function RosterPage() {
     if (!searchQuery) return caddies
     return caddies.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
   }, [caddies, searchQuery])
+  const rosterPage = usePaged(filteredCaddies)
 
   const exportCSV = () => {
     const headers = ['Caddie Name', ...weekDays.map(d => format(d, 'EEE d MMM'))].join(',')
-    const rows = filteredCaddies.map(caddie => {
+    const rows = rosterPage.pageItems.map(caddie => {
       const row = [`"${caddie.name}"`]
       weekDays.forEach(day => {
         const dateStr = format(day, 'yyyy-MM-dd')
@@ -384,6 +393,7 @@ export default function RosterPage() {
               )}
             </tbody>
             </table>
+            <Pager {...rosterPage} />
           </div>
         </div>
       )}
