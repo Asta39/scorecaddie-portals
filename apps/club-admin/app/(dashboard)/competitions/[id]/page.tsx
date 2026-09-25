@@ -11,6 +11,7 @@ import {
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import { ScorecardScannerModal } from '../../../../components/ScorecardScannerModal'
+import { HeaderSkeleton, StatGridSkeleton, TabsSkeleton, RowsSkeleton } from '@/components/ui/page-skeletons'
 
 type Competition = {
   id: string
@@ -716,7 +717,14 @@ export default function CompetitionDetailsPage() {
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
-  if (loading) return <div className="p-8 text-text-muted text-sm">Loading competition…</div>
+  if (loading) return (
+    <div className="portal-content max-w-5xl">
+      <HeaderSkeleton icon action />
+      <StatGridSkeleton count={4} />
+      <div className="mt-6"><TabsSkeleton count={4} /></div>
+      <div className="card p-6"><RowsSkeleton rows={8} cols={5} /></div>
+    </div>
+  )
   if (!competition) return <div className="p-8">Competition not found</div>
 
   const startDate = new Date(competition.start_date).toLocaleDateString()

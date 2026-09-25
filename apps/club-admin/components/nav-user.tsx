@@ -17,11 +17,12 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserIcon, SettingsIcon, LogOutIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function NavUser() {
 	const router = useRouter();
 	const supabase = createClient();
-	const [user, setUser] = useState({ name: "Secretary", email: "loading...", initial: "S", role: "Secretary" });
+	const [user, setUser] = useState({ name: "Secretary", email: "", initial: "S", role: "Secretary" });
 
 	useEffect(() => {
 		const loadUser = async () => {
@@ -64,7 +65,7 @@ export function NavUser() {
 							<span className="font-medium text-foreground">{user.name}</span>{" "}
 							<br />
 							<div className="max-w-full overflow-hidden overflow-ellipsis whitespace-nowrap text-muted-foreground text-xs">
-								{user.email}
+								{user.email || <Skeleton className="h-3 w-32 mt-1" />}
 							</div>
 							<div className="mt-0.5 text-[10px] text-muted-foreground">
 								{user.role}

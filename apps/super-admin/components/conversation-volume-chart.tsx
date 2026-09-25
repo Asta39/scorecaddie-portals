@@ -17,6 +17,7 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from "@/components/ui/chart";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const chartConfig = {
 	amount: {
@@ -163,11 +164,11 @@ export function ConversationVolumeChart({
 				<CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div className="min-w-0 space-y-2">
 						<CardTitle>Revenue timeline</CardTitle>
-						<CardDescription>Loading revenue timeline...</CardDescription>
+						<Skeleton className="h-4 w-48" />
 					</div>
 				</CardHeader>
-				<CardContent className="h-[280px] w-full flex items-center justify-center">
-					<div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+				<CardContent className="h-[280px] w-full">
+					<Skeleton className="h-full w-full rounded-lg" />
 				</CardContent>
 			</Card>
 		);

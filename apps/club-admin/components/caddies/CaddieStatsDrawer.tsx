@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { format, differenceInMinutes, parseISO, subDays } from 'date-fns'
 import { X, Calendar, Clock, Award, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type Caddie = {
   id: string
@@ -232,9 +233,13 @@ export function CaddieStatsDrawer({ caddie, isOpen, onClose }: CaddieStatsDrawer
         </div>
 
         {loading ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-2" style={{ color: '#8e8e93' }}>
-            <RefreshCw className="animate-spin text-primary" size={20} />
-            <span className="text-sm font-medium mt-1">Analyzing metrics...</span>
+          <div className="flex-1 space-y-5">
+            <Skeleton className="h-16 w-full rounded-xl" />
+            <div className="grid grid-cols-2 gap-3">
+              {Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+            </div>
+            <Skeleton className="h-40 w-full rounded-xl" />
+            <Skeleton className="h-32 w-full rounded-xl" />
           </div>
         ) : stats ? (
           <div className="flex-1 overflow-y-auto space-y-5 pr-1" style={{ scrollbarWidth: 'thin' }}>

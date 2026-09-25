@@ -6,6 +6,7 @@ import { Calendar, Settings, FileDown, Search, Plus, Trash2 } from 'lucide-react
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { computeHandicaps, formatHandicaps, type HandicapTee } from '@/lib/handicap'
+import { RowsSkeleton } from '@/components/ui/page-skeletons'
 
 export default function TeeTimesPage() {
   const supabase = createClient()
@@ -356,7 +357,7 @@ export default function TeeTimesPage() {
             </p>
           )}
           {loading ? (
-             <div className="py-10 text-center text-text-muted">Loading Tee Sheet...</div>
+             <RowsSkeleton rows={10} cols={5} />
           ) : sheetView === 'grid' ? (
             <div className="space-y-2">
               {timeSlots.length === 0 && (

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { MapPin, UtensilsCrossed, Grid3x3, Plus, Trash2, Pencil, X, Check, FileText, Upload, CalendarCheck } from 'lucide-react'
+import { HeaderSkeleton, TabsSkeleton, CardSkeleton } from '@/components/ui/page-skeletons'
 
 type Location = {
   id: string
@@ -156,7 +157,15 @@ export default function RestaurantPage() {
   }
 
   if (loading) {
-    return <div className="p-8 text-text-muted">Loading…</div>
+    return (
+      <div className="p-8">
+        <HeaderSkeleton />
+        <TabsSkeleton count={4} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }, (_, i) => <CardSkeleton key={i} lines={2} />)}
+        </div>
+      </div>
+    )
   }
 
   if (!clubId) {

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { Save, X, Trophy, Image as ImageIcon } from 'lucide-react'
+import { HeaderSkeleton, FormSkeleton } from '@/components/ui/page-skeletons'
 
 export default function EditCompetitionPage() {
   const router = useRouter()
@@ -184,7 +185,12 @@ export default function EditCompetitionPage() {
   }
 
   if (loading) {
-    return <div className="p-8">Loading...</div>
+    return (
+      <div className="portal-content max-w-3xl">
+        <HeaderSkeleton icon />
+        <FormSkeleton sections={3} fields={3} />
+      </div>
+    )
   }
 
   return (

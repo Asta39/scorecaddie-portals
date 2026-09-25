@@ -12,6 +12,7 @@ import {
   type TeeRow,
   type Issue,
 } from '@/lib/scorecard-validation'
+import { HeaderSkeleton, CardSkeleton, RowsSkeleton } from '@/components/ui/page-skeletons'
 
 const GENDERS = ['men', 'women', 'unisex']
 
@@ -242,7 +243,14 @@ export default function ScorecardPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-text-muted">Loading…</div>
+  if (loading) return (
+    <div className="p-8">
+      <HeaderSkeleton />
+      <CardSkeleton lines={2} className="mb-6" />
+      <div className="card p-6 mb-6"><RowsSkeleton rows={2} cols={5} /></div>
+      <div className="card p-6"><RowsSkeleton rows={18} cols={5} /></div>
+    </div>
+  )
 
   if (!courseId) {
     return (

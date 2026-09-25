@@ -11,6 +11,7 @@ import {
   TrendingUp, Users, ShieldAlert, Award, Zap,
   Building, CheckCircle, RefreshCw, BarChart3, Star, Compass
 } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type Club = {
   id: string
@@ -371,8 +372,15 @@ export default function PlatformAnalyticsPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64 text-text-muted">
-          Compiling platform metrics, parsing Supabase data and drawing charts…
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+            {Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Skeleton className="h-80 rounded-xl" />
+            <Skeleton className="h-80 rounded-xl" />
+          </div>
+          <Skeleton className="h-72 rounded-xl" />
         </div>
       ) : (
         <div className="space-y-8">

@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { Save, X, Trophy, Image as ImageIcon } from 'lucide-react'
+import { HeaderSkeleton, FormSkeleton } from '@/components/ui/page-skeletons'
 
 function NewCompetitionForm() {
   const router = useRouter()
@@ -481,7 +482,12 @@ function NewCompetitionForm() {
 
 export default function NewCompetitionPage() {
   return (
-    <Suspense fallback={<div className="portal-content text-sm text-text-muted">Loading page parameters…</div>}>
+    <Suspense fallback={
+      <div className="portal-content max-w-3xl">
+        <HeaderSkeleton icon />
+        <FormSkeleton sections={3} fields={3} />
+      </div>
+    }>
       <NewCompetitionForm />
     </Suspense>
   )

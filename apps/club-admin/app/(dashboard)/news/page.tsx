@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Trash2, Megaphone, Calendar, Trophy, Plus, RefreshCw } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { HeaderSkeleton, FormSkeleton, CardSkeleton } from '@/components/ui/page-skeletons'
 
 type ClubPost = {
   id: string
@@ -128,7 +129,13 @@ export default function NewsFeedPage() {
   }
 
   if (loading) {
-    return <div className="p-8 text-center">Loading news feed...</div>
+    return (
+      <div className="max-w-4xl mx-auto w-full space-y-6">
+        <HeaderSkeleton action />
+        <FormSkeleton sections={1} fields={2} />
+        {Array.from({ length: 3 }, (_, i) => <CardSkeleton key={i} lines={3} />)}
+      </div>
+    )
   }
 
   return (
