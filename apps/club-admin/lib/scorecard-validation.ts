@@ -9,7 +9,12 @@
 export type HoleRow = {
   holeNumber: number
   par: number | null
-  si: number | null
+  /** 18-hole stroke index per tee id. Differs between tees on cards where a
+   *  nine-hole course is played twice ("Course 1" / "Course 2"). */
+  si: Record<string, number | null>
+  /** Optional nine-hole stroke index (1-9 within each nine) per tee id, used
+   *  when only the front or back nine is played. */
+  si9: Record<string, number | null>
   /** yardage per tee id */
   yardages: Record<string, number | null>
 }
@@ -32,6 +37,7 @@ const PAR_BOUNDS: Record<number, [number, number]> = {
   6: [550, 720],
 }
 
+// For 18 holes; scaled for a nine-row card.
 const MIN_TOTAL_YARDS = 4500
 const MAX_TOTAL_YARDS = 7800
 
@@ -51,35 +57,8 @@ export function validateScorecard(holes: HoleRow[], tees: TeeRow[]): Issue[] {
     issues.push({ level: 'error', message: 'Par must be between 3 and 6 on every hole.' })
   }
 
-  // ── Stroke index ──────────────────────────────────────────
-  const sis = holes.map(h => h.si)
-  if (sis.some(s => s === null)) {
-    issues.push({ level: 'error', message: 'Every hole needs a stroke index.' })
-  } else {
-    const sorted = [...(sis as number[])].sort((a, b) => a - b)
-    const expected = Array.from({ length: n }, (_, i) => i + 1)
-    if (!sorted.every((v, i) => v === expected[i])) {
-      issues.push({
-        level: 'error',
-        message: `Stroke indices must use each number from 1 to ${n} exactly once (no repeats, no gaps).`,
-      })
-    } else if ((sis as number[]).every((s, i) => s === i + 1)) {
-      // The exact bug this whole exercise exists to fix.
-      issues.push({
-        level: 'error',
-        message:
-          'Stroke index matches the hole number on every hole. That is placeholder data, not a real allocation — enter the stroke indices from the official card.',
-      })
-    } else if (n === 18) {
-      const frontOdd = (sis as number[]).slice(0, 9).filter(s => s % 2 === 1).length
-      if (frontOdd !== 0 && frontOdd !== 9) {
-        issues.push({
-          level: 'warning',
-          message: `Stroke indices are usually split odd on one nine and even on the other; this card has ${frontOdd} odd on the front nine. Double-check against the official card.`,
-        })
-      }
-    }
-  }
+  // ── Stroke index (per tee) ────────────────────────────────
+  for (const tee of tees) issues.push(...checkStrokeIndex(holes, tee))
 
   // ── Tees and yardages ─────────────────────────────────────
   if (tees.length === 0) {
@@ -118,10 +97,12 @@ export function validateScorecard(holes: HoleRow[], tees: TeeRow[]): Issue[] {
     }
 
     const total = values.reduce((a, b) => a + b, 0)
-    if (total < MIN_TOTAL_YARDS || total > MAX_TOTAL_YARDS) {
+    const minTotal = Math.round((MIN_TOTAL_YARDS * n) / 18)
+    const maxTotal = Math.round((MAX_TOTAL_YARDS * n) / 18)
+    if (total < minTotal || total > maxTotal) {
       issues.push({
         level: 'error',
-        message: `${tee.name}: totals ${total} yds, outside the plausible ${MIN_TOTAL_YARDS}–${MAX_TOTAL_YARDS} range. Check for a typo or a metres/yards mix-up.`,
+        message: `${tee.name}: totals ${total} yds, outside the plausible ${minTotal}–${maxTotal} range. Check for a typo or a metres/yards mix-up.`,
       })
     }
 
@@ -138,6 +119,57 @@ export function validateScorecard(holes: HoleRow[], tees: TeeRow[]): Issue[] {
         }
       }
     })
+  }
+
+  return issues
+}
+
+function isPermutation(values: number[], n: number) {
+  const sorted = [...values].sort((a, b) => a - b)
+  return sorted.length === n && sorted.every((v, i) => v === i + 1)
+}
+
+function checkStrokeIndex(holes: HoleRow[], tee: TeeRow): Issue[] {
+  const issues: Issue[] = []
+  const n = holes.length
+  const sis = holes.map(h => h.si[tee.id] ?? null)
+
+  if (sis.some(s => s === null)) {
+    issues.push({ level: 'error', message: `${tee.name}: every hole needs a stroke index.` })
+  } else if (!isPermutation(sis as number[], n)) {
+    issues.push({
+      level: 'error',
+      message: `${tee.name}: stroke indexes must use each number from 1 to ${n} exactly once (no repeats, no gaps).`,
+    })
+  } else if ((sis as number[]).every((s, i) => s === i + 1)) {
+    // The exact bug this whole exercise exists to fix.
+    issues.push({
+      level: 'error',
+      message: `${tee.name}: stroke index matches the hole number on every hole. That is placeholder data — enter the stroke indexes from the official card.`,
+    })
+  } else if (n === 18) {
+    const frontOdd = (sis as number[]).slice(0, 9).filter(s => s % 2 === 1).length
+    if (frontOdd !== 0 && frontOdd !== 9) {
+      issues.push({
+        level: 'warning',
+        message: `${tee.name}: stroke indexes are usually odd on one nine and even on the other; this card has ${frontOdd} odd on the front nine. Double-check against the official card.`,
+      })
+    }
+  }
+
+  // Nine-hole index is optional, but if any is entered each nine must be a
+  // complete 1-9 allocation, or front/back-nine rounds get wrong strokes.
+  const nines = holes.map(h => h.si9[tee.id] ?? null)
+  if (nines.some(v => v !== null)) {
+    for (let start = 0; start < n; start += 9) {
+      const half = nines.slice(start, start + 9)
+      const label = `holes ${start + 1}–${Math.min(start + 9, n)}`
+      if (half.some(v => v === null)) {
+        issues.push({ level: 'error', message: `${tee.name}: nine-hole stroke index is missing on some of ${label}. Fill all nine or leave all blank.` })
+      } else if (!isPermutation(half as number[], half.length)) {
+        issues.push({ level: 'error', message: `${tee.name}: nine-hole stroke indexes on ${label} must use 1 to ${half.length} exactly once.` })
+      }
+    }
   }
 
   return issues

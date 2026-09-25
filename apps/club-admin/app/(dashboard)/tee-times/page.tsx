@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase-client'
 import { Calendar, Settings, FileDown, Search, Plus, Trash2 } from 'lucide-react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { computeHandicaps, formatHandicaps, type HandicapTee } from '@/lib/handicap'
 
 export default function TeeTimesPage() {
   const supabase = createClient()
@@ -23,12 +24,18 @@ export default function TeeTimesPage() {
   const [maxPlayers, setMaxPlayers] = useState(4)
   const [advanceDays, setAdvanceDays] = useState(14)
   const [savingSettings, setSavingSettings] = useState(false)
+  // Tee used for Course Handicap on the sheet, and the handicap allowance (%)
+  // used for Playing Handicap.
+  const [handicapTeeId, setHandicapTeeId] = useState<string | null>(null)
+  const [allowance, setAllowance] = useState(95)
+  const [tees, setTees] = useState<{ id: string; name: string; courseRating: number | null; slopeRating: number | null; par: number | null }[]>([])
 
   // Sheet State
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [timeSlots, setTimeSlots] = useState<any[]>([])
   const [bookings, setBookings] = useState<any[]>([])
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
+  const [sheetView, setSheetView] = useState<'grid' | 'list'>('grid')
 
   useEffect(() => {
     const loadClub = async () => {
@@ -76,8 +83,30 @@ export default function TeeTimesPage() {
       setLastTime(data.last_tee_time)
       setMaxPlayers(data.max_players_per_slot)
       setAdvanceDays(data.advance_booking_days)
+      setHandicapTeeId(data.handicap_tee_id ?? null)
+      setAllowance(Number(data.handicap_allowance ?? 95))
     }
+
+    const { data: teeRows } = await supabase
+      .from('Tee')
+      .select('id, name, "courseRating", "slopeRating", par')
+      .eq('courseId', courseId)
+      .order('name')
+    setTees(teeRows ?? [])
   }
+
+  const handicapTee: HandicapTee | null = (() => {
+    const t = tees.find(x => x.id === handicapTeeId)
+    if (!t || t.courseRating == null || t.slopeRating == null || t.par == null) return null
+    return { courseRating: t.courseRating, slopeRating: t.slopeRating, par: t.par }
+  })()
+
+  const playerHandicapText = (p: any) =>
+    p.custom_name ? '' : formatHandicaps(p.User?.handicap, computeHandicaps(p.User?.handicap, handicapTee, allowance))
+
+  const isAway = (p: any) =>
+    !p.custom_name &&
+    !(p.User?.player_club_memberships ?? []).some((m: any) => m.club_id === clubId && m.status === 'active')
 
   const saveSettings = async () => {
     if (!courseId) return
@@ -88,7 +117,9 @@ export default function TeeTimesPage() {
       first_tee_time: firstTime,
       last_tee_time: lastTime,
       max_players_per_slot: maxPlayers,
-      advance_booking_days: advanceDays
+      advance_booking_days: advanceDays,
+      handicap_tee_id: handicapTeeId,
+      handicap_allowance: allowance,
     })
     setSavingSettings(false)
     if (error) {
@@ -172,8 +203,8 @@ export default function TeeTimesPage() {
 
       players.forEach((p: any, idx: number) => {
         const name = p.custom_name || p.User?.name || 'Unknown'
-        const type = p.custom_name ? 'Guest' : 'Member'
-        const handicap = !p.custom_name && p.User?.handicap != null ? String(p.User.handicap) : '—'
+        const type = p.custom_name ? 'Guest' : isAway(p) ? 'Away' : 'Member'
+        const handicap = playerHandicapText(p) || '—'
         rows.push([String(idx + 1), name, type, handicap, ''])
       })
     }
@@ -192,7 +223,7 @@ export default function TeeTimesPage() {
         columnStyles: {
           0: { halign: 'center', cellWidth: 10 },
           2: { halign: 'center', cellWidth: 22 },
-          3: { halign: 'center', cellWidth: 22 },
+          3: { halign: 'center', cellWidth: 48 },
           4: { halign: 'center', cellWidth: 26, minCellHeight: 12 },
         },
         alternateRowStyles: { fillColor: [250, 251, 249] },
@@ -300,6 +331,17 @@ export default function TeeTimesPage() {
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="bg-background border rounded-xl px-4 py-2 outline-none text-sm font-medium"
               />
+              <div className="flex rounded-xl border overflow-hidden text-sm">
+                {(['grid', 'list'] as const).map(v => (
+                  <button
+                    key={v}
+                    onClick={() => setSheetView(v)}
+                    className={`px-3 py-2 capitalize ${sheetView === v ? 'bg-primary text-white' : 'hover:bg-gray-50'}`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
             </div>
             <button className="btn-secondary" onClick={exportTeeSheetPdf}>
               <FileDown size={18} />
@@ -307,8 +349,62 @@ export default function TeeTimesPage() {
             </button>
           </div>
           
+          {!loading && !handicapTee && (
+            <p className="text-xs text-text-muted mb-4">
+              Showing Handicap Index only. To show Course and Playing Handicap, pick a tee under
+              Settings &amp; Configuration (the tee needs its course rating and slope on the Scorecard page).
+            </p>
+          )}
           {loading ? (
              <div className="py-10 text-center text-text-muted">Loading Tee Sheet...</div>
+          ) : sheetView === 'grid' ? (
+            <div className="space-y-2">
+              {timeSlots.length === 0 && (
+                <div className="text-center py-10 text-text-muted">No tee times configured. Please check settings.</div>
+              )}
+              {timeSlots.map((slot, index) => {
+                const players = bookings
+                  .filter(b => b.tee_time === slot.time_slot)
+                  .flatMap(b => b.casual_tee_time_players)
+                return (
+                  <div key={index} className="flex items-stretch gap-3">
+                    <div className="w-14 shrink-0 font-mono text-sm pt-3 text-text-muted">{slot.time_slot.substring(0, 5)}</div>
+                    {slot.is_blocked ? (
+                      <div className="flex-1 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-600">
+                        Blocked: {slot.block_reason}
+                      </div>
+                    ) : (
+                      <div className="flex-1 grid gap-2" style={{ gridTemplateColumns: `repeat(${maxPlayers}, minmax(0, 1fr))` }}>
+                        {Array.from({ length: maxPlayers }, (_, i) => {
+                          const p = players[i]
+                          if (!p) {
+                            return (
+                              <div key={i} className="rounded-lg border border-gray-200 px-2 py-2 text-center text-sm font-medium text-text-muted flex items-center justify-center">
+                                Available
+                              </div>
+                            )
+                          }
+                          const name = p.custom_name || p.User?.name || 'Unknown'
+                          const hcp = playerHandicapText(p)
+                          return (
+                            <div key={i} className="rounded-lg border border-primary/40 px-2 py-2 text-center text-sm font-semibold text-primary leading-snug">
+                              {name}
+                              {(hcp || isAway(p) || p.custom_name) && (
+                                <div className="text-xs font-medium">
+                                  {hcp && `(${hcp}${isAway(p) ? ' AWAY' : ''})`}
+                                  {!hcp && isAway(p) && '(AWAY)'}
+                                  {p.custom_name && '(GUEST)'}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           ) : (
             <div className="table-responsive-wrapper">
               <table className="data-table">
@@ -388,8 +484,8 @@ export default function TeeTimesPage() {
                                         <p className="font-medium text-sm text-gray-900">
                                           {p.custom_name ? p.custom_name : (p.User?.name || 'Unknown')}
                                         </p>
-                                        {!p.custom_name && p.User?.handicap != null && (
-                                          <p className="text-xs text-gray-500">Handicap: <span className="font-medium">{p.User.handicap}</span></p>
+                                        {playerHandicapText(p) && (
+                                          <p className="text-xs text-gray-500 font-medium">{playerHandicapText(p)}</p>
                                         )}
                                         {!p.custom_name && !isMember && (
                                           <p className="text-xs text-gray-500">Home Club: <span className="font-medium">{homeClub.replace('-', ' ').toUpperCase()}</span></p>
@@ -434,6 +530,35 @@ export default function TeeTimesPage() {
             <h3 className="text-lg font-bold mb-6">Tee Time Configuration</h3>
 
             <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Handicap tee</label>
+                  <select
+                    value={handicapTeeId ?? ''}
+                    onChange={e => setHandicapTeeId(e.target.value || null)}
+                    className="w-full bg-background border rounded-lg px-4 py-2"
+                  >
+                    <option value="">None (show HI only)</option>
+                    {tees.map(t => (
+                      <option key={t.id} value={t.id} disabled={t.courseRating == null || t.slopeRating == null}>
+                        {t.name}{t.courseRating == null || t.slopeRating == null ? ' (no rating/slope)' : ` (CR ${t.courseRating} / Slope ${t.slopeRating})`}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-text-muted mt-1">Used for Course Handicap (CH) on the tee sheet.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Handicap allowance (%)</label>
+                  <input
+                    type="number" min={1} max={100}
+                    value={allowance}
+                    onChange={e => setAllowance(Number(e.target.value))}
+                    className="w-full bg-background border rounded-lg px-4 py-2"
+                  />
+                  <p className="text-xs text-text-muted mt-1">Playing Handicap (PH) = CH × allowance. 95% for individual stroke play and stableford.</p>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-1">Tee Interval (Minutes)</label>
                 <input 

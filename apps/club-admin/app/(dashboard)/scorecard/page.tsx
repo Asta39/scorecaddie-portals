@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, Fragment } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { Plus, Trash2, Save, AlertTriangle, CheckCircle2, Info } from 'lucide-react'
 import {
@@ -15,6 +15,12 @@ import {
 
 const GENDERS = ['men', 'women', 'unisex']
 
+const emptyHole = (holeNumber: number): HoleRow => ({
+  holeNumber, par: null, si: {}, si9: {}, yardages: {},
+})
+
+const numOrNull = (v: string) => (v === '' ? null : parseInt(v))
+
 export default function ScorecardPage() {
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
@@ -22,6 +28,7 @@ export default function ScorecardPage() {
   const [courseId, setCourseId] = useState<string | null>(null)
   const [clubName, setClubName] = useState('')
   const [holeCount, setHoleCount] = useState(18)
+  const [rowCount, setRowCount] = useState(18)
   const [dataVerified, setDataVerified] = useState(false)
   const [dataSource, setDataSource] = useState<string | null>(null)
 
@@ -54,8 +61,8 @@ export default function ScorecardPage() {
         .eq('id', cid)
         .maybeSingle()
 
-      const count = course?.holesCount ?? 18
-      setHoleCount(count)
+      const courseHoles = course?.holesCount ?? 18
+      setHoleCount(courseHoles)
       setDataVerified(course?.dataVerified ?? false)
       setDataSource(course?.dataSource ?? null)
 
@@ -76,25 +83,40 @@ export default function ScorecardPage() {
 
       const { data: holeRows } = await supabase
         .from('CourseHole')
-        .select('"teeId", "holeNumber", par, "handicapIndex", distance')
+        .select('"teeId", "holeNumber", par, "handicapIndex", "nineHoleIndex", distance')
         .eq('courseId', cid)
 
-      // par/SI are properties of the hole, not the tee, so take the first
-      // non-null value seen for each hole; yardage stays per tee.
-      const built: HoleRow[] = Array.from({ length: count }, (_, i) => ({
-        holeNumber: i + 1,
-        par: null,
-        si: null,
-        yardages: {},
-      }))
+      // A nine-hole course played twice has an 18-row card (holes 10-18 are
+      // the second loop), so show 18 rows if any are already stored.
+      const maxStored = Math.max(0, ...(holeRows ?? []).map(r => r.holeNumber as number))
+      const count = maxStored > 9 ? 18 : courseHoles
+      setRowCount(count)
+
+      // Par is a property of the hole; stroke index and yardage are per tee.
+      const built: HoleRow[] = Array.from({ length: count }, (_, i) => emptyHole(i + 1))
+      const legacy: Record<number, { si: number | null; si9: number | null }> = {}
 
       for (const r of holeRows ?? []) {
         const idx = (r.holeNumber as number) - 1
         if (idx < 0 || idx >= count) continue
         const row = built[idx]
         if (row.par == null && r.par != null) row.par = r.par
-        if (row.si == null && r.handicapIndex != null) row.si = r.handicapIndex
-        if (r.teeId) row.yardages[r.teeId] = r.distance ?? null
+        if (r.teeId) {
+          row.si[r.teeId] = r.handicapIndex ?? null
+          row.si9[r.teeId] = r.nineHoleIndex ?? null
+          row.yardages[r.teeId] = r.distance ?? null
+        } else {
+          legacy[idx] = { si: r.handicapIndex ?? null, si9: r.nineHoleIndex ?? null }
+        }
+      }
+
+      // Rows stored before stroke index was per tee apply to every tee.
+      for (const [idx, v] of Object.entries(legacy)) {
+        for (const t of loadedTees) {
+          const row = built[Number(idx)]
+          if (row.si[t.id] == null) row.si[t.id] = v.si
+          if (row.si9[t.id] == null) row.si9[t.id] = v.si9
+        }
       }
 
       setHoles(built)
@@ -110,11 +132,28 @@ export default function ScorecardPage() {
     setHoles(prev => prev.map((h, i) => (i === idx ? { ...h, ...patch } : h)))
   }, [])
 
-  const setYardage = useCallback((idx: number, teeId: string, value: number | null) => {
-    setHoles(prev => prev.map((h, i) =>
-      i === idx ? { ...h, yardages: { ...h.yardages, [teeId]: value } } : h
-    ))
-  }, [])
+  const setTeeValue = useCallback(
+    (idx: number, field: 'si' | 'si9' | 'yardages', teeId: string, value: number | null) => {
+      setHoles(prev => prev.map((h, i) =>
+        i === idx ? { ...h, [field]: { ...h[field], [teeId]: value } } : h
+      ))
+    }, [])
+
+  // 18 rows for a nine-hole course played twice: holes 10-18 are the second
+  // loop, with their own stroke indexes (and often their own yardages).
+  const changeRowCount = (count: number) => {
+    if (count < holes.length && !confirm(`Remove holes ${count + 1}–${holes.length} from the card?`)) return
+    setRowCount(count)
+    setHoles(prev => Array.from({ length: count }, (_, i) => prev[i] ?? emptyHole(i + 1)))
+  }
+
+  const copyStrokeIndex = (fromId: string, toId: string) => {
+    setHoles(prev => prev.map(h => ({
+      ...h,
+      si: { ...h.si, [toId]: h.si[fromId] ?? null },
+      si9: { ...h.si9, [toId]: h.si9[fromId] ?? null },
+    })))
+  }
 
   const addTee = () => {
     const name = prompt('Tee name (e.g. Blue, White, Yellow, Red)')?.trim()
@@ -122,14 +161,19 @@ export default function ScorecardPage() {
     const id = `${courseId}-${name.toLowerCase().replace(/\s+/g, '-')}`
     if (tees.some(t => t.id === id)) { alert('That tee already exists.'); return }
     setTees(prev => [...prev, { id, name, gender: 'men', courseRating: null, slopeRating: null }])
+    // Most tees share the stroke index; start from the first tee's and let
+    // the club change it (e.g. "Course 2" on a nine-hole course).
+    if (tees[0]) copyStrokeIndex(tees[0].id, id)
   }
 
   const removeTee = (id: string) => {
     if (!confirm('Remove this tee and its yardages?')) return
     setTees(prev => prev.filter(t => t.id !== id))
     setHoles(prev => prev.map(h => {
-      const { [id]: _drop, ...rest } = h.yardages
-      return { ...h, yardages: rest }
+      const { [id]: _y, ...yardages } = h.yardages
+      const { [id]: _s, ...si } = h.si
+      const { [id]: _n, ...si9 } = h.si9
+      return { ...h, yardages, si, si9 }
     }))
   }
 
@@ -165,7 +209,8 @@ export default function ScorecardPage() {
           teeId: t.id,
           holeNumber: h.holeNumber,
           par: h.par,
-          handicapIndex: h.si,
+          handicapIndex: h.si[t.id] ?? null,
+          nineHoleIndex: h.si9[t.id] ?? null,
           distance: h.yardages[t.id] ?? null,
         }))
       )
@@ -296,15 +341,56 @@ export default function ScorecardPage() {
 
       {/* Hole grid */}
       <div className="card p-6 mb-6">
-        <h3 className="font-medium mb-4">Holes</h3>
+        <div className="flex justify-between items-start mb-4 gap-4 flex-wrap">
+          <div>
+            <h3 className="font-medium">Holes</h3>
+            <p className="text-sm text-text-muted max-w-2xl">
+              Stroke index and yardage are entered per tee, because they can differ (e.g. Course 1 and
+              Course 2 on a nine-hole course). The optional <strong>9-hole SI</strong> is the small number
+              on the card, used only when a player plays just the front or back nine.
+            </p>
+          </div>
+          <label className="text-sm flex items-center gap-2">
+            Card rows
+            <select
+              value={rowCount}
+              onChange={e => changeRowCount(parseInt(e.target.value))}
+              className="bg-background border rounded-lg px-3 py-1.5 text-sm"
+            >
+              <option value={9}>9 holes</option>
+              <option value={18}>18 holes{holeCount === 9 ? ' (nine played twice)' : ''}</option>
+            </select>
+          </label>
+        </div>
+        {tees.length > 1 && (
+          <div className="flex flex-wrap gap-2 mb-4 text-sm">
+            {tees.slice(1).map(t => (
+              <button
+                key={t.id}
+                onClick={() => copyStrokeIndex(tees[0].id, t.id)}
+                className="px-3 py-1.5 rounded-lg border border-light hover:bg-gray-50"
+              >
+                Copy stroke indexes from {tees[0].name} to {t.name}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="table-responsive-wrapper">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Hole</th>
-                <th>Par</th>
-                <th>Stroke Index</th>
-                {tees.map(t => <th key={t.id}>{t.name} (yds)</th>)}
+                <th rowSpan={2}>Hole</th>
+                <th rowSpan={2}>Par</th>
+                {tees.map(t => <th key={t.id} colSpan={3} className="text-center">{t.name}</th>)}
+              </tr>
+              <tr>
+                {tees.map(t => (
+                  <Fragment key={t.id}>
+                    <th>SI</th>
+                    <th>9-hole SI</th>
+                    <th>Yds</th>
+                  </Fragment>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -314,33 +400,46 @@ export default function ScorecardPage() {
                   <td>
                     <input
                       type="number" min={3} max={6} value={h.par ?? ''}
-                      onChange={e => setHole(i, { par: e.target.value === '' ? null : parseInt(e.target.value) })}
-                      className="w-16 bg-background border rounded-lg px-2 py-1 text-sm"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number" min={1} max={holeCount} value={h.si ?? ''}
-                      onChange={e => setHole(i, { si: e.target.value === '' ? null : parseInt(e.target.value) })}
-                      className="w-16 bg-background border rounded-lg px-2 py-1 text-sm"
+                      onChange={e => setHole(i, { par: numOrNull(e.target.value) })}
+                      className="w-14 bg-background border rounded-lg px-2 py-1 text-sm"
                     />
                   </td>
                   {tees.map(t => (
-                    <td key={t.id}>
-                      <input
-                        type="number" value={h.yardages[t.id] ?? ''}
-                        onChange={e => setYardage(i, t.id, e.target.value === '' ? null : parseInt(e.target.value))}
-                        className="w-20 bg-background border rounded-lg px-2 py-1 text-sm"
-                      />
-                    </td>
+                    <Fragment key={t.id}>
+                      <td>
+                        <input
+                          type="number" min={1} max={rowCount} value={h.si[t.id] ?? ''}
+                          onChange={e => setTeeValue(i, 'si', t.id, numOrNull(e.target.value))}
+                          className="w-14 bg-background border rounded-lg px-2 py-1 text-sm"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number" min={1} max={9} value={h.si9[t.id] ?? ''}
+                          onChange={e => setTeeValue(i, 'si9', t.id, numOrNull(e.target.value))}
+                          className="w-14 bg-background border rounded-lg px-2 py-1 text-sm"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number" value={h.yardages[t.id] ?? ''}
+                          onChange={e => setTeeValue(i, 'yardages', t.id, numOrNull(e.target.value))}
+                          className="w-20 bg-background border rounded-lg px-2 py-1 text-sm"
+                        />
+                      </td>
+                    </Fragment>
                   ))}
                 </tr>
               ))}
               <tr className="font-medium bg-gray-50">
                 <td>Total</td>
                 <td>{parTotal(holes)}</td>
-                <td />
-                {tees.map(t => <td key={t.id}>{teeTotal(holes, t.id)}</td>)}
+                {tees.map(t => (
+                  <Fragment key={t.id}>
+                    <td /><td />
+                    <td>{teeTotal(holes, t.id)}</td>
+                  </Fragment>
+                ))}
               </tr>
             </tbody>
           </table>
