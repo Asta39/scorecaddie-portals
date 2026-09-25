@@ -241,7 +241,7 @@ export default function ScorecardPage() {
   }
 
   if (loading) return (
-    <div className="p-8">
+    <div>
       <HeaderSkeleton />
       <CardSkeleton lines={2} className="mb-6" />
       <div className="card p-6 mb-6"><RowsSkeleton rows={2} cols={5} /></div>
@@ -251,7 +251,7 @@ export default function ScorecardPage() {
 
   if (!courseId) {
     return (
-      <div className="p-8">
+      <div>
         <div className="card p-8 text-center text-text-muted">
           This club isn&apos;t linked to a course yet, so there&apos;s no scorecard to edit.
           Ask the platform admin to link a course to {clubName || 'this club'}.
@@ -264,7 +264,7 @@ export default function ScorecardPage() {
   const warnings = issues.filter(i => i.level === 'warning')
 
   return (
-    <div className="p-8">
+    <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Scorecard</h1>
         <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>

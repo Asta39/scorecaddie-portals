@@ -725,7 +725,7 @@ export default function CompetitionDetailsPage() {
       <div className="card p-6"><RowsSkeleton rows={8} cols={5} /></div>
     </div>
   )
-  if (!competition) return <div className="p-8">Competition not found</div>
+  if (!competition) return <div>Competition not found</div>
 
   const startDate = new Date(competition.start_date).toLocaleDateString()
   const feeText = competition.entry_fee

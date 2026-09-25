@@ -48,7 +48,7 @@ export default function AddSecretaryButton({ clubId, clubName }: { clubId: strin
 
   return (
     <>
-      <button className="btn-secondary text-xs py-1.5 px-3" onClick={() => setOpen(true)}>
+      <button className="btn-secondary text-xs py-1.5 px-3 inline-flex items-center gap-1.5 whitespace-nowrap shrink-0" onClick={() => setOpen(true)}>
         <Plus size={13} />
         Add Secretary
       </button>

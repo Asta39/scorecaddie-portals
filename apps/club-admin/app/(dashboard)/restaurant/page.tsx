@@ -155,7 +155,7 @@ export default function RestaurantPage() {
 
   if (loading) {
     return (
-      <div className="p-8">
+      <div>
         <HeaderSkeleton />
         <TabsSkeleton count={4} />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -170,7 +170,7 @@ export default function RestaurantPage() {
   }
 
   return (
-    <div className="p-8">
+    <div>
       <div className="mb-8">
         <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Restaurant</h1>
         <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>

@@ -58,7 +58,9 @@ a, button, input, select, textarea {
 
 
 .portal-content {
-  padding: 20px 28px;
+  /* The app shell provides the page gutter (16px mobile, 24px desktop),
+     matching the header, so pages add none of their own. */
+  padding: 0;
   max-width: 1400px;
 }
 
