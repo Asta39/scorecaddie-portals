@@ -51,7 +51,7 @@ create index if not exists idx_admin_notifications_club
 create index if not exists idx_round_user_played
   on public."Round" ("userId", "playedAt" desc);
 create index if not exists idx_booking_caddie on public."Booking" ("caddieId");
-create index if not exists idx_booking_player on public."Booking" ("playerId");
+create index if not exists idx_booking_player on public."Booking" (player_id);
 create index if not exists idx_message_booking on public."Message" ("bookingId");
 create index if not exists idx_message_sender on public."Message" ("senderId");
 create index if not exists idx_message_receiver on public."Message" ("receiverId");
