@@ -6,6 +6,17 @@ import { useRouter } from 'next/navigation'
 
 export default function AddClubButton({ courses = [] }: { courses?: any[] }) {
   const [open, setOpen] = useState(false)
+
+  // The sidebar's "Add Club" quick action links to /clubs?new=1.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('new') === '1') {
+      setOpen(true)
+      params.delete('new')
+      const rest = params.toString()
+      window.history.replaceState(null, '', window.location.pathname + (rest ? `?${rest}` : ''))
+    }
+  }, [])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
