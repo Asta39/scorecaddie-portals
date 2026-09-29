@@ -13,7 +13,7 @@ export const getServerAdmin = cache(async () => {
 
   const { data: admin } = await supabase
     .from('club_admins')
-    .select('club_id, clubs(brand_color)')
+    .select('club_id, clubs(brand_color, mascot)')
     .eq('user_id', userId)
     .single()
   if (!admin) return null
@@ -23,5 +23,6 @@ export const getServerAdmin = cache(async () => {
     userId,
     clubId: admin.club_id as string,
     brandColor: (club as { brand_color?: string | null } | null)?.brand_color ?? null,
+    mascot: (club as { mascot?: string | null } | null)?.mascot ?? null,
   }
 })

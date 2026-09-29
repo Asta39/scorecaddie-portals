@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase'
 import { format } from 'date-fns'
 import AddSecretaryButton from '@/components/clubs/AddSecretaryButton'
 import EditClubButton from '@/components/clubs/EditClubButton'
+import { Mascot } from '@/components/mascot'
 import SecretaryList from '@/components/clubs/SecretaryList'
 import { ArrowLeft, Users, UserCheck } from 'lucide-react'
 import Link from 'next/link'
@@ -13,12 +14,13 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
   const supabase = await createClient()
   const { clubId } = await params
 
-  const [{ data: club }, { data: caddies }, { data: admins }, { data: payments }, { data: courses }] = await Promise.all([
+  const [{ data: club }, { data: caddies }, { data: admins }, { data: payments }, { data: courses }, { data: otherMascots }] = await Promise.all([
     supabase.from('clubs').select('*').eq('id', clubId).single(),
     supabase.from('caddies').select('*').eq('club_id', clubId).order('name'),
     supabase.from('club_admins').select('*').eq('club_id', clubId),
     supabase.from('caddie_payments').select('*').eq('club_id', clubId).order('created_at', { ascending: false }).limit(10),
     supabase.from('Course').select('id, name').order('name'),
+    supabase.from('clubs').select('mascot').neq('id', clubId).not('mascot', 'is', null),
   ])
 
   if (!club) return notFound()
@@ -37,7 +39,9 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-muted">
-            {club.logo_url ? (
+            {club.mascot ? (
+              <Mascot mascot={club.mascot} size={52} />
+            ) : club.logo_url ? (
               <img src={club.logo_url} alt={club.name} className="w-14 h-14 rounded-xl object-cover" />
             ) : (
               <span className="text-2xl font-bold text-primary">{club.name.charAt(0)}</span>
@@ -54,7 +58,7 @@ export default async function ClubDetailPage({ params }: { params: { clubId: str
           <span className={`badge badge-${club.status === 'active' ? 'active' : 'suspended'} text-sm`}>
             {club.status}
           </span>
-          <EditClubButton club={club} courses={courses ?? []} />
+          <EditClubButton club={club} courses={courses ?? []} takenMascots={(otherMascots ?? []).map((c: any) => c.mascot)} />
         </div>
       </div>
 

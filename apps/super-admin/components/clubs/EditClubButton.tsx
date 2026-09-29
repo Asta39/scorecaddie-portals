@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Edit2, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import MascotPicker from '@/components/clubs/MascotPicker'
 
 interface Club {
   id: string
@@ -11,6 +12,7 @@ interface Club {
   region: string | null
   status: string
   course_id: string | null
+  mascot?: string | null
 }
 
 interface Course {
@@ -18,7 +20,7 @@ interface Course {
   name: string
 }
 
-export default function EditClubButton({ club, courses = [] }: { club: Club; courses?: Course[] }) {
+export default function EditClubButton({ club, courses = [], takenMascots = [] }: { club: Club; courses?: Course[]; takenMascots?: string[] }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -30,6 +32,7 @@ export default function EditClubButton({ club, courses = [] }: { club: Club; cou
     region: club.region ?? '',
     status: club.status,
     course_id: club.course_id ?? '',
+    mascot: club.mascot ?? '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,7 +67,7 @@ export default function EditClubButton({ club, courses = [] }: { club: Club; cou
 
       {open && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setOpen(false)}>
-          <div className="modal" style={{ maxWidth: 520 }}>
+          <div className="modal" style={{ maxWidth: 600 }}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>Edit Club</h3>
@@ -118,6 +121,8 @@ export default function EditClubButton({ club, courses = [] }: { club: Club; cou
                   ))}
                 </select>
               </div>
+
+              <MascotPicker value={form.mascot} onChange={mascot => setForm(f => ({ ...f, mascot }))} taken={takenMascots} />
 
               {error && (
                 <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">{error}</div>

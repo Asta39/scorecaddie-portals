@@ -1,4 +1,5 @@
 'use client'
+import { MascotState } from '@/components/mascot'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -165,20 +166,12 @@ export default function CompetitionsPage() {
             <tbody>
               {filteredCompetitions.length === 0 ? (
                 <tr>
-                  <td colSpan={activeTab === 'template' ? 5 : 6} className="text-center py-20">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-lighter)' }}>
-                        <Trophy size={22} style={{ color: 'var(--color-secondary)' }} />
-                      </div>
-                      <p className="font-medium" style={{ color: 'var(--color-text)' }}>
-                        No {activeTab === 'template' ? 'templates' : 'competitions'} found
-                      </p>
-                      <p className="text-sm" style={{ color: 'var(--color-light)' }}>
-                        {activeTab === 'template' 
-                          ? 'Create a template to easily publish recurring competitions.' 
-                          : 'Try adjusting your search query or create a new competition.'}
-                      </p>
-                    </div>
+                  <td colSpan={activeTab === 'template' ? 5 : 6} className="p-0">
+                    <MascotState title={`No ${activeTab === 'template' ? 'templates' : 'competitions'} found`}>
+                      {activeTab === 'template'
+                        ? 'Create a template for a competition that repeats, like the monthly medal.'
+                        : 'Try a different search, or create a competition.'}
+                    </MascotState>
                   </td>
                 </tr>
               ) : filteredCompetitions.map(c => {

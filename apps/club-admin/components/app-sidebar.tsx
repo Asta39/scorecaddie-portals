@@ -18,9 +18,11 @@ import { PlusIcon, SearchIcon, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
 import { GlobalSearch } from "@/components/global-search";
+import { Mascot, useClubMascot } from "@/components/mascot";
 import { getCurrentUser, getCurrentAdminRow } from '@/lib/current-admin'
 
 export function AppSidebar() {
+	const clubMascot = useClubMascot();
 	const router = useRouter();
 	const [clubName, setClubName] = useState("Score Caddie");
 	const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -56,7 +58,11 @@ export function AppSidebar() {
 			<Sidebar collapsible="icon" variant="floating">
 				<SidebarHeader className="h-14 justify-center">
 					<SidebarMenuButton render={<a href="/dashboard" />}>
-						<img src="/logo.png" alt="Score Caddie" className="size-6" />
+						{clubMascot ? (
+							<Mascot mascot={clubMascot} size={28} className="-m-0.5" />
+						) : (
+							<img src="/logo.png" alt="Score Caddie" className="size-6" />
+						)}
 						<span className="font-bold tracking-tight">{clubName}</span>
 					</SidebarMenuButton>
 				</SidebarHeader>

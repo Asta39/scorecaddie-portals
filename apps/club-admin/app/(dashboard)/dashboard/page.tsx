@@ -5,6 +5,7 @@ import { Users, UserCheck, CreditCard, Clock } from 'lucide-react'
 import { Dashboard } from '@/components/dashboard'
 import { Suspense } from 'react'
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton'
+import { ClubGreeting } from '@/components/dashboard/ClubGreeting'
 
 export const dynamic = 'force-dynamic'
 
@@ -83,6 +84,18 @@ async function getDashboardData(clubId: string) {
   
   presentList.sort((a, b) => a.name.localeCompare(b.name))
 
+  // ── Today's tee times, for the greeting ────────────────────────
+  const { data: club } = await supabase.from('clubs').select('name, course_id').eq('id', clubId).single()
+  const { data: todaysBookings } = club?.course_id
+    ? await supabase
+        .from('casual_tee_time_bookings')
+        .select('tee_time')
+        .eq('course_id', club.course_id)
+        .eq('booking_date', todayStr)
+        .neq('status', 'CANCELLED')
+        .order('tee_time')
+    : { data: [] as { tee_time: string }[] }
+
   return {
     totalCaddies: totalCaddies ?? 0,
     presentCaddies: presentCaddies ?? 0,
@@ -94,6 +107,9 @@ async function getDashboardData(clubId: string) {
     attendanceHistory,
     presentList,
     clubId,
+    clubName: club?.name ?? null,
+    teeTimesToday: todaysBookings?.length ?? 0,
+    firstTeeTime: todaysBookings?.[0]?.tee_time ?? null,
   }
 }
 
@@ -139,6 +155,13 @@ async function DashboardContent({ clubId }: { clubId: string }) {
   ]
 
   return (
+    <div className="space-y-6">
+    <ClubGreeting
+      clubName={data.clubName}
+      teeTimesToday={data.teeTimesToday}
+      firstTeeTime={data.firstTeeTime}
+      presentCaddies={data.presentCaddies}
+    />
     <Dashboard
       stats={stats}
       presenceData={presenceData}
@@ -149,6 +172,7 @@ async function DashboardContent({ clubId }: { clubId: string }) {
       clubId={data.clubId}
       expiringCaddiesCount={data.expiringCaddies}
     />
+    </div>
   )
 }
 

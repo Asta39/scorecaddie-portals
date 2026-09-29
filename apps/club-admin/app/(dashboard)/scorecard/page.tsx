@@ -1,4 +1,7 @@
 'use client'
+import { ClubMascot, MascotState } from '@/components/mascot'
+import { FeatureTip } from '@/components/feature-tip'
+import { toast } from '@/components/mascot-toast'
 
 import React, { useState, useEffect, useCallback, Fragment } from 'react'
 import { createClient } from '@/lib/supabase-client'
@@ -157,7 +160,7 @@ export default function ScorecardPage() {
     const name = prompt('Tee name (e.g. Blue, White, Yellow, Red)')?.trim()
     if (!name) return
     const id = `${courseId}-${name.toLowerCase().replace(/\s+/g, '-')}`
-    if (tees.some(t => t.id === id)) { alert('That tee already exists.'); return }
+    if (tees.some(t => t.id === id)) { toast.error('That tee already exists.'); return }
     setTees(prev => [...prev, { id, name, gender: 'men', courseRating: null, slopeRating: null }])
     // Most tees share the stroke index; start from the first tee's and let
     // the club change it (e.g. "Course 2" on a nine-hole course).
@@ -231,10 +234,10 @@ export default function ScorecardPage() {
 
       setDataVerified(true)
       setDataSource('official-card')
-      alert('Scorecard saved and marked verified.')
+      toast.success('Scorecard saved and verified.', 'Players see it on their next round.')
     } catch (err: any) {
       console.error(err)
-      alert(`Failed to save scorecard: ${err.message ?? err}`)
+      toast.error('Couldn\'t save the scorecard.', String(err.message ?? err))
     } finally {
       setSaving(false)
     }
@@ -273,14 +276,19 @@ export default function ScorecardPage() {
         </p>
       </div>
 
+      <FeatureTip id="nine-hole-si" title="New: 9-hole stroke index">
+        Nine-hole courses can now give each nine its own 1–9 stroke index, so a player on the
+        front nine gets the right strokes. Fill in the &quot;9-hole SI&quot; column next to each hole.
+      </FeatureTip>
+
       {!dataVerified && (
-        <div className="card p-4 mb-6 flex items-start gap-3 border-l-4 border-amber-400">
-          <Info size={18} className="text-amber-500 mt-0.5 shrink-0" />
+        <div className="card p-4 mb-6 flex items-center gap-4 border-l-4 border-amber-400">
+          <ClubMascot mood="idle" size={60} />
           <div className="text-sm">
-            <span className="font-medium">This course is showing estimated data.</span>{' '}
-            The scorecard currently in the app was generated, not sourced from your card —
-            stroke indices in particular were placeholders. Entering your official card here
-            replaces it and marks the course verified.
+            <span className="font-semibold">This card isn&apos;t checked yet.</span>{' '}
+            The scorecard players see was filled in from public sources, and the stroke
+            indexes are placeholders. Enter your official card below so handicaps come out
+            right. Saving it marks the course verified.
             {dataSource && <span className="text-text-muted"> (current source: {dataSource})</span>}
           </div>
         </div>
@@ -309,7 +317,7 @@ export default function ScorecardPage() {
         </div>
 
         {tees.length === 0 ? (
-          <div className="text-center py-8 text-text-muted text-sm">No tees yet — add one to start.</div>
+          <MascotState title="No tees yet">Add a tee to start entering the card.</MascotState>
         ) : (
           <div className="space-y-2">
             {tees.map((t, i) => (

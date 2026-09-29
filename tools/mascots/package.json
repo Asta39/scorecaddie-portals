@@ -1,0 +1,8 @@
+{
+  "name": "scorecaddie-mascots",
+  "private": true,
+  "type": "module",
+  "description": "Renders the club mascots in apps/*/public/mascots with the bot-avatars renderer. Keep packages/shared/mascots.ts in step.",
+  "scripts": { "render": "node render.mjs" },
+  "dependencies": { "@napi-rs/canvas": "^1.0.9", "bot-avatars": "^0.1.1", "react": "^18.3.1" }
+}

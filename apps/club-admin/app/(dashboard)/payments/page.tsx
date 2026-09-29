@@ -1,5 +1,6 @@
 'use client'
 
+import { MascotState } from '@/components/mascot'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { TableSkeleton } from '@/components/ui/table-skeleton'
@@ -265,8 +266,8 @@ export default function PaymentsPage() {
               </div>
 
               {activeBatches.length === 0 ? (
-                <div className="card p-6 text-center text-text-muted" style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                  No caddies with active subscriptions found.
+                <div className="card">
+                  <MascotState title="No active subscriptions">Caddies show up here once their monthly fee is paid.</MascotState>
                 </div>
               ) : (
                 <div className="space-y-4">

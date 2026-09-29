@@ -1,4 +1,7 @@
 'use client'
+import { ClubMascot, MascotState } from '@/components/mascot'
+import { FeatureTip } from '@/components/feature-tip'
+import { toast } from '@/components/mascot-toast'
 
 import React, { useState, useEffect, Fragment } from 'react'
 import { createClient } from '@/lib/supabase-client'
@@ -121,10 +124,10 @@ export default function TeeTimesPage() {
     })
     setSavingSettings(false)
     if (error) {
-      alert(`Failed to save settings: ${error.message}`)
+      toast.error('Couldn\'t save the settings.', error.message)
       return
     }
-    alert('Settings saved successfully')
+    toast.success('Tee time settings saved.')
   }
 
   const loadTeeSheet = async () => {
@@ -270,7 +273,7 @@ export default function TeeTimesPage() {
       reason: reason
     })
     if (error) {
-      alert(`Failed to block time slot: ${error.message}`)
+      toast.error('Couldn\'t block the slot.', error.message)
       return
     }
     loadTeeSheet()
@@ -287,6 +290,11 @@ export default function TeeTimesPage() {
           </p>
         </div>
       </div>
+
+      <FeatureTip id="tee-sheet-handicaps" title="New: handicaps on the tee sheet">
+        Each booked player now shows their Handicap Index (HI), Course Handicap (CH) and Playing
+        Handicap (PH). Pick the tee and allowance under Settings &amp; Configuration.
+      </FeatureTip>
 
       {!loading && !courseId ? (
         <div className="card py-10 text-center text-text-muted">
@@ -353,12 +361,25 @@ export default function TeeTimesPage() {
               Settings &amp; Configuration (the tee needs its course rating and slope on the Scorecard page).
             </p>
           )}
+          {!loading && timeSlots.length > 0 && (
+            timeSlots.every(s => s.remaining_capacity === 0) ? (
+              <div className="card flex items-center gap-3 px-4 py-3 mb-4">
+                <ClubMascot mood="work" size={44} hop />
+                <p className="font-semibold text-foreground">Fully booked. Every slot is taken.</p>
+              </div>
+            ) : bookings.length === 0 ? (
+              <div className="card flex items-center gap-3 px-4 py-3 mb-4">
+                <ClubMascot mood="sleep" size={44} />
+                <p className="text-sm text-muted-foreground"><span className="font-semibold text-foreground">No bookings yet for this day.</span> Members book from the app.</p>
+              </div>
+            ) : null
+          )}
           {loading ? (
              <RowsSkeleton rows={10} cols={5} />
           ) : sheetView === 'grid' ? (
             <div className="space-y-2">
               {timeSlots.length === 0 && (
-                <div className="text-center py-10 text-text-muted">No tee times configured. Please check settings.</div>
+                <MascotState title="No tee times set up">Add the first and last tee time under Settings &amp; Configuration.</MascotState>
               )}
               {timeSlots.map((slot, index) => {
                 const players = bookings
@@ -510,8 +531,8 @@ export default function TeeTimesPage() {
                   })}
                   {timeSlots.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="text-center py-10 text-text-muted">
-                        No tee times configured. Please check settings.
+                      <td colSpan={4} className="p-0">
+                        <MascotState title="No tee times set up">Add the first and last tee time under Settings &amp; Configuration.</MascotState>
                       </td>
                     </tr>
                   )}

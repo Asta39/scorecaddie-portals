@@ -1,4 +1,6 @@
 'use client'
+import { ClubMascot } from '@/components/mascot'
+import { mascotLabel } from '@scorecaddie/shared/mascots'
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
@@ -153,9 +155,7 @@ export default function SettingsPage() {
           <div className="lg:col-span-1 space-y-4">
             <div className="card p-6">
               <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10">
-                  <Building size={20} className="text-primary" />
-                </div>
+                <ClubMascot size={44} />
                 <div>
                   <h3 className="font-bold text-base text-foreground">Club Info</h3>
                   <p className="text-xs text-muted-foreground">Assigned golf club details</p>
@@ -167,6 +167,10 @@ export default function SettingsPage() {
                   <div>
                     <label className="block text-xs font-semibold text-muted-foreground mb-1">Club Name</label>
                     <p className="font-semibold text-foreground">{clubInfo.name}</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1">Club Mascot</label>
+                    <p className="font-semibold text-foreground">{mascotLabel(clubInfo.mascot)}{!clubInfo.mascot && ' (not chosen yet)'}</p>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-muted-foreground mb-1">Location</label>

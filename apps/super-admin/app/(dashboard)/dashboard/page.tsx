@@ -26,6 +26,8 @@ async function getDashboardData() {
     { data: summary, error: summaryError },
     { data: recentPayments },
     { data: flags },
+    { data: clubRows },
+    { data: adminRows },
   ] = await Promise.all([
     supabase.from('clubs').select('*', { count: 'exact', head: true }).eq('status', 'active'),
     supabase.from('caddies').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -42,6 +44,8 @@ async function getDashboardData() {
       .order('created_at', { ascending: false }).limit(6),
     supabase.from('platform_flags').select('*, clubs(name)')
       .eq('resolved', false).order('created_at', { ascending: false }).limit(5),
+    supabase.from('clubs').select('id, name, mascot, course_id').eq('status', 'active'),
+    supabase.from('club_admins').select('club_id'),
   ])
 
   if (summaryError) console.error('platform_dashboard_summary failed:', summaryError.message)
@@ -95,16 +99,56 @@ async function getDashboardData() {
     clubCaddies,
     recentPayments: recentPayments ?? [],
     flags: flags ?? [],
+    health: clubHealth(clubRows ?? [], adminRows ?? []),
   }
 }
 
 import { Dashboard } from '@/components/dashboard'
+import { Mascot } from '@/components/mascot'
+
+type ClubRow = { id: string; name: string; mascot: string | null; course_id: string | null }
+
+/** Which active clubs still can't be used, and why. */
+function clubHealth(clubs: ClubRow[], admins: { club_id: string }[]) {
+  const withAdmin = new Set(admins.map(a => a.club_id))
+  const pending = clubs
+    .map(c => ({
+      ...c,
+      missing: [!c.course_id && 'no linked course', !withAdmin.has(c.id) && 'no secretary'].filter(Boolean) as string[],
+    }))
+    .filter(c => c.missing.length > 0)
+  return { total: clubs.length, pending }
+}
+
+function HealthCard({ health }: { health: ReturnType<typeof clubHealth> }) {
+  const first = health.pending[0]
+  const ready = health.total - health.pending.length
+  return (
+    <div className="card flex flex-wrap items-center gap-4 p-4">
+      <Mascot mascot={first ? first.mascot : 'star'} mood={first ? 'sleep' : 'work'} size={64} hop={!first} />
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold text-foreground">
+          {first ? `${ready} of ${health.total} clubs are good to go.` : `All ${health.total} clubs are good to go.`}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {first
+            ? `${first.name} has ${first.missing.join(' and ')}${health.pending.length > 1 ? `, and ${health.pending.length - 1} more club${health.pending.length > 2 ? 's need' : ' needs'} attention` : ''}.`
+            : 'Every club has a linked course and a secretary.'}
+        </p>
+      </div>
+      {first && (
+        <Link href={`/clubs/${first.id}`} className="btn-secondary text-sm">Open club</Link>
+      )}
+    </div>
+  )
+}
 
 export default async function DashboardPage() {
   const d = await getDashboardData()
 
   return (
     <div className="flex flex-col gap-6">
+      {d.health.total > 0 && <HealthCard health={d.health} />}
       <Dashboard data={d} />
     </div>
   )

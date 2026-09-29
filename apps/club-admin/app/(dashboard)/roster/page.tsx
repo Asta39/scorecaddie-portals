@@ -1,5 +1,6 @@
 'use client'
 
+import { MascotState } from '@/components/mascot'
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
@@ -330,13 +331,8 @@ export default function RosterPage() {
             <tbody>
               {filteredCaddies.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-20">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-lighter)' }}>
-                         <User size={22} style={{ color: 'var(--color-secondary)' }} />
-                      </div>
-                      <p className="font-medium" style={{ color: 'var(--color-text)' }}>No caddies found</p>
-                    </div>
+                  <td colSpan={8} className="p-0">
+                    <MascotState title="No caddies found" />
                   </td>
                 </tr>
               ) : (

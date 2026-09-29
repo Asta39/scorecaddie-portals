@@ -4,6 +4,7 @@ import { Plus, MapPin } from 'lucide-react'
 import AddClubButton from '@/components/clubs/AddClubButton'
 import Link from 'next/link'
 import { DeleteClubButton } from '@/components/clubs/DeleteClubButton'
+import { Mascot } from '@/components/mascot'
 export const dynamic = 'force-dynamic'
 
 export default async function ClubsPage() {
@@ -39,7 +40,7 @@ export default async function ClubsPage() {
             {clubs?.length ?? 0} golf club{(clubs?.length ?? 0) !== 1 ? 's' : ''} on the platform
           </p>
         </div>
-        <AddClubButton courses={courses ?? []} />
+        <AddClubButton courses={courses ?? []} takenMascots={(clubs ?? []).map((c: any) => c.mascot).filter(Boolean)} />
       </div>
 
       <div className="card">
@@ -72,7 +73,10 @@ export default async function ClubsPage() {
               <tr key={club.id}>
                 <td>
                   <div className="flex items-center gap-3">
-                    {club.logo_url ? (
+                    {club.mascot ? (
+                      // A club not yet linked to a course can't take rounds, so its mascot sleeps.
+                      <Mascot mascot={club.mascot} mood={club.course_id ? 'idle' : 'sleep'} size={36} />
+                    ) : club.logo_url ? (
                       <img src={club.logo_url} alt={club.name}
                         className="w-8 h-8 rounded-lg object-cover border border-border" />
                     ) : (
@@ -82,7 +86,12 @@ export default async function ClubsPage() {
                         </span>
                       </div>
                     )}
-                    <span className="font-semibold text-sm">{club.name}</span>
+                    <div>
+                      <span className="font-semibold text-sm">{club.name}</span>
+                      {!club.course_id && (
+                        <p className="text-xs text-muted-foreground">Not linked to a course yet</p>
+                      )}
+                    </div>
                   </div>
                 </td>
                 <td className="text-sm text-muted-foreground">

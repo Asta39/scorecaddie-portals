@@ -470,3 +470,12 @@ a, button, input, select, textarea {
     -webkit-font-smoothing: antialiased;
   }
 }
+/* Mascots: a gentle hop while something is working. */
+@keyframes mascot-hop {
+  0%, 100% { transform: translateY(0); }
+  45% { transform: translateY(-8%); }
+}
+.mascot-hop { animation: mascot-hop 1.1s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .mascot-hop { animation: none; }
+}

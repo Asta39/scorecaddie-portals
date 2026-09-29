@@ -1,5 +1,7 @@
 'use client'
 
+import { MascotState } from '@/components/mascot'
+import { toast } from '@/components/mascot-toast'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -97,7 +99,7 @@ export default function NewsFeedPage() {
       fetchPosts(clubId)
     } catch (err) {
       console.error(err)
-      alert('Failed to create post')
+      toast.error('Couldn\'t publish the post.', 'Try again.')
     } finally {
       setIsCreating(false)
     }
@@ -189,10 +191,8 @@ export default function NewsFeedPage() {
 
       <div className="space-y-4">
         {posts.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg border">
-            <Megaphone className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-medium">No posts yet</h3>
-            <p className="text-muted-foreground">Publish an announcement to engage your club members.</p>
+          <div className="card">
+            <MascotState title="No posts yet">Publish an announcement and members see it in the app.</MascotState>
           </div>
         ) : (
           posts.map(post => (

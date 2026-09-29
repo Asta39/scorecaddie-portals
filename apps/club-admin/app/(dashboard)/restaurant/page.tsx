@@ -1,5 +1,7 @@
 'use client'
 
+import { MascotState } from '@/components/mascot'
+import { toast } from '@/components/mascot-toast'
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { MapPin, UtensilsCrossed, Grid3x3, Plus, Trash2, Pencil, X, Check, FileText, Upload, CalendarCheck } from 'lucide-react'
@@ -306,7 +308,7 @@ function LocationsTab({ clubId, locations, onChange }: { clubId: string, locatio
       setIsCreating(false)
       onChange()
     } else {
-      alert('Failed to create location')
+      toast.error('Couldn\'t add the location.', 'Check the name and try again.')
     }
   }
 
@@ -376,7 +378,7 @@ function LocationsTab({ clubId, locations, onChange }: { clubId: string, locatio
           </div>
         ))}
         {locations.length === 0 && (
-          <div className="text-center py-10 text-text-muted text-sm">No locations yet — add your first one above.</div>
+          <MascotState title="No locations yet">Add your first one above, like the Terrace or the Sports Bar.</MascotState>
         )}
       </div>
     </div>
@@ -410,7 +412,7 @@ function TablesTab({ locations, tables, onChange }: { locations: Location[], tab
       setIsCreating(false)
       onChange()
     } else {
-      alert(error.message.includes('duplicate') ? 'Table number already exists in this location' : 'Failed to create table')
+      toast.error(error.message.includes('duplicate') ? 'That table number is already used here.' : 'Couldn\'t add the table.')
     }
   }
 
@@ -495,7 +497,7 @@ function TablesTab({ locations, tables, onChange }: { locations: Location[], tab
           </div>
         ))}
         {tablesForLocation.length === 0 && (
-          <div className="col-span-full text-center py-10 text-text-muted text-sm">No tables for this location yet.</div>
+          <MascotState className="col-span-full" title="No tables here yet">Add a table and its seats so members can book it.</MascotState>
         )}
       </div>
     </div>
@@ -516,7 +518,7 @@ function MenuTab({ clubId, menu, onChange, menuDocs, onDocsChange }: {
 
   const uploadDoc = async (file: File) => {
     if (file.type !== 'application/pdf') {
-      alert('Please choose a PDF file')
+      toast.error('Choose a PDF file.', 'Menus upload as PDFs.')
       return
     }
     setIsUploading(true)
@@ -537,7 +539,7 @@ function MenuTab({ clubId, menu, onChange, menuDocs, onDocsChange }: {
       onDocsChange()
     } catch (err) {
       console.error(err)
-      alert('Failed to upload menu PDF')
+      toast.error('Couldn\'t upload the menu.', 'Try again, or use a smaller PDF.')
     } finally {
       setIsUploading(false)
     }
@@ -567,7 +569,7 @@ function MenuTab({ clubId, menu, onChange, menuDocs, onDocsChange }: {
       setIsCreating(false)
       onChange()
     } else {
-      alert('Failed to create menu item')
+      toast.error('Couldn\'t add the dish.', 'Try again.')
     }
   }
 
@@ -619,7 +621,7 @@ function MenuTab({ clubId, menu, onChange, menuDocs, onDocsChange }: {
           </div>
         ))}
         {menuDocs.length === 0 && (
-          <div className="text-center py-8 text-text-muted text-sm">No menu PDFs uploaded yet.</div>
+          <MascotState size={64} title="No menus uploaded yet" />
         )}
       </div>
     </div>
@@ -697,7 +699,7 @@ function MenuTab({ clubId, menu, onChange, menuDocs, onDocsChange }: {
           )
         })}
         {menu.length === 0 && (
-          <div className="text-center py-10 text-text-muted text-sm">No dishes yet — add your first one above.</div>
+          <MascotState title="No dishes yet">Add your first one above.</MascotState>
         )}
       </div>
     </div>

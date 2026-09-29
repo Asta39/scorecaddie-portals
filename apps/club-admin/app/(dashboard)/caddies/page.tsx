@@ -1,5 +1,6 @@
 'use client'
 
+import { ClubMascot, MascotState } from '@/components/mascot'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { TableSkeleton } from '@/components/ui/table-skeleton'
@@ -448,14 +449,8 @@ export default function CaddiesPage() {
             <tbody>
               {filteredCaddies.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-20">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-lighter)' }}>
-                        <User size={22} style={{ color: 'var(--color-secondary)' }} />
-                      </div>
-                      <p className="font-medium" style={{ color: 'var(--color-text)' }}>No caddies found</p>
-                      <p className="text-sm" style={{ color: 'var(--color-light)' }}>Try adjusting your search query or add a caddie.</p>
-                    </div>
+                  <td colSpan={7} className="p-0">
+                    <MascotState title="No caddies found">Try a different search, or register a caddie.</MascotState>
                   </td>
                 </tr>
               ) : caddiesPage.pageItems.map(c => {
@@ -469,11 +464,9 @@ export default function CaddiesPage() {
                             className="w-10 h-10 rounded-full object-cover"
                             style={{ border: '1px solid var(--color-light)' }} />
                         ) : (
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center"
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
                             style={{ background: 'var(--color-lighter)' }}>
-                            <span className="text-sm font-bold" style={{ color: 'var(--color-primary)' }}>
-                              {c.name.charAt(0)}
-                            </span>
+                            <ClubMascot mood={isPaid ? 'idle' : 'sleep'} size={38} />
                           </div>
                         )}
                         <div className="flex flex-col">

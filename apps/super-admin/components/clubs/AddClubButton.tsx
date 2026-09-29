@@ -3,8 +3,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { Plus, X, ChevronDown, Search, Check } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import MascotPicker from '@/components/clubs/MascotPicker'
 
-export default function AddClubButton({ courses = [] }: { courses?: any[] }) {
+export default function AddClubButton({ courses = [], takenMascots = [] }: { courses?: any[]; takenMascots?: string[] }) {
   const [open, setOpen] = useState(false)
 
   // The sidebar's "Add Club" quick action links to /clubs?new=1.
@@ -26,7 +27,7 @@ export default function AddClubButton({ courses = [] }: { courses?: any[] }) {
 
   const [form, setForm] = useState({
     location: '', region: '', contact_name: '', contact_phone: '',
-    course_id: '', name: '',
+    course_id: '', name: '', mascot: '',
   })
 
   const selectedCourse = courses.find(c => c.id === form.course_id)
@@ -77,13 +78,13 @@ export default function AddClubButton({ courses = [] }: { courses?: any[] }) {
     }
 
     setOpen(false)
-    setForm({ location: '', region: '', contact_name: '', contact_phone: '', course_id: '', name: '' })
+    setForm({ location: '', region: '', contact_name: '', contact_phone: '', course_id: '', name: '', mascot: '' })
     router.refresh()
   }
 
   const handleClose = () => {
     setOpen(false)
-    setForm({ location: '', region: '', contact_name: '', contact_phone: '', course_id: '', name: '' })
+    setForm({ location: '', region: '', contact_name: '', contact_phone: '', course_id: '', name: '', mascot: '' })
     setError('')
     setSearch('')
     setDropdownOpen(false)
@@ -98,7 +99,7 @@ export default function AddClubButton({ courses = [] }: { courses?: any[] }) {
 
       {open && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && handleClose()}>
-          <div className="modal" style={{ maxWidth: 520 }}>
+          <div className="modal" style={{ maxWidth: 600 }}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>Add New Club</h3>
@@ -224,6 +225,8 @@ export default function AddClubButton({ courses = [] }: { courses?: any[] }) {
                 <input className="input" placeholder="+254 7XX XXX XXX"
                   value={form.contact_phone} onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))} />
               </div>
+
+              <MascotPicker value={form.mascot} onChange={mascot => setForm(f => ({ ...f, mascot }))} taken={takenMascots} />
 
               {error && (
                 <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">{error}</div>

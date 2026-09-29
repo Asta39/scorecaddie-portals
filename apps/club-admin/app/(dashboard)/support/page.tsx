@@ -1,4 +1,5 @@
 'use client'
+import { ClubMascot } from '@/components/mascot'
 
 import { Mail, MessageCircle, BookOpen, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
@@ -62,11 +63,14 @@ export default function SupportPage() {
   return (
     <div className="portal-content">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Help &amp; Support</h1>
-        <p className="text-sm mt-0.5 text-muted-foreground">
-          Frequently asked questions and ways to get in touch
-        </p>
+      <div className="mb-8 flex items-center gap-4">
+        <ClubMascot size={72} />
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">What do you need help with?</h1>
+          <p className="text-sm mt-0.5 text-muted-foreground">
+            Answers to common questions, and how to reach us
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

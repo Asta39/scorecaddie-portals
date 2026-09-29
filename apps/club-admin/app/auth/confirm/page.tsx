@@ -1,4 +1,5 @@
 'use client'
+import { Mascot } from '@/components/mascot'
 
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase-client'
@@ -23,6 +24,7 @@ export default function ConfirmPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [club, setClub] = useState<{ name: string | null; mascot: string | null } | null>(null)
 
   useEffect(() => {
     // The callback route already set the session cookie.
@@ -30,6 +32,16 @@ export default function ConfirmPage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setSessionReady(true)
+        // Greet the secretary with their club's name and mascot.
+        supabase
+          .from('club_admins')
+          .select('clubs(name, mascot)')
+          .eq('user_id', session.user.id)
+          .maybeSingle()
+          .then(({ data }) => {
+            const c = Array.isArray(data?.clubs) ? data?.clubs[0] : data?.clubs
+            if (c) setClub(c as { name: string | null; mascot: string | null })
+          })
       } else {
         setError('Your activation link has expired or was already used. Please ask your administrator to resend the invitation.')
       }
@@ -98,8 +110,9 @@ export default function ConfirmPage() {
               <p className="text-lg font-bold">Club Admin</p>
             </div>
           </div>
+          {club?.mascot && <Mascot mascot={club.mascot} size={120} hop className="mb-4" />}
           <h1 className="text-4xl font-bold mb-4 leading-tight">
-            Welcome aboard!
+            {club?.name ? `Welcome to ${club.name}!` : 'Welcome aboard!'}
           </h1>
           <p className="text-lg" style={{ color: 'rgba(255,255,255,0.75)' }}>
             Set your password to activate your club secretary account and start managing your club's caddies.
@@ -112,7 +125,11 @@ export default function ConfirmPage() {
         <div className="w-full max-w-md bg-background rounded-2xl shadow-2xl p-10 border border-border">
           <div className="mb-8">
             <div className="mb-6">
-              <img src="/logo.png" alt="Score Caddie" className="h-12 w-auto dark:brightness-0 dark:invert" />
+              {club?.mascot ? (
+                <Mascot mascot={club.mascot} size={64} className="lg:hidden" />
+              ) : (
+                <img src="/logo.png" alt="Score Caddie" className="h-12 w-auto dark:brightness-0 dark:invert" />
+              )}
             </div>
             <h2 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
               Set your password

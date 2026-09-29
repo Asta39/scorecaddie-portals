@@ -1,4 +1,5 @@
 'use client'
+import { MascotState } from '@/components/mascot'
 
 import React, { useState, useRef } from 'react'
 import { Camera, X, Check, Loader2, AlertTriangle } from 'lucide-react'
@@ -198,10 +199,9 @@ export function ScorecardScannerModal({
           )}
 
           {isScanning && (
-            <div className="text-center py-12 space-y-4">
-              <Loader2 size={32} className="animate-spin text-primary mx-auto" />
-              <p className="text-gray-600 font-medium">Analyzing Scorecard using Gemini AI...</p>
-            </div>
+            <MascotState mood="work" title="Reading your scorecard…">
+              Finding each hole&apos;s par, stroke index and yardage. This takes a few seconds.
+            </MascotState>
           )}
 
           {scanResult && !isScanning && (

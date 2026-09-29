@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { isMascotKey } from '@scorecaddie/shared/mascots'
 
 export async function POST(req: NextRequest) {
   try {
-    const { id, name, location, region, status, course_id } = await req.json()
+    const { id, name, location, region, status, course_id, mascot } = await req.json()
 
     if (!id) {
       return NextResponse.json({ error: 'Club ID is required' }, { status: 400 })
     }
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Club name is required' }, { status: 400 })
+    }
+    if (mascot && !isMascotKey(mascot)) {
+      return NextResponse.json({ error: 'Unknown mascot' }, { status: 400 })
     }
 
     const { data, error } = await supabaseAdmin
@@ -20,11 +24,15 @@ export async function POST(req: NextRequest) {
         region: region?.trim() || null,
         status,
         course_id: course_id || null,
+        mascot: mascot || null,
       })
       .eq('id', id)
       .select()
       .single()
 
+    if (error?.code === '23505' && error.message.includes('mascot')) {
+      return NextResponse.json({ error: 'Another club just took that mascot. Pick a different one.' }, { status: 409 })
+    }
     if (error) {
       console.error('Update club error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })

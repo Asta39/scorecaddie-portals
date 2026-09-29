@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { AppShell } from '@/components/app-shell'
 import { getServerAdmin } from '@/lib/server-admin'
+import { ClubMascotProvider } from '@/components/mascot'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Score Caddie Club Admin' }
@@ -8,8 +9,11 @@ export const metadata: Metadata = { title: 'Score Caddie Club Admin' }
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // The club's brand color drives the whole accent scale (see globals.css).
   let brandColor: string | null = null
+  let mascot: string | null = null
   try {
-    brandColor = (await getServerAdmin())?.brandColor ?? null
+    const admin = await getServerAdmin()
+    brandColor = admin?.brandColor ?? null
+    mascot = admin?.mascot ?? null
   } catch {
     // Fall back to the default brand color baked into globals.css
   }
@@ -31,7 +35,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         // anything renders.
         <style dangerouslySetInnerHTML={{ __html: `:root { --color-brand: ${brandColor}; }` }} />
       )}
-      <AppShell>{children}</AppShell>
+      <ClubMascotProvider mascot={mascot}>
+        <AppShell>{children}</AppShell>
+      </ClubMascotProvider>
     </>
   )
 }

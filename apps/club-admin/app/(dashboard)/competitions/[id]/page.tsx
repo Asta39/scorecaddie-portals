@@ -1,4 +1,6 @@
 'use client'
+import { ClubMascot, MascotState } from '@/components/mascot'
+import { toast } from '@/components/mascot-toast'
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
@@ -220,7 +222,7 @@ export default function CompetitionDetailsPage() {
       ))
     } catch (err) {
       console.error('Failed to update status:', err)
-      alert('Failed to update status')
+      toast.error('Couldn\'t update the entry.', 'Try again.')
     }
   }
 
@@ -239,7 +241,7 @@ export default function CompetitionDetailsPage() {
       }
     } catch (err) {
       console.error('Failed to update competition status:', err)
-      alert('Failed to update competition status')
+      toast.error('Couldn\'t update the competition.', 'Try again.')
     }
   }
 
@@ -480,7 +482,7 @@ export default function CompetitionDetailsPage() {
 
       const enteredCount = scorecard.filter(h => h.strokes !== null).length
       if (enteredCount === 0) {
-        alert("Please enter a score for at least one hole.")
+        toast.error('Enter a score for at least one hole.')
         setIsSavingScorecard(false)
         return
       }
@@ -514,7 +516,7 @@ export default function CompetitionDetailsPage() {
       if (lbData) setLeaderboard(lbData)
     } catch (err) {
       console.error("Failed to save scorecard:", err)
-      alert("Failed to save scorecard. Please try again.")
+      toast.error('Couldn\'t save the scorecard.', 'Try again.')
     } finally {
       setIsSavingScorecard(false)
     }
@@ -705,7 +707,7 @@ export default function CompetitionDetailsPage() {
       setGeneratedGroups([])
     } catch (err: any) {
       console.error('Error saving start sheet:', err)
-      alert(`Failed to save start sheet: ${err?.message || err?.details || JSON.stringify(err)}`)
+      toast.error('Couldn\'t save the start sheet.', err?.message || err?.details || String(err))
     } finally {
       setIsSaving(false)
     }
@@ -871,8 +873,8 @@ export default function CompetitionDetailsPage() {
               <tbody>
                 {entries.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="text-center py-10 text-text-muted text-sm">
-                      No entries found for this competition.
+                    <td colSpan={5} className="p-0">
+                      <MascotState title="No entries yet">Players enter from the Competitions tab in the app.</MascotState>
                     </td>
                   </tr>
                 ) : entries.map(entry => (
@@ -1251,12 +1253,8 @@ export default function CompetitionDetailsPage() {
           )}
 
           {startList.length === 0 && generatedGroups.length === 0 && !saveSuccess && (
-            <div className="card p-6 text-center py-12">
-              <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center bg-muted">
-                <Calendar size={22} className="text-primary" />
-              </div>
-              <p className="font-medium text-foreground">No starting sheet yet</p>
-              <p className="text-sm text-muted-foreground mt-1">Use the generator above to create and publish one.</p>
+            <div className="card">
+              <MascotState title="No starting sheet yet">Use the generator above to create and publish one.</MascotState>
             </div>
           )}
         </div>
@@ -1266,8 +1264,8 @@ export default function CompetitionDetailsPage() {
       {activeTab === 'leaderboard' && (
         <div className="card p-6 space-y-6">
           <div className="flex items-center justify-between border-b border-border pb-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2 text-foreground">
-              <Trophy size={20} className="text-primary" />
+            <h2 className="text-lg font-semibold flex items-center gap-3 text-foreground">
+              <ClubMascot mood={leaderboard.length > 0 ? 'work' : 'idle'} size={44} />
               Live Leaderboard
             </h2>
             <button
@@ -1295,8 +1293,8 @@ export default function CompetitionDetailsPage() {
               <tbody>
                 {leaderboard.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-10 text-text-muted text-sm">
-                      No scores recorded yet.
+                    <td colSpan={7} className="p-0">
+                      <MascotState title="No scores yet">Scores appear here live as players finish holes.</MascotState>
                     </td>
                   </tr>
                 ) : leaderboard.map((lb, i) => (

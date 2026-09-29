@@ -1,5 +1,7 @@
 'use client'
 
+import { ClubMascot, MascotState } from '@/components/mascot'
+import { toast } from '@/components/mascot-toast'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { TableSkeleton } from '@/components/ui/table-skeleton'
@@ -166,7 +168,7 @@ export default function MembersPage() {
         if (event.target) event.target.value = ''
       },
       error: (error) => {
-        alert('Error parsing CSV: ' + error.message)
+        toast.error('Couldn\'t read the CSV.', error.message)
         setIsUploading(false)
       }
     })
@@ -188,7 +190,7 @@ export default function MembersPage() {
       }, { onConflict: 'club_id, email' })
 
     if (error) {
-      alert('Error adding: ' + error.message)
+      toast.error('Couldn\'t add the player.', error.message)
     } else {
       setShowAddModal(false)
       setFormData({ email: '', full_name: '', membership_number: '', handicap_index: '' })
@@ -205,7 +207,7 @@ export default function MembersPage() {
       .eq('id', id)
     
     if (error) {
-      alert('Error removing: ' + error.message)
+      toast.error('Couldn\'t remove the player.', error.message)
     } else {
       fetchRoster(clubId!)
     }
@@ -245,14 +247,14 @@ export default function MembersPage() {
           
           if (retryError) throw retryError
           
-          alert('Player already has a home club. They have been approved as a regular member.')
+          toast.success('Approved as a regular member.', 'They already have a home club elsewhere.')
         } else {
           throw error
         }
       }
     } catch (err: any) {
       console.error('Error updating status:', err)
-      alert(err?.message || 'Error updating status')
+      toast.error('Couldn\'t update the member.', err?.message)
       fetchAppMembers(clubId)
     }
   }
@@ -361,18 +363,32 @@ export default function MembersPage() {
         // ==== ROSTER VIEW ====
         <div className="space-y-8 animate-in fade-in">
           {uploadStats && (
-            <div className="mb-6 p-4 rounded-xl border bg-white shadow-sm">
-              <h3 className="font-bold mb-2">Upload Results</h3>
-              <p className="text-sm text-green-600 font-medium">Successfully added/updated: {uploadStats.success}</p>
+            <div className="card mb-6 p-4">
+              <div className="flex items-center gap-4">
+                <ClubMascot mood={uploadStats.failed > 0 ? 'idle' : 'work'} size={60} hop={uploadStats.failed === 0} />
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-foreground">
+                    Imported {uploadStats.success} member{uploadStats.success === 1 ? '' : 's'}.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {uploadStats.failed > 0
+                      ? `${uploadStats.failed} row${uploadStats.failed === 1 ? '' : 's'} skipped. Fix ${uploadStats.failed === 1 ? 'it' : 'them'} in the file and import it again.`
+                      : 'Every row went in.'}
+                  </p>
+                </div>
+                <button type="button" onClick={() => setUploadStats(null)} className="btn-secondary text-xs">Dismiss</button>
+              </div>
               {uploadStats.failed > 0 && (
-                <>
-                  <p className="text-sm text-red-600 font-medium mt-1">Failed to import: {uploadStats.failed}</p>
-                  <div className="mt-2 text-xs font-mono bg-red-50 p-2 rounded max-h-32 overflow-y-auto">
-                    {uploadStats.errors.map((e, i) => (
-                      <div key={i}>{e.email}: {e.error}</div>
-                    ))}
-                  </div>
-                </>
+                <div className="table-responsive-wrapper mt-3 max-h-48 overflow-y-auto">
+                  <table className="data-table">
+                    <thead><tr><th>Email</th><th>Problem</th></tr></thead>
+                    <tbody>
+                      {uploadStats.errors.map((e, i) => (
+                        <tr key={i}><td className="text-sm">{e.email || '—'}</td><td className="text-sm text-muted-foreground">{e.error}</td></tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}
@@ -433,7 +449,7 @@ export default function MembersPage() {
                   </thead>
                   <tbody>
                     {rosterPlayers.length === 0 ? (
-                      <tr><td colSpan={6} className="text-center py-10">No players in roster</td></tr>
+                      <tr><td colSpan={6} className="p-0"><MascotState title="No players on the roster">Import your members with a CSV, or add them one by one.</MascotState></td></tr>
                     ) : (
                       playersPage.pageItems.map(m => (
                         <tr key={m.id}>
@@ -550,13 +566,8 @@ export default function MembersPage() {
                   <tbody>
                     {activeMembers.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-center py-16">
-                          <div className="flex flex-col items-center gap-3">
-                            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-muted">
-                              <Users size={22} className="text-muted-foreground" />
-                            </div>
-                            <p className="font-medium text-foreground">No active members found</p>
-                          </div>
+                        <td colSpan={5} className="p-0">
+                          <MascotState title="No active members found">Members appear here once they sign in to the app.</MascotState>
                         </td>
                       </tr>
                     ) : (
