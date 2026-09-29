@@ -67,9 +67,9 @@ export function NavUser() {
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
-					<DropdownMenuItem>
+					<DropdownMenuItem onClick={() => router.push("/settings")}>
 						<UserIcon />
-						Profile
+						Settings
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 				<DropdownMenuSeparator />

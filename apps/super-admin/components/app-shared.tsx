@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { LayoutGridIcon, BuildingIcon, UsersIcon, ShieldIcon, BarChart3Icon, CreditCardIcon, FlagIcon, SettingsIcon } from "lucide-react";
+import { LayoutGridIcon, BuildingIcon, UsersIcon, ShieldIcon, BarChart3Icon, CreditCardIcon, FlagIcon, SettingsIcon, UserCogIcon } from "lucide-react";
 
 export type SidebarNavItem = {
 	title: string;
@@ -77,7 +77,13 @@ export const navGroups: SidebarNavGroup[] = [
 ];
 
 // Sign out is rendered by the sidebar itself, as in the club-admin portal.
-export const footerNavLinks: SidebarNavItem[] = [];
+export const footerNavLinks: SidebarNavItem[] = [
+	{
+		title: "Settings",
+		path: "/settings",
+		icon: <UserCogIcon />,
+	},
+];
 
 export const navLinks: SidebarNavItem[] = [
 	...navGroups.flatMap((group) =>
