@@ -10,6 +10,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const ONESIGNAL_APP_ID = Deno.env.get('ONESIGNAL_APP_ID') || ''
 const ONESIGNAL_REST_API_KEY = Deno.env.get('ONESIGNAL_REST_API_KEY') || ''
+// The club's mascot shows as the notification's picture; PNGs are served by
+// the club-admin portal (Android can't show WebP large icons everywhere).
+const MASCOT_BASE = Deno.env.get('MASCOT_BASE_URL') || 'https://scorecaddie-portals-club-admin.vercel.app/mascots/notify'
+// Every club is in Kenya; booking_date + tee_time are local East Africa Time.
+const CLUB_UTC_OFFSET = '+03:00'
+const MASCOT_KEY = /^[a-z][a-z0-9_]{1,31}$/
 
 serve(async (_req) => {
   try {
@@ -24,8 +30,9 @@ serve(async (_req) => {
 
     // Only bother with today's or tomorrow's bookings (tee_time is a bare
     // time-of-day column, so date filtering happens in JS after the fetch).
-    const todayStr = now.toISOString().split('T')[0]
-    const tomorrowStr = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    const eatDate = (d: Date) => new Date(d.getTime() + 3 * 60 * 60 * 1000).toISOString().split('T')[0]
+    const todayStr = eatDate(now)
+    const tomorrowStr = eatDate(new Date(now.getTime() + 24 * 60 * 60 * 1000))
 
     const { data: bookings, error: bookingsError } = await supabaseAdmin
       .from('casual_tee_time_bookings')
@@ -41,7 +48,7 @@ serve(async (_req) => {
     const due: { playerRowId: string; userId: string; teeTime: string; courseId: string }[] = []
 
     for (const booking of bookings ?? []) {
-      const teeAt = new Date(`${booking.booking_date}T${booking.tee_time}`)
+      const teeAt = new Date(`${booking.booking_date}T${booking.tee_time.substring(0, 5)}:00${CLUB_UTC_OFFSET}`)
       if (teeAt < windowStart || teeAt > windowEnd) continue
 
       for (const player of (booking as any).casual_tee_time_players ?? []) {
@@ -61,15 +68,33 @@ serve(async (_req) => {
       })
     }
 
+    // Club name and mascot for each course in this batch.
+    const courseIds = [...new Set(due.map(d => d.courseId))]
+    const { data: clubs } = await supabaseAdmin
+      .from('clubs')
+      .select('course_id, name, mascot')
+      .in('course_id', courseIds)
+    const clubFor = new Map((clubs ?? []).map((c: any) => [c.course_id, c]))
+
     let sent = 0
     for (const item of due) {
-      const payload = {
+      const club: any = clubFor.get(item.courseId)
+      const where = club?.name ? ` at ${club.name}` : ''
+      const payload: Record<string, unknown> = {
         app_id: ONESIGNAL_APP_ID,
         include_external_user_ids: [item.userId],
         channel_for_external_user_ids: 'push',
-        headings: { en: 'Tee Time Reminder' },
-        contents: { en: `Your tee time is at ${item.teeTime} — see you on the first tee!` },
-        url: `scorecaddie://book-tee-time`,
+        headings: { en: `Tee off at ${item.teeTime}` },
+        contents: { en: `30 minutes to go${where}. See you on the first tee!` },
+        // Opens the app on My tee times (handled by the app's click listener).
+        data: { type: 'tee_time_reminder', route: '/tee-times' },
+        small_icon: 'ic_stat_onesignal_default',
+        android_accent_color: 'FFA3E635',
+        android_group: 'tee_time_reminders',
+      }
+      if (club?.mascot && MASCOT_KEY.test(club.mascot)) {
+        payload.large_icon = `${MASCOT_BASE}/${club.mascot}.png`
+        payload.ios_attachments = { mascot: `${MASCOT_BASE}/${club.mascot}.png` }
       }
 
       const response = await fetch('https://onesignal.com/api/v1/notifications', {
