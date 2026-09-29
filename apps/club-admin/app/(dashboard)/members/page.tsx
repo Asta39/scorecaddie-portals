@@ -80,14 +80,23 @@ export default function MembersPage() {
   const fetchAppMembers = async (cId: string) => {
     const { data } = await fetchAll((from, to) => supabase
       .from('player_club_memberships')
-      .select('id, player_id, status, joined_at, user_profiles:User!player_club_memberships_player_id_fkey(name, email, handicap:handicapIndex)')
+      .select('id, player_id, status, joined_at, user_profiles:User!player_club_memberships_player_id_fkey(name, handicap:handicapIndex)')
       .eq('club_id', cId)
       .order('joined_at', { ascending: false })
       .order('id')
       .range(from, to))
 
     if (data) {
-      setMembers(data as any)
+      // Emails are private on User; club admins get their own members'
+      // emails through club_member_emails.
+      const { data: emails } = await supabase.rpc('club_member_emails', { p_club_id: cId })
+      const emailOf = new Map<string, string | null>(
+        (emails ?? []).map((e: { player_id: string; email: string | null }) => [e.player_id, e.email]),
+      )
+      setMembers((data as any[]).map(m => ({
+        ...m,
+        user_profiles: m.user_profiles ? { ...m.user_profiles, email: emailOf.get(String(m.player_id)) ?? null } : m.user_profiles,
+      })) as any)
     }
   }
 
