@@ -51,7 +51,9 @@ async function runMiddleware(request: NextRequest) {
   }
 
   const isLoginPage = request.nextUrl.pathname === '/login'
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth/')
+  // /api/auth/* establishes the session in the first place, so it runs
+  // before any session cookie exists.
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth/') || request.nextUrl.pathname.startsWith('/api/auth/')
 
   // Activation routes (/auth/callback exchanges the invite code, /auth/confirm
   // sets the first password) must ALWAYS pass through untouched. A freshly

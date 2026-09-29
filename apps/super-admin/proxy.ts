@@ -47,7 +47,9 @@ export async function proxy(request: NextRequest) {
   }
 
   const isPublicPage = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/update-password'
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth/')
+  // /api/auth/* establishes the session in the first place, so it runs
+  // before any session cookie exists.
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth/') || request.nextUrl.pathname.startsWith('/api/auth/')
 
   // /auth/callback exchanges a recovery-link code for a session and must
   // always pass through untouched — there is no session cookie yet on the
